@@ -14,7 +14,124 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      events: {
+        Row: {
+          created_at: string
+          end_at: string | null
+          id: string
+          location: string | null
+          notes: string | null
+          owner_id: string
+          profile_id: string
+          start_at: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          end_at?: string | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          owner_id: string
+          profile_id: string
+          start_at: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          end_at?: string | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          owner_id?: string
+          profile_id?: string
+          start_at?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "household_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      household_profiles: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          initials: string
+          name: string
+          owner_id: string
+          pin: string | null
+          role: string
+          sort_order: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          initials?: string
+          name: string
+          owner_id: string
+          pin?: string | null
+          role?: string
+          sort_order?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          initials?: string
+          name?: string
+          owner_id?: string
+          pin?: string | null
+          role?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          created_at: string
+          done: boolean
+          due_at: string | null
+          id: string
+          owner_id: string
+          profile_id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          due_at?: string | null
+          id?: string
+          owner_id: string
+          profile_id: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          due_at?: string | null
+          id?: string
+          owner_id?: string
+          profile_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "household_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
