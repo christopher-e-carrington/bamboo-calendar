@@ -17,7 +17,7 @@ import { ProfileAvatar } from "./profile-avatar";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { PinDialog } from "./pin-dialog";
-import type { Profile } from "@/lib/profiles";
+import type { Profile } from "@/lib/household-store";
 
 const navItems = [
   { id: "calendar", title: "Calendar", icon: Calendar },
