@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Delete } from "lucide-react";
 import { ProfileAvatar } from "./profile-avatar";
-import type { Profile } from "@/lib/profiles";
+import type { Profile } from "@/lib/household-store";
 
 export function PinDialog({
   profile,
@@ -52,7 +52,7 @@ export function PinDialog({
         <DialogHeader className="items-center text-center">
           <ProfileAvatar profile={profile} size={64} />
           <DialogTitle className="font-display text-2xl">Welcome, {profile.name}</DialogTitle>
-          <DialogDescription>Enter your 4-digit PIN to switch profile.</DialogDescription>
+          <DialogDescription>Enter the 4-digit PIN to switch profile.</DialogDescription>
         </DialogHeader>
 
         <div className={`flex justify-center gap-3 my-2 transition-transform ${error ? "animate-pulse" : ""}`}>
@@ -82,9 +82,6 @@ export function PinDialog({
             <Delete className="h-5 w-5" />
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground text-center mt-2">
-          Demo PIN: <span className="font-mono">1234</span>
-        </p>
       </DialogContent>
     </Dialog>
   );

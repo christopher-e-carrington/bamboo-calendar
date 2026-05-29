@@ -11,7 +11,11 @@ export function TopNav() {
     month: "long",
     day: "numeric",
   });
-  const viewing = activeProfile.id === "family" ? "Family view" : `${activeProfile.name}'s view`;
+  const viewing = !activeProfile
+    ? "Loading…"
+    : activeProfile.name === "Family"
+    ? "Family view"
+    : `${activeProfile.name}'s view`;
 
   return (
     <header className="sticky top-0 z-30 backdrop-blur-md bg-background/70 border-b border-border">
