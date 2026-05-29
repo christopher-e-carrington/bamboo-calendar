@@ -1,4 +1,4 @@
-import type { Profile } from "@/lib/profiles";
+import type { Profile } from "@/lib/household-store";
 import { cn } from "@/lib/utils";
 
 export function ProfileAvatar({

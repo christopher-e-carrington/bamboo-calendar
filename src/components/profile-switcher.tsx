@@ -3,8 +3,9 @@ import { useHousehold } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
 import { PinDialog } from "./pin-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ChevronDown, Check, Lock } from "lucide-react";
-import type { Profile } from "@/lib/profiles";
+import { ChevronDown, Check, Lock, LogOut } from "lucide-react";
+import type { Profile } from "@/lib/household-store";
+import { supabase } from "@/integrations/supabase/client";
 
 export function ProfileSwitcher() {
   const { profiles, activeProfile, activeProfileId, setActiveProfileId } = useHousehold();
@@ -21,6 +22,8 @@ export function ProfileSwitcher() {
       setActiveProfileId(p.id);
     }
   };
+
+  if (!activeProfile) return null;
 
   return (
     <>
@@ -57,6 +60,15 @@ export function ProfileSwitcher() {
                 </button>
               );
             })}
+          </div>
+          <div className="border-t border-border mt-2 pt-2">
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="w-full flex items-center gap-2 rounded-lg px-2 py-2 text-sm text-muted-foreground hover:bg-secondary transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign out
+            </button>
           </div>
         </PopoverContent>
       </Popover>

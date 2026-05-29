@@ -5,6 +5,9 @@ import { HouseholdProvider } from "@/lib/household-store";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TopNav } from "@/components/top-nav";
 import { Dashboard } from "@/components/dashboard";
+import { AuthScreen } from "@/components/auth-screen";
+import { useAuth } from "@/hooks/use-auth";
+import { Leaf } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,9 +29,21 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const { user, loading } = useAuth();
   const [active, setActive] = useState("today");
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+        <Leaf className="h-5 w-5 mr-2 animate-pulse text-primary" /> Growing your garden…
+      </div>
+    );
+  }
+
+  if (!user) return <AuthScreen />;
+
   return (
-    <HouseholdProvider>
+    <HouseholdProvider user={user}>
       <SidebarProvider>
         <div className="min-h-screen flex w-full">
           <AppSidebar active={active} onSelect={setActive} />
