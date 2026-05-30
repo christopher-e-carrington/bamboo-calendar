@@ -126,6 +126,30 @@ export function TasksPage() {
                   <SelectItem value="yearly">Yearly</SelectItem>
                 </SelectContent>
               </Select>
+              {recurrence === "weekly" && (
+                <Select value={String(weekday)} onValueChange={(v) => setWeekday(Number(v))}>
+                  <SelectTrigger className="w-[130px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {WEEKDAYS.map((d, i) => (
+                      <SelectItem key={i} value={String(i)}>{d}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {(recurrence === "monthly" || recurrence === "quarterly" || recurrence === "yearly") && (
+                <Select value={String(monthDay)} onValueChange={(v) => setMonthDay(Number(v))}>
+                  <SelectTrigger className="w-[110px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                      <SelectItem key={d} value={String(d)}>Day {d}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               <Button type="submit" disabled={!title.trim() || busy} className="gap-1.5">
                 <Plus className="h-4 w-4" /> Add
               </Button>
