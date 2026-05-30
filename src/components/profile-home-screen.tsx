@@ -376,7 +376,7 @@ export function ProfileHomeScreen() {
         </section>
 
         {/* Weather widget */}
-        <WeatherWidget seed={activeProfile.id} />
+        <WeatherWidget />
 
         {/* Smart travel — full width across when present */}
         {travelEvent && travelEvent.location && (
