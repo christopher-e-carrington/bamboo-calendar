@@ -14,8 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      contacts: {
+        Row: {
+          address: string | null
+          birthday: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          owner_id: string
+          phone: string | null
+        }
+        Insert: {
+          address?: string | null
+          birthday?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          owner_id: string
+          phone?: string | null
+        }
+        Update: {
+          address?: string | null
+          birthday?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
+          contact_id: string | null
           created_at: string
           end_at: string | null
           id: string
@@ -23,10 +60,13 @@ export type Database = {
           notes: string | null
           owner_id: string
           profile_id: string
+          profile_ids: string[]
+          recurrence: string
           start_at: string
           title: string
         }
         Insert: {
+          contact_id?: string | null
           created_at?: string
           end_at?: string | null
           id?: string
@@ -34,10 +74,13 @@ export type Database = {
           notes?: string | null
           owner_id: string
           profile_id: string
+          profile_ids?: string[]
+          recurrence?: string
           start_at: string
           title: string
         }
         Update: {
+          contact_id?: string | null
           created_at?: string
           end_at?: string | null
           id?: string
@@ -45,6 +88,8 @@ export type Database = {
           notes?: string | null
           owner_id?: string
           profile_id?: string
+          profile_ids?: string[]
+          recurrence?: string
           start_at?: string
           title?: string
         }

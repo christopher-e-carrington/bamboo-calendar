@@ -18,11 +18,25 @@ export interface Profile {
 export interface CalendarEvent {
   id: string;
   profile_id: string;
+  profile_ids: string[];
   title: string;
   start_at: string;
   end_at?: string | null;
   location?: string | null;
   notes?: string | null;
+  recurrence: "none" | "yearly";
+  contact_id?: string | null;
+}
+
+export interface Contact {
+  id: string;
+  name: string;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  birthday?: string | null;
+  notes?: string | null;
+  created_at: string;
 }
 
 export type Recurrence = "none" | "daily" | "weekly" | "monthly";
@@ -40,6 +54,7 @@ interface HouseholdState {
   profiles: Profile[];
   events: CalendarEvent[];
   tasks: TaskItem[];
+  contacts: Contact[];
   activeProfileId: string;
   setActiveProfileId: (id: string) => void;
   toggleTask: (id: string, done: boolean) => void;
@@ -52,7 +67,7 @@ interface HouseholdState {
   removeProfile: (id: string) => Promise<void>;
   setProfilePin: (id: string, pin: string | null) => Promise<void>;
   addEvent: (input: {
-    profile_id: string;
+    profile_ids: string[];
     title: string;
     start_at: string;
     end_at?: string | null;
@@ -62,6 +77,9 @@ interface HouseholdState {
   addTask: (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence }) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
+  addContact: (input: Omit<Contact, "id" | "created_at">) => Promise<void>;
+  updateContact: (id: string, input: Partial<Omit<Contact, "id" | "created_at">>) => Promise<void>;
+  deleteContact: (id: string) => Promise<void>;
 }
 
 const Ctx = createContext<HouseholdState | null>(null);
@@ -117,10 +135,15 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   const events = eventsQ.data ?? [];
   const tasks = tasksQ.data ?? [];
 
+  const includesProfile = (e: CalendarEvent, id: string) =>
+    (e.profile_ids?.length ? e.profile_ids.includes(id) : e.profile_id === id);
+
   const visibleEvents = useMemo(() => {
     if (!activeProfile) return [];
     if (activeProfile.id === familyProfile?.id) return events;
-    return events.filter((e) => e.profile_id === activeProfile.id || e.profile_id === familyProfile?.id);
+    return events.filter(
+      (e) => includesProfile(e, activeProfile.id) || (familyProfile && includesProfile(e, familyProfile.id)),
+    );
   }, [events, activeProfile, familyProfile]);
 
   const visibleTasks = useMemo(() => {
@@ -211,14 +234,25 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
 
   const addEventMut = useMutation({
     mutationFn: async (input: {
-      profile_id: string;
+      profile_ids: string[];
       title: string;
       start_at: string;
       end_at?: string | null;
       location?: string | null;
       notes?: string | null;
     }) => {
-      const { error } = await supabase.from("events").insert({ ...input, owner_id: user.id });
+      const primary = input.profile_ids[0];
+      if (!primary) throw new Error("Assign at least one profile");
+      const { error } = await supabase.from("events").insert({
+        owner_id: user.id,
+        profile_id: primary,
+        profile_ids: input.profile_ids,
+        title: input.title,
+        start_at: input.start_at,
+        end_at: input.end_at ?? null,
+        location: input.location ?? null,
+        notes: input.notes ?? null,
+      });
       if (error) throw error;
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ["events", user.id] }),
@@ -254,10 +288,56 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", user.id] }),
   });
 
+  const contactsQ = useQuery({
+    queryKey: ["contacts", user.id],
+    queryFn: async (): Promise<Contact[]> => {
+      const { data, error } = await supabase
+        .from("contacts")
+        .select("*")
+        .order("name", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as Contact[];
+    },
+  });
+
+  const addContactMut = useMutation({
+    mutationFn: async (input: Omit<Contact, "id" | "created_at">) => {
+      const { error } = await supabase.from("contacts").insert({ ...input, owner_id: user.id });
+      if (error) throw error;
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["contacts", user.id] });
+      qc.invalidateQueries({ queryKey: ["events", user.id] });
+    },
+  });
+
+  const updateContactMut = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: Partial<Omit<Contact, "id" | "created_at">> }) => {
+      const { error } = await supabase.from("contacts").update(patch).eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["contacts", user.id] });
+      qc.invalidateQueries({ queryKey: ["events", user.id] });
+    },
+  });
+
+  const deleteContactMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("contacts").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["contacts", user.id] });
+      qc.invalidateQueries({ queryKey: ["events", user.id] });
+    },
+  });
+
   const value: HouseholdState = {
     profiles,
     events,
     tasks,
+    contacts: contactsQ.data ?? [],
     activeProfileId: effectiveActiveId,
     setActiveProfileId,
     toggleTask: (id, done) => toggleMut.mutate({ id, done }),
@@ -273,6 +353,9 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     addTask: (input) => addTaskMut.mutateAsync(input).then(() => undefined),
     deleteEvent: (id) => deleteEventMut.mutateAsync(id).then(() => undefined),
     deleteTask: (id) => deleteTaskMut.mutateAsync(id).then(() => undefined),
+    addContact: (input) => addContactMut.mutateAsync(input).then(() => undefined),
+    updateContact: (id, patch) => updateContactMut.mutateAsync({ id, patch }).then(() => undefined),
+    deleteContact: (id) => deleteContactMut.mutateAsync(id).then(() => undefined),
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
