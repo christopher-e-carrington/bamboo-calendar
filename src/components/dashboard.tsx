@@ -139,6 +139,25 @@ export function Dashboard() {
               {visibleTasks.filter((t) => !t.done).length} open
             </div>
           </header>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              quickAddTask();
+            }}
+            className="flex gap-2 mb-3"
+          >
+            <Input
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              placeholder="Quick add a task…"
+              className="h-9"
+            />
+            <Button type="submit" size="icon" disabled={!newTask.trim() || adding} aria-label="Add task">
+              <Plus className="h-4 w-4" />
+            </Button>
+          </form>
+
           {visibleTasks.length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">Nothing on the list.</p>
           ) : (
@@ -148,13 +167,20 @@ export function Dashboard() {
                 return (
                   <li
                     key={t.id}
-                    className="flex items-center gap-3 rounded-lg p-2.5 hover:bg-secondary/60 transition-colors"
+                    className="group flex items-center gap-3 rounded-lg p-2.5 hover:bg-secondary/60 transition-colors"
                   >
                     <Checkbox checked={t.done} onCheckedChange={(v) => toggleTask(t.id, Boolean(v))} />
                     <span className={`flex-1 text-sm ${t.done ? "line-through text-muted-foreground" : ""}`}>
                       {t.title}
                     </span>
                     {p && <ProfileAvatar profile={p} size={22} />}
+                    <button
+                      onClick={() => deleteTask(t.id)}
+                      className="text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all"
+                      aria-label="Delete task"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </li>
                 );
               })}
