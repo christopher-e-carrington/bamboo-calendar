@@ -102,6 +102,7 @@ export type Database = {
           id: string
           owner_id: string
           profile_id: string
+          recurrence: string
           title: string
         }
         Insert: {
@@ -111,6 +112,7 @@ export type Database = {
           id?: string
           owner_id: string
           profile_id: string
+          recurrence?: string
           title: string
         }
         Update: {
@@ -120,6 +122,7 @@ export type Database = {
           id?: string
           owner_id?: string
           profile_id?: string
+          recurrence?: string
           title?: string
         }
         Relationships: [
