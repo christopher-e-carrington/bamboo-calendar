@@ -59,7 +59,7 @@ interface HouseholdState {
     location?: string | null;
     notes?: string | null;
   }) => Promise<void>;
-  addTask: (input: { profile_id: string; title: string; due_at?: string | null }) => Promise<void>;
+  addTask: (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence }) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
 }
