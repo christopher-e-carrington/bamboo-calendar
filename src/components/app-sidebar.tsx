@@ -87,7 +87,10 @@ export function AppSidebar({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Profiles</SidebarGroupLabel>
+          <SidebarGroupLabel className="flex items-center justify-between pr-2">
+            <span>Profiles</span>
+            {!collapsed && <ManageProfilesDialog />}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {profiles.map((p) => {
