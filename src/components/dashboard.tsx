@@ -149,17 +149,33 @@ export function Dashboard() {
               e.preventDefault();
               quickAddTask();
             }}
-            className="flex gap-2 mb-3"
+            className="flex flex-col gap-2 mb-3"
           >
-            <Input
-              value={newTask}
-              onChange={(e) => setNewTask(e.target.value)}
-              placeholder="Quick add a task…"
-              className="h-9"
-            />
-            <Button type="submit" size="icon" disabled={!newTask.trim() || adding} aria-label="Add task">
-              <Plus className="h-4 w-4" />
-            </Button>
+            <div className="flex gap-2">
+              <Input
+                value={newTask}
+                onChange={(e) => setNewTask(e.target.value)}
+                placeholder="Quick add a task…"
+                className="h-9"
+              />
+              <Button type="submit" size="icon" disabled={!newTask.trim() || adding} aria-label="Add task">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <Select value={recurrence} onValueChange={(v) => setRecurrence(v as Recurrence)}>
+              <SelectTrigger className="h-8 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <Repeat className="h-3 w-3 text-muted-foreground" />
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">One-time</SelectItem>
+                <SelectItem value="daily">Repeats daily</SelectItem>
+                <SelectItem value="weekly">Repeats weekly</SelectItem>
+                <SelectItem value="monthly">Repeats monthly</SelectItem>
+              </SelectContent>
+            </Select>
           </form>
 
           {visibleTasks.length === 0 ? (
