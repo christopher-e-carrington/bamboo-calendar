@@ -4,7 +4,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { HouseholdProvider } from "@/lib/household-store";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TopNav } from "@/components/top-nav";
-import { Dashboard } from "@/components/dashboard";
+import { ProfileHomeScreen } from "@/components/profile-home-screen";
 import { CalendarView } from "@/components/calendar-view";
 import { ContactsPage } from "@/components/contacts-page";
 import { TasksPage } from "@/components/tasks-page";
@@ -63,7 +63,7 @@ function Index() {
               ) : active === "goals" ? (
                 <GoalsPage />
               ) : (
-                <Dashboard />
+                <ProfileHomeScreen />
               )}
             </main>
           </SidebarInset>
