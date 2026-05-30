@@ -3,18 +3,21 @@ import { ProfileSwitcher } from "./profile-switcher";
 import { Button } from "@/components/ui/button";
 import { Bell, Plus, Search } from "lucide-react";
 import { useHousehold } from "@/lib/household-store";
+import { EventDialog } from "./event-dialog";
+import { ProfileSettingsSheet } from "./profile-settings-sheet";
 
 export function TopNav() {
-  const { activeProfile } = useHousehold();
+  const { activeProfile, familyProfile } = useHousehold();
   const today = new Date().toLocaleDateString(undefined, {
     weekday: "long",
     month: "long",
     day: "numeric",
   });
+  const isHousehold = activeProfile?.id === familyProfile?.id;
   const viewing = !activeProfile
     ? "Loading…"
-    : activeProfile.name === "Family"
-    ? "Family view"
+    : isHousehold
+    ? "Household view"
     : `${activeProfile.name}'s view`;
 
   return (
@@ -35,10 +38,15 @@ export function TopNav() {
             <Bell className="h-4 w-4" />
             <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-wood" />
           </Button>
-          <Button size="sm" className="rounded-full px-3 gap-1.5 hidden sm:inline-flex">
-            <Plus className="h-4 w-4" />
-            <span>New</span>
-          </Button>
+          <ProfileSettingsSheet />
+          <EventDialog
+            trigger={
+              <Button size="sm" className="rounded-full px-3 gap-1.5 hidden sm:inline-flex">
+                <Plus className="h-4 w-4" />
+                <span>New</span>
+              </Button>
+            }
+          />
           <ProfileSwitcher />
         </div>
       </div>
