@@ -39,7 +39,10 @@ export interface Contact {
   created_at: string;
 }
 
-export type Recurrence = "none" | "daily" | "weekly" | "monthly";
+export type Recurrence = "none" | "daily" | "weekly" | "monthly" | "quarterly" | "yearly";
+export type Tier = "daily" | "weekly" | "monthly" | "quarterly" | "yearly";
+
+export const TIERS: Tier[] = ["daily", "weekly", "monthly", "quarterly", "yearly"];
 
 export interface TaskItem {
   id: string;
@@ -48,18 +51,33 @@ export interface TaskItem {
   done: boolean;
   due_at?: string | null;
   recurrence: Recurrence;
+  tier: Tier;
+}
+
+export interface Goal {
+  id: string;
+  profile_id: string;
+  title: string;
+  tier: Tier;
+  target: number;
+  progress: number;
+  done: boolean;
+  notes?: string | null;
+  created_at: string;
 }
 
 interface HouseholdState {
   profiles: Profile[];
   events: CalendarEvent[];
   tasks: TaskItem[];
+  goals: Goal[];
   contacts: Contact[];
   activeProfileId: string;
   setActiveProfileId: (id: string) => void;
   toggleTask: (id: string, done: boolean) => void;
   visibleEvents: CalendarEvent[];
   visibleTasks: TaskItem[];
+  visibleGoals: Goal[];
   activeProfile: Profile | undefined;
   familyProfile: Profile | undefined;
   loading: boolean;
@@ -74,13 +92,18 @@ interface HouseholdState {
     location?: string | null;
     notes?: string | null;
   }) => Promise<void>;
-  addTask: (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence }) => Promise<void>;
+  addTask: (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence; tier?: Tier }) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
+  addGoal: (input: { profile_id: string; title: string; tier: Tier; target?: number; notes?: string | null }) => Promise<void>;
+  updateGoalProgress: (id: string, progress: number) => Promise<void>;
+  toggleGoalDone: (id: string, done: boolean) => Promise<void>;
+  deleteGoal: (id: string) => Promise<void>;
   addContact: (input: Omit<Contact, "id" | "created_at">) => Promise<void>;
   updateContact: (id: string, input: Partial<Omit<Contact, "id" | "created_at">>) => Promise<void>;
   deleteContact: (id: string) => Promise<void>;
 }
+
 
 const Ctx = createContext<HouseholdState | null>(null);
 
@@ -259,18 +282,20 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   });
 
   const addTaskMut = useMutation({
-    mutationFn: async (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence }) => {
+    mutationFn: async (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence; tier?: Tier }) => {
       const { error } = await supabase.from("tasks").insert({
         profile_id: input.profile_id,
         title: input.title,
         due_at: input.due_at ?? null,
         recurrence: input.recurrence ?? "none",
+        tier: input.tier ?? "daily",
         owner_id: user.id,
-      });
+      } as any);
       if (error) throw error;
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", user.id] }),
   });
+
 
   const deleteEventMut = useMutation({
     mutationFn: async (id: string) => {
@@ -288,6 +313,74 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", user.id] }),
   });
 
+  // Goals
+  const goalsQ = useQuery({
+    queryKey: ["goals", user.id],
+    queryFn: async (): Promise<Goal[]> => {
+      const { data, error } = await (supabase as any)
+        .from("goals")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as Goal[];
+    },
+  });
+
+  const goals = goalsQ.data ?? [];
+  const visibleGoals = useMemo(() => {
+    if (!activeProfile) return [];
+    if (activeProfile.id === familyProfile?.id) return goals;
+    return goals.filter((g) => g.profile_id === activeProfile.id || g.profile_id === familyProfile?.id);
+  }, [goals, activeProfile, familyProfile]);
+
+  const addGoalMut = useMutation({
+    mutationFn: async (input: { profile_id: string; title: string; tier: Tier; target?: number; notes?: string | null }) => {
+      const { error } = await (supabase as any).from("goals").insert({
+        owner_id: user.id,
+        profile_id: input.profile_id,
+        title: input.title,
+        tier: input.tier,
+        target: input.target ?? 1,
+        notes: input.notes ?? null,
+      });
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", user.id] }),
+  });
+
+  const updateGoalProgressMut = useMutation({
+    mutationFn: async ({ id, progress }: { id: string; progress: number }) => {
+      const cur = goals.find((g) => g.id === id);
+      const target = cur?.target ?? 1;
+      const clamped = Math.max(0, Math.min(progress, target));
+      const done = clamped >= target;
+      const { error } = await (supabase as any).from("goals").update({ progress: clamped, done }).eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", user.id] }),
+  });
+
+  const toggleGoalDoneMut = useMutation({
+    mutationFn: async ({ id, done }: { id: string; done: boolean }) => {
+      const cur = goals.find((g) => g.id === id);
+      const target = cur?.target ?? 1;
+      const { error } = await (supabase as any)
+        .from("goals")
+        .update({ done, progress: done ? target : 0 })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", user.id] }),
+  });
+
+  const deleteGoalMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any).from("goals").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", user.id] }),
+  });
+
   const contactsQ = useQuery({
     queryKey: ["contacts", user.id],
     queryFn: async (): Promise<Contact[]> => {
@@ -299,6 +392,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       return (data ?? []) as Contact[];
     },
   });
+
 
   const addContactMut = useMutation({
     mutationFn: async (input: Omit<Contact, "id" | "created_at">) => {
@@ -337,12 +431,14 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     profiles,
     events,
     tasks,
+    goals,
     contacts: contactsQ.data ?? [],
     activeProfileId: effectiveActiveId,
     setActiveProfileId,
     toggleTask: (id, done) => toggleMut.mutate({ id, done }),
     visibleEvents,
     visibleTasks,
+    visibleGoals,
     activeProfile,
     familyProfile,
     loading: profilesQ.isLoading || eventsQ.isLoading || tasksQ.isLoading,
@@ -353,10 +449,15 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     addTask: (input) => addTaskMut.mutateAsync(input).then(() => undefined),
     deleteEvent: (id) => deleteEventMut.mutateAsync(id).then(() => undefined),
     deleteTask: (id) => deleteTaskMut.mutateAsync(id).then(() => undefined),
+    addGoal: (input) => addGoalMut.mutateAsync(input).then(() => undefined),
+    updateGoalProgress: (id, progress) => updateGoalProgressMut.mutateAsync({ id, progress }).then(() => undefined),
+    toggleGoalDone: (id, done) => toggleGoalDoneMut.mutateAsync({ id, done }).then(() => undefined),
+    deleteGoal: (id) => deleteGoalMut.mutateAsync(id).then(() => undefined),
     addContact: (input) => addContactMut.mutateAsync(input).then(() => undefined),
     updateContact: (id, patch) => updateContactMut.mutateAsync({ id, patch }).then(() => undefined),
     deleteContact: (id) => deleteContactMut.mutateAsync(id).then(() => undefined),
   };
+
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

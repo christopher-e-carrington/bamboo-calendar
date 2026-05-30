@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EventDialog } from "./event-dialog";
+import { ProgressDashboard } from "./progress-dashboard";
 import { toast } from "sonner";
 
 function formatTime(iso: string) {
@@ -213,6 +214,10 @@ export function Dashboard() {
             </ul>
           )}
         </section>
+
+        <div className="lg:col-span-3">
+          <ProgressDashboard />
+        </div>
 
         <section className="bamboo-card p-5 lg:col-span-3">
           <h2 className="font-display text-lg mb-4">Who's busy</h2>

@@ -103,6 +103,45 @@ export type Database = {
           },
         ]
       }
+      goals: {
+        Row: {
+          created_at: string
+          done: boolean
+          id: string
+          notes: string | null
+          owner_id: string
+          profile_id: string
+          progress: number
+          target: number
+          tier: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          notes?: string | null
+          owner_id: string
+          profile_id: string
+          progress?: number
+          target?: number
+          tier?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          profile_id?: string
+          progress?: number
+          target?: number
+          tier?: string
+          title?: string
+        }
+        Relationships: []
+      }
       household_profiles: {
         Row: {
           color: string
@@ -148,6 +187,7 @@ export type Database = {
           owner_id: string
           profile_id: string
           recurrence: string
+          tier: string
           title: string
         }
         Insert: {
@@ -158,6 +198,7 @@ export type Database = {
           owner_id: string
           profile_id: string
           recurrence?: string
+          tier?: string
           title: string
         }
         Update: {
@@ -168,6 +209,7 @@ export type Database = {
           owner_id?: string
           profile_id?: string
           recurrence?: string
+          tier?: string
           title?: string
         }
         Relationships: [

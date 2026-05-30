@@ -1,4 +1,4 @@
-import { Calendar, CheckSquare, Image as ImageIcon, Home, Users, Settings, Leaf, BookUser } from "lucide-react";
+import { Calendar, CheckSquare, Image as ImageIcon, Home, Users, Settings, Leaf, BookUser, Target } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -22,13 +22,15 @@ import { ManageProfilesDialog } from "./manage-profiles-dialog";
 import { ProfileSettingsSheet } from "./profile-settings-sheet";
 
 const navItems = [
-  { id: "calendar", title: "Calendar", icon: Calendar },
   { id: "today", title: "Today", icon: Home },
-  { id: "tasks", title: "Tasks", icon: CheckSquare },
+  { id: "calendar", title: "Calendar", icon: Calendar },
+  { id: "tasks", title: "To-Dos", icon: CheckSquare },
+  { id: "goals", title: "Goals", icon: Target },
   { id: "contacts", title: "Contacts", icon: BookUser },
   { id: "memories", title: "Memories", icon: ImageIcon },
   { id: "household", title: "Household", icon: Users },
 ];
+
 
 export function AppSidebar({
   active,
