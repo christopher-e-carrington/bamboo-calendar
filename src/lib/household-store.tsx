@@ -54,6 +54,7 @@ interface HouseholdState {
   profiles: Profile[];
   events: CalendarEvent[];
   tasks: TaskItem[];
+  contacts: Contact[];
   activeProfileId: string;
   setActiveProfileId: (id: string) => void;
   toggleTask: (id: string, done: boolean) => void;
@@ -66,7 +67,7 @@ interface HouseholdState {
   removeProfile: (id: string) => Promise<void>;
   setProfilePin: (id: string, pin: string | null) => Promise<void>;
   addEvent: (input: {
-    profile_id: string;
+    profile_ids: string[];
     title: string;
     start_at: string;
     end_at?: string | null;
@@ -76,6 +77,9 @@ interface HouseholdState {
   addTask: (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence }) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
+  addContact: (input: Omit<Contact, "id" | "created_at">) => Promise<void>;
+  updateContact: (id: string, input: Partial<Omit<Contact, "id" | "created_at">>) => Promise<void>;
+  deleteContact: (id: string) => Promise<void>;
 }
 
 const Ctx = createContext<HouseholdState | null>(null);
