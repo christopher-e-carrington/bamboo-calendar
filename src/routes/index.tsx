@@ -9,6 +9,9 @@ import { CalendarView } from "@/components/calendar-view";
 import { ContactsPage } from "@/components/contacts-page";
 import { TasksPage } from "@/components/tasks-page";
 import { GoalsPage } from "@/components/goals-page";
+import { MealsPage } from "@/components/meals-page";
+import { ShoppingListPage } from "@/components/shopping-list-page";
+import { InventoryPage } from "@/components/inventory-page";
 import { AuthScreen } from "@/components/auth-screen";
 import { useAuth } from "@/hooks/use-auth";
 import { Leaf } from "lucide-react";
@@ -62,6 +65,12 @@ function Index() {
                 <TasksPage />
               ) : active === "goals" ? (
                 <GoalsPage />
+              ) : active === "meals" ? (
+                <MealsPage />
+              ) : active === "shopping" ? (
+                <ShoppingListPage />
+              ) : active === "inventory" ? (
+                <InventoryPage />
               ) : (
                 <ProfileHomeScreen />
               )}

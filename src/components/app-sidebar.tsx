@@ -1,4 +1,4 @@
-import { Calendar, CheckSquare, Image as ImageIcon, Home, Users, Settings, Leaf, BookUser, Target } from "lucide-react";
+import { Calendar, CheckSquare, Image as ImageIcon, Home, Users, Settings, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -26,6 +26,9 @@ const navItems = [
   { id: "calendar", title: "Calendar", icon: Calendar },
   { id: "tasks", title: "To-Dos", icon: CheckSquare },
   { id: "goals", title: "Goals", icon: Target },
+  { id: "meals", title: "Meals", icon: ChefHat },
+  { id: "shopping", title: "Shopping", icon: ShoppingCart },
+  { id: "inventory", title: "Inventory", icon: Boxes },
   { id: "contacts", title: "Contacts", icon: BookUser },
   { id: "memories", title: "Memories", icon: ImageIcon },
   { id: "household", title: "Household", icon: Users },
