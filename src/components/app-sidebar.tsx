@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { PinDialog } from "./pin-dialog";
 import type { Profile } from "@/lib/household-store";
+import { ManageProfilesDialog } from "./manage-profiles-dialog";
 
 const navItems = [
   { id: "calendar", title: "Calendar", icon: Calendar },
@@ -87,7 +88,10 @@ export function AppSidebar({
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Profiles</SidebarGroupLabel>
+          <SidebarGroupLabel className="flex items-center justify-between pr-2">
+            <span>Profiles</span>
+            {!collapsed && <ManageProfilesDialog />}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {profiles.map((p) => {

@@ -45,6 +45,8 @@ interface HouseholdState {
   activeProfile: Profile | undefined;
   familyProfile: Profile | undefined;
   loading: boolean;
+  addProfile: (input: { name: string; role: ProfileRole; color: string }) => Promise<void>;
+  removeProfile: (id: string) => Promise<void>;
 }
 
 const Ctx = createContext<HouseholdState | null>(null);
@@ -89,7 +91,10 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   });
 
   const profiles = profilesQ.data ?? [];
-  const familyProfile = profiles.find((p) => p.name.toLowerCase() === "family") ?? profiles[0];
+  const familyProfile =
+    profiles.find((p) => p.name.toLowerCase() === "household") ??
+    profiles.find((p) => p.name.toLowerCase() === "family") ??
+    profiles[0];
   const [activeProfileId, setActiveProfileId] = useState<string>("");
   const effectiveActiveId = activeProfileId || familyProfile?.id || "";
   const activeProfile = profiles.find((p) => p.id === effectiveActiveId);
@@ -128,6 +133,37 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", user.id] }),
   });
 
+  const addMut = useMutation({
+    mutationFn: async (input: { name: string; role: ProfileRole; color: string }) => {
+      const initials = input.name.trim().slice(0, 2).toUpperCase() || "NP";
+      const sort_order = (profiles.at(-1)?.sort_order ?? 0) + 1;
+      const { error } = await supabase.from("household_profiles").insert({
+        owner_id: user.id,
+        name: input.name.trim(),
+        role: input.role,
+        color: input.color,
+        initials,
+        sort_order,
+      });
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["profiles", user.id] }),
+  });
+
+  const removeMut = useMutation({
+    mutationFn: async (id: string) => {
+      await supabase.from("events").delete().eq("profile_id", id);
+      await supabase.from("tasks").delete().eq("profile_id", id);
+      const { error } = await supabase.from("household_profiles").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["profiles", user.id] });
+      qc.invalidateQueries({ queryKey: ["events", user.id] });
+      qc.invalidateQueries({ queryKey: ["tasks", user.id] });
+    },
+  });
+
   const value: HouseholdState = {
     profiles,
     events,
@@ -140,6 +176,12 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     activeProfile,
     familyProfile,
     loading: profilesQ.isLoading || eventsQ.isLoading || tasksQ.isLoading,
+    addProfile: async (input) => {
+      await addMut.mutateAsync(input);
+    },
+    removeProfile: async (id) => {
+      await removeMut.mutateAsync(id);
+    },
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
