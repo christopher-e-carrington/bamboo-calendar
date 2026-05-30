@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useHousehold } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
 import { CalendarPlus, MapPin, Sparkles } from "lucide-react";
@@ -41,7 +41,7 @@ export function EventDialog({
   const setOpen = setControlledOpen ?? setUncontrolled;
 
   const [title, setTitle] = useState("");
-  const [profileId, setProfileId] = useState<string>("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [start, setStart] = useState(nowLocalRounded());
   const [end, setEnd] = useState(addHourLocal(nowLocalRounded()));
   const [location, setLocation] = useState("");
@@ -55,16 +55,26 @@ export function EventDialog({
         : nowLocalRounded();
       setStart(s);
       setEnd(addHourLocal(s));
-      setProfileId(activeProfile?.id ?? familyProfile?.id ?? profiles[0]?.id ?? "");
+      const pre = activeProfile?.id ?? familyProfile?.id ?? profiles[0]?.id;
+      setSelected(new Set(pre ? [pre] : []));
     }
   }, [open, initialDate, activeProfile, familyProfile, profiles]);
 
+  const toggle = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const submit = async () => {
-    if (!title.trim() || !profileId || !start) return;
+    if (!title.trim() || selected.size === 0 || !start) return;
     setBusy(true);
     try {
       await addEvent({
-        profile_id: profileId,
+        profile_ids: Array.from(selected),
         title: title.trim(),
         start_at: new Date(start).toISOString(),
         end_at: end ? new Date(end).toISOString() : null,
@@ -86,7 +96,7 @@ export function EventDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display flex items-center gap-2">
             <CalendarPlus className="h-5 w-5 text-primary" />
@@ -102,25 +112,34 @@ export function EventDialog({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Soccer practice, dinner with Sam…"
+              maxLength={120}
               autoFocus
             />
           </div>
 
           <div>
-            <Label className="text-xs">For</Label>
-            <Select value={profileId} onValueChange={setProfileId}>
-              <SelectTrigger><SelectValue placeholder="Pick a profile" /></SelectTrigger>
-              <SelectContent>
-                {profiles.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    <span className="flex items-center gap-2">
-                      <ProfileAvatar profile={p} size={18} />
-                      {p.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label className="text-xs mb-1.5 block">Assign to</Label>
+            <div className="grid grid-cols-2 gap-1.5">
+              {profiles.map((p) => {
+                const checked = selected.has(p.id);
+                return (
+                  <label
+                    key={p.id}
+                    className={`flex items-center gap-2 rounded-lg border p-2 cursor-pointer transition-colors ${
+                      checked ? "border-primary bg-primary/5" : "border-border hover:bg-secondary/60"
+                    }`}
+                  >
+                    <Checkbox checked={checked} onCheckedChange={() => toggle(p.id)} />
+                    <ProfileAvatar profile={p} size={20} />
+                    <span className="text-sm truncate">{p.name}</span>
+                    <span
+                      className="ml-auto h-2.5 w-2.5 rounded-full shrink-0"
+                      style={{ background: p.color }}
+                    />
+                  </label>
+                );
+              })}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -153,6 +172,7 @@ export function EventDialog({
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="Optional"
+              maxLength={200}
             />
           </div>
 
@@ -164,13 +184,14 @@ export function EventDialog({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Bring cleats, snacks…"
               rows={2}
+              maxLength={1000}
             />
           </div>
         </div>
 
         <DialogFooter className="gap-2">
           <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={submit} disabled={!title.trim() || !profileId || busy} className="gap-1.5">
+          <Button onClick={submit} disabled={!title.trim() || selected.size === 0 || busy} className="gap-1.5">
             <Sparkles className="h-4 w-4" />
             {busy ? "Saving…" : "Add event"}
           </Button>
