@@ -45,6 +45,8 @@ interface HouseholdState {
   activeProfile: Profile | undefined;
   familyProfile: Profile | undefined;
   loading: boolean;
+  addProfile: (input: { name: string; role: ProfileRole; color: string }) => Promise<void>;
+  removeProfile: (id: string) => Promise<void>;
 }
 
 const Ctx = createContext<HouseholdState | null>(null);
