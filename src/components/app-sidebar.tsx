@@ -19,6 +19,7 @@ import { useState } from "react";
 import { PinDialog } from "./pin-dialog";
 import type { Profile } from "@/lib/household-store";
 import { ManageProfilesDialog } from "./manage-profiles-dialog";
+import { ProfileSettingsSheet } from "./profile-settings-sheet";
 
 const navItems = [
   { id: "calendar", title: "Calendar", icon: Calendar },
