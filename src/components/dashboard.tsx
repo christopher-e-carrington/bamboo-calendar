@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { useHousehold } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar as CalIcon, MapPin, Sparkles } from "lucide-react";
+import { Calendar as CalIcon, MapPin, Sparkles, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { EventDialog } from "./event-dialog";
+import { toast } from "sonner";
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
