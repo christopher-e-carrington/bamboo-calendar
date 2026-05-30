@@ -63,7 +63,7 @@ function Index() {
               ) : active === "goals" ? (
                 <GoalsPage />
               ) : (
-                <Dashboard />
+                <ProfileHomeScreen />
               )}
             </main>
           </SidebarInset>
