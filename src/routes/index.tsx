@@ -6,6 +6,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { TopNav } from "@/components/top-nav";
 import { Dashboard } from "@/components/dashboard";
 import { CalendarView } from "@/components/calendar-view";
+import { ContactsPage } from "@/components/contacts-page";
 import { AuthScreen } from "@/components/auth-screen";
 import { useAuth } from "@/hooks/use-auth";
 import { Leaf } from "lucide-react";
