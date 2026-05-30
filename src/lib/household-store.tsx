@@ -91,7 +91,10 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   });
 
   const profiles = profilesQ.data ?? [];
-  const familyProfile = profiles.find((p) => p.name.toLowerCase() === "family") ?? profiles[0];
+  const familyProfile =
+    profiles.find((p) => p.name.toLowerCase() === "household") ??
+    profiles.find((p) => p.name.toLowerCase() === "family") ??
+    profiles[0];
   const [activeProfileId, setActiveProfileId] = useState<string>("");
   const effectiveActiveId = activeProfileId || familyProfile?.id || "";
   const activeProfile = profiles.find((p) => p.id === effectiveActiveId);
