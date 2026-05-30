@@ -176,6 +176,53 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     },
   });
 
+  const setPinMut = useMutation({
+    mutationFn: async ({ id, pin }: { id: string; pin: string | null }) => {
+      const { error } = await supabase.from("household_profiles").update({ pin }).eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["profiles", user.id] }),
+  });
+
+  const addEventMut = useMutation({
+    mutationFn: async (input: {
+      profile_id: string;
+      title: string;
+      start_at: string;
+      end_at?: string | null;
+      location?: string | null;
+      notes?: string | null;
+    }) => {
+      const { error } = await supabase.from("events").insert({ ...input, owner_id: user.id });
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["events", user.id] }),
+  });
+
+  const addTaskMut = useMutation({
+    mutationFn: async (input: { profile_id: string; title: string; due_at?: string | null }) => {
+      const { error } = await supabase.from("tasks").insert({ ...input, owner_id: user.id });
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", user.id] }),
+  });
+
+  const deleteEventMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("events").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["events", user.id] }),
+  });
+
+  const deleteTaskMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("tasks").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", user.id] }),
+  });
+
   const value: HouseholdState = {
     profiles,
     events,
