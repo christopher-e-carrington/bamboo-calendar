@@ -176,6 +176,12 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     activeProfile,
     familyProfile,
     loading: profilesQ.isLoading || eventsQ.isLoading || tasksQ.isLoading,
+    addProfile: async (input) => {
+      await addMut.mutateAsync(input);
+    },
+    removeProfile: async (id) => {
+      await removeMut.mutateAsync(id);
+    },
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
