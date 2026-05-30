@@ -235,12 +235,13 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     activeProfile,
     familyProfile,
     loading: profilesQ.isLoading || eventsQ.isLoading || tasksQ.isLoading,
-    addProfile: async (input) => {
-      await addMut.mutateAsync(input);
-    },
-    removeProfile: async (id) => {
-      await removeMut.mutateAsync(id);
-    },
+    addProfile: (input) => addMut.mutateAsync(input).then(() => undefined),
+    removeProfile: (id) => removeMut.mutateAsync(id).then(() => undefined),
+    setProfilePin: (id, pin) => setPinMut.mutateAsync({ id, pin }).then(() => undefined),
+    addEvent: (input) => addEventMut.mutateAsync(input).then(() => undefined),
+    addTask: (input) => addTaskMut.mutateAsync(input).then(() => undefined),
+    deleteEvent: (id) => deleteEventMut.mutateAsync(id).then(() => undefined),
+    deleteTask: (id) => deleteTaskMut.mutateAsync(id).then(() => undefined),
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
