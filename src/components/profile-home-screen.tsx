@@ -76,33 +76,62 @@ function Ring({ value, label, sublabel, color = "hsl(var(--primary))" }: { value
   );
 }
 
-// ---------- Mock weather ----------
-const WEATHER_ICONS = { sun: Sun, cloudSun: CloudSun, cloud: Cloud, rain: CloudRain } as const;
-type WeatherKind = keyof typeof WEATHER_ICONS;
-function mockForecastFor(seed: string) {
-  // deterministic mock from profile id seed
-  const seedNum = Array.from(seed).reduce((a, c) => a + c.charCodeAt(0), 0);
-  const kinds: WeatherKind[] = ["sun", "cloudSun", "cloud", "rain"];
-  const pick = (i: number) => kinds[(seedNum + i) % kinds.length];
-  const base = 64 + (seedNum % 8); // °F
-  return {
-    today: { kind: pick(0), temp: base + 4, hi: base + 8, lo: base - 6, wind: 5 + (seedNum % 9), humidity: 38 + (seedNum % 30) },
-    next: [
-      { day: "Tomorrow", kind: pick(1), hi: base + 6, lo: base - 7 },
-      { day: dayLabel(2), kind: pick(2), hi: base + 3, lo: base - 5 },
-      { day: dayLabel(3), kind: pick(3), hi: base + 1, lo: base - 8 },
-    ],
-  };
-}
-function dayLabel(offset: number) {
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  return d.toLocaleDateString(undefined, { weekday: "short" });
+// ---------- Live weather ----------
+const WEATHER_ICONS: Record<ApiWeatherKind, typeof Sun> = {
+  sun: Sun,
+  cloudSun: CloudSun,
+  cloud: Cloud,
+  rain: CloudRain,
+  snow: CloudSnow,
+  storm: CloudLightning,
+  fog: CloudFog,
+};
+
+type Coords = { lat: number; lon: number };
+
+function useGeolocation() {
+  const [coords, setCoords] = useState<Coords | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    if (typeof window === "undefined" || !("geolocation" in navigator)) {
+      setError("Geolocation not supported");
+      return;
+    }
+    const cached = localStorage.getItem("weather:coords");
+    if (cached) {
+      try {
+        setCoords(JSON.parse(cached));
+      } catch {
+        /* ignore */
+      }
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const c = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        setCoords(c);
+        localStorage.setItem("weather:coords", JSON.stringify(c));
+      },
+      (err) => setError(err.message),
+      { timeout: 8000, maximumAge: 5 * 60 * 1000 },
+    );
+  }, []);
+  return { coords, error };
 }
 
-function WeatherWidget({ seed }: { seed: string }) {
-  const f = mockForecastFor(seed);
-  const Icon = WEATHER_ICONS[f.today.kind];
+function WeatherWidget() {
+  const { coords, error: geoError } = useGeolocation();
+  const fetchWeather = useServerFn(getWeather);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["weather", coords?.lat, coords?.lon],
+    queryFn: () => fetchWeather({ data: coords! }),
+    enabled: !!coords,
+    staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const Icon = data ? WEATHER_ICONS[data.today.kind] : Sun;
+  const fatal = geoError || (error as Error | null)?.message;
+
   return (
     <section className="bamboo-card p-5 relative overflow-hidden">
       <div className="absolute -top-12 -right-10 h-40 w-40 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
@@ -111,42 +140,64 @@ function WeatherWidget({ seed }: { seed: string }) {
           <Leaf className="h-4 w-4 text-primary" />
           <h2 className="font-display text-lg">Today's weather</h2>
         </div>
-        <span className="text-xs text-muted-foreground">Mock data</span>
+        <span className="text-xs text-muted-foreground truncate max-w-[50%] text-right">
+          {data?.location ?? (isLoading || !coords ? "Locating…" : "—")}
+        </span>
       </header>
-      <div className="flex items-center gap-4 relative">
-        <div className="h-16 w-16 rounded-2xl bg-primary/10 text-primary grid place-items-center">
-          <Icon className="h-9 w-9" />
+
+      {fatal && !data ? (
+        <div className="flex items-center gap-3 text-sm text-muted-foreground py-4">
+          <CloudOff className="h-5 w-5 shrink-0" />
+          <span className="text-xs">
+            {geoError ? "Allow location access to see live weather." : "Couldn't reach the weather service."}
+          </span>
         </div>
-        <div className="flex-1">
-          <div className="font-display text-4xl leading-none">{f.today.temp}°</div>
-          <div className="text-xs text-muted-foreground mt-1 capitalize">
-            {f.today.kind === "cloudSun" ? "Partly sunny" : f.today.kind === "cloud" ? "Overcast" : f.today.kind === "rain" ? "Light rain" : "Sunny"}
-          </div>
+      ) : !data ? (
+        <div className="flex items-center gap-3 text-sm text-muted-foreground py-6">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span className="text-xs">Fetching the forecast…</span>
         </div>
-        <div className="text-right text-xs text-muted-foreground space-y-1">
-          <div>H {f.today.hi}° · L {f.today.lo}°</div>
-          <div className="flex items-center justify-end gap-1"><Wind className="h-3 w-3" /> {f.today.wind} mph</div>
-          <div className="flex items-center justify-end gap-1"><Droplets className="h-3 w-3" /> {f.today.humidity}%</div>
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-2 mt-5">
-        {f.next.map((d) => {
-          const I = WEATHER_ICONS[d.kind];
-          return (
-            <div key={d.day} className="rounded-xl border border-border bg-background/50 p-3 flex flex-col items-center gap-1">
-              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{d.day}</div>
-              <I className="h-5 w-5 text-primary" />
-              <div className="text-xs">
-                <span className="font-medium">{d.hi}°</span>
-                <span className="text-muted-foreground"> / {d.lo}°</span>
+      ) : (
+        <>
+          <div className="flex items-center gap-4 relative">
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 text-primary grid place-items-center">
+              <Icon className="h-9 w-9" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-display text-4xl leading-none">{data.today.temp}°</div>
+              <div className="text-xs text-muted-foreground mt-1 capitalize truncate">
+                {data.today.description}
               </div>
             </div>
-          );
-        })}
-      </div>
+            <div className="text-right text-xs text-muted-foreground space-y-1">
+              <div>H {data.today.hi}° · L {data.today.lo}°</div>
+              <div className="flex items-center justify-end gap-1"><Wind className="h-3 w-3" /> {data.today.wind} mph</div>
+              <div className="flex items-center justify-end gap-1"><Droplets className="h-3 w-3" /> {data.today.humidity}%</div>
+            </div>
+          </div>
+          {data.forecast.length > 0 && (
+            <div className="grid grid-cols-3 gap-2 mt-5">
+              {data.forecast.map((d) => {
+                const I = WEATHER_ICONS[d.kind];
+                return (
+                  <div key={d.day} className="rounded-xl border border-border bg-background/50 p-3 flex flex-col items-center gap-1">
+                    <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{d.day}</div>
+                    <I className="h-5 w-5 text-primary" />
+                    <div className="text-xs">
+                      <span className="font-medium">{d.hi}°</span>
+                      <span className="text-muted-foreground"> / {d.lo}°</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
     </section>
   );
 }
+
 
 // ---------- Smart travel card ----------
 function SmartTravelCard({ title, location, startAt }: { title: string; location: string; startAt: string }) {
