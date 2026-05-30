@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useHousehold } from "@/lib/household-store";
+import { useHousehold, type Recurrence } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar as CalIcon, MapPin, Sparkles, Plus, Trash2 } from "lucide-react";
+import { Calendar as CalIcon, MapPin, Sparkles, Plus, Trash2, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EventDialog } from "./event-dialog";
 import { toast } from "sonner";
 
