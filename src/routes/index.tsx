@@ -65,6 +65,12 @@ function Index() {
                 <TasksPage />
               ) : active === "goals" ? (
                 <GoalsPage />
+              ) : active === "meals" ? (
+                <MealsPage />
+              ) : active === "shopping" ? (
+                <ShoppingListPage />
+              ) : active === "inventory" ? (
+                <InventoryPage />
               ) : (
                 <ProfileHomeScreen />
               )}
