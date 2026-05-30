@@ -20,6 +20,7 @@ export function Dashboard() {
   const { visibleEvents, visibleTasks, profiles, toggleTask, activeProfile, familyProfile, loading, addTask, deleteTask } =
     useHousehold();
   const [newTask, setNewTask] = useState("");
+  const [recurrence, setRecurrence] = useState<Recurrence>("none");
   const [adding, setAdding] = useState(false);
 
   if (loading || !activeProfile) {
@@ -35,8 +36,10 @@ export function Dashboard() {
       await addTask({
         profile_id: activeProfile.id,
         title: newTask.trim(),
+        recurrence,
       });
       setNewTask("");
+      setRecurrence("none");
     } catch {
       toast.error("Couldn't add task");
     } finally {
