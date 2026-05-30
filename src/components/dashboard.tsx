@@ -69,10 +69,14 @@ export function Dashboard() {
               {visibleTasks.filter((t) => !t.done).length} open tasks
             </p>
           </div>
-          <Button className="rounded-full gap-1.5 self-start sm:self-center">
-            <Sparkles className="h-4 w-4" />
-            Add event
-          </Button>
+          <EventDialog
+            trigger={
+              <Button className="rounded-full gap-1.5 self-start sm:self-center">
+                <Sparkles className="h-4 w-4" />
+                Add event
+              </Button>
+            }
+          />
         </div>
       </section>
 
