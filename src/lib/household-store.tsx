@@ -25,12 +25,15 @@ export interface CalendarEvent {
   notes?: string | null;
 }
 
+export type Recurrence = "none" | "daily" | "weekly" | "monthly";
+
 export interface TaskItem {
   id: string;
   profile_id: string;
   title: string;
   done: boolean;
   due_at?: string | null;
+  recurrence: Recurrence;
 }
 
 interface HouseholdState {
@@ -56,7 +59,7 @@ interface HouseholdState {
     location?: string | null;
     notes?: string | null;
   }) => Promise<void>;
-  addTask: (input: { profile_id: string; title: string; due_at?: string | null }) => Promise<void>;
+  addTask: (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence }) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
 }
@@ -126,10 +129,32 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     return tasks.filter((t) => t.profile_id === activeProfile.id || t.profile_id === familyProfile?.id);
   }, [tasks, activeProfile, familyProfile]);
 
+  const advanceDate = (iso: string | null | undefined, rec: Recurrence): string | null => {
+    const base = iso ? new Date(iso) : new Date();
+    if (rec === "daily") base.setDate(base.getDate() + 1);
+    else if (rec === "weekly") base.setDate(base.getDate() + 7);
+    else if (rec === "monthly") base.setMonth(base.getMonth() + 1);
+    else return null;
+    return base.toISOString();
+  };
+
   const toggleMut = useMutation({
     mutationFn: async ({ id, done }: { id: string; done: boolean }) => {
       const { error } = await supabase.from("tasks").update({ done }).eq("id", id);
       if (error) throw error;
+      if (done) {
+        const t = (qc.getQueryData<TaskItem[]>(["tasks", user.id]) ?? []).find((x) => x.id === id);
+        if (t && t.recurrence && t.recurrence !== "none") {
+          const next_due = advanceDate(t.due_at, t.recurrence);
+          await supabase.from("tasks").insert({
+            owner_id: user.id,
+            profile_id: t.profile_id,
+            title: t.title,
+            due_at: next_due,
+            recurrence: t.recurrence,
+          });
+        }
+      }
     },
     onMutate: async ({ id, done }) => {
       await qc.cancelQueries({ queryKey: ["tasks", user.id] });
@@ -200,8 +225,14 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   });
 
   const addTaskMut = useMutation({
-    mutationFn: async (input: { profile_id: string; title: string; due_at?: string | null }) => {
-      const { error } = await supabase.from("tasks").insert({ ...input, owner_id: user.id });
+    mutationFn: async (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence }) => {
+      const { error } = await supabase.from("tasks").insert({
+        profile_id: input.profile_id,
+        title: input.title,
+        due_at: input.due_at ?? null,
+        recurrence: input.recurrence ?? "none",
+        owner_id: user.id,
+      });
       if (error) throw error;
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", user.id] }),

@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useHousehold } from "@/lib/household-store";
+import { useHousehold, type Recurrence } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar as CalIcon, MapPin, Sparkles, Plus, Trash2 } from "lucide-react";
+import { Calendar as CalIcon, MapPin, Sparkles, Plus, Trash2, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EventDialog } from "./event-dialog";
 import { toast } from "sonner";
 
@@ -19,6 +20,7 @@ export function Dashboard() {
   const { visibleEvents, visibleTasks, profiles, toggleTask, activeProfile, familyProfile, loading, addTask, deleteTask } =
     useHousehold();
   const [newTask, setNewTask] = useState("");
+  const [recurrence, setRecurrence] = useState<Recurrence>("none");
   const [adding, setAdding] = useState(false);
 
   if (loading || !activeProfile) {
@@ -34,8 +36,10 @@ export function Dashboard() {
       await addTask({
         profile_id: activeProfile.id,
         title: newTask.trim(),
+        recurrence,
       });
       setNewTask("");
+      setRecurrence("none");
     } catch {
       toast.error("Couldn't add task");
     } finally {
@@ -145,17 +149,33 @@ export function Dashboard() {
               e.preventDefault();
               quickAddTask();
             }}
-            className="flex gap-2 mb-3"
+            className="flex flex-col gap-2 mb-3"
           >
-            <Input
-              value={newTask}
-              onChange={(e) => setNewTask(e.target.value)}
-              placeholder="Quick add a task…"
-              className="h-9"
-            />
-            <Button type="submit" size="icon" disabled={!newTask.trim() || adding} aria-label="Add task">
-              <Plus className="h-4 w-4" />
-            </Button>
+            <div className="flex gap-2">
+              <Input
+                value={newTask}
+                onChange={(e) => setNewTask(e.target.value)}
+                placeholder="Quick add a task…"
+                className="h-9"
+              />
+              <Button type="submit" size="icon" disabled={!newTask.trim() || adding} aria-label="Add task">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <Select value={recurrence} onValueChange={(v) => setRecurrence(v as Recurrence)}>
+              <SelectTrigger className="h-8 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <Repeat className="h-3 w-3 text-muted-foreground" />
+                  <SelectValue />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">One-time</SelectItem>
+                <SelectItem value="daily">Repeats daily</SelectItem>
+                <SelectItem value="weekly">Repeats weekly</SelectItem>
+                <SelectItem value="monthly">Repeats monthly</SelectItem>
+              </SelectContent>
+            </Select>
           </form>
 
           {visibleTasks.length === 0 ? (
@@ -170,8 +190,14 @@ export function Dashboard() {
                     className="group flex items-center gap-3 rounded-lg p-2.5 hover:bg-secondary/60 transition-colors"
                   >
                     <Checkbox checked={t.done} onCheckedChange={(v) => toggleTask(t.id, Boolean(v))} />
-                    <span className={`flex-1 text-sm ${t.done ? "line-through text-muted-foreground" : ""}`}>
+                    <span className={`flex-1 text-sm flex items-center gap-1.5 ${t.done ? "line-through text-muted-foreground" : ""}`}>
                       {t.title}
+                      {t.recurrence && t.recurrence !== "none" && (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] uppercase tracking-wide text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded-full">
+                          <Repeat className="h-2.5 w-2.5" />
+                          {t.recurrence}
+                        </span>
+                      )}
                     </span>
                     {p && <ProfileAvatar profile={p} size={22} />}
                     <button
