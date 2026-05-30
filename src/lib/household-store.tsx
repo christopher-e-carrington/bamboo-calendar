@@ -39,7 +39,10 @@ export interface Contact {
   created_at: string;
 }
 
-export type Recurrence = "none" | "daily" | "weekly" | "monthly";
+export type Recurrence = "none" | "daily" | "weekly" | "monthly" | "quarterly" | "yearly";
+export type Tier = "daily" | "weekly" | "monthly" | "quarterly" | "yearly";
+
+export const TIERS: Tier[] = ["daily", "weekly", "monthly", "quarterly", "yearly"];
 
 export interface TaskItem {
   id: string;
@@ -48,18 +51,33 @@ export interface TaskItem {
   done: boolean;
   due_at?: string | null;
   recurrence: Recurrence;
+  tier: Tier;
+}
+
+export interface Goal {
+  id: string;
+  profile_id: string;
+  title: string;
+  tier: Tier;
+  target: number;
+  progress: number;
+  done: boolean;
+  notes?: string | null;
+  created_at: string;
 }
 
 interface HouseholdState {
   profiles: Profile[];
   events: CalendarEvent[];
   tasks: TaskItem[];
+  goals: Goal[];
   contacts: Contact[];
   activeProfileId: string;
   setActiveProfileId: (id: string) => void;
   toggleTask: (id: string, done: boolean) => void;
   visibleEvents: CalendarEvent[];
   visibleTasks: TaskItem[];
+  visibleGoals: Goal[];
   activeProfile: Profile | undefined;
   familyProfile: Profile | undefined;
   loading: boolean;
@@ -74,13 +92,18 @@ interface HouseholdState {
     location?: string | null;
     notes?: string | null;
   }) => Promise<void>;
-  addTask: (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence }) => Promise<void>;
+  addTask: (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence; tier?: Tier }) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
+  addGoal: (input: { profile_id: string; title: string; tier: Tier; target?: number; notes?: string | null }) => Promise<void>;
+  updateGoalProgress: (id: string, progress: number) => Promise<void>;
+  toggleGoalDone: (id: string, done: boolean) => Promise<void>;
+  deleteGoal: (id: string) => Promise<void>;
   addContact: (input: Omit<Contact, "id" | "created_at">) => Promise<void>;
   updateContact: (id: string, input: Partial<Omit<Contact, "id" | "created_at">>) => Promise<void>;
   deleteContact: (id: string) => Promise<void>;
 }
+
 
 const Ctx = createContext<HouseholdState | null>(null);
 
