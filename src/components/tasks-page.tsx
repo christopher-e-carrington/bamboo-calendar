@@ -18,11 +18,32 @@ const TIER_LABEL: Record<Tier, string> = {
   yearly: "Yearly",
 };
 
+const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+function nextWeeklyDue(weekday: number): string {
+  const d = new Date();
+  d.setHours(9, 0, 0, 0);
+  const diff = (weekday - d.getDay() + 7) % 7;
+  d.setDate(d.getDate() + (diff === 0 ? 7 : diff));
+  return d.toISOString();
+}
+
+function nextMonthlyDue(dayOfMonth: number): string {
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth(), dayOfMonth, 9, 0, 0, 0);
+  if (d <= now) d.setMonth(d.getMonth() + 1);
+  // clamp to last day if month overflowed
+  if (d.getDate() !== dayOfMonth) d.setDate(0);
+  return d.toISOString();
+}
+
 export function TasksPage() {
   const { visibleTasks, profiles, activeProfile, toggleTask, addTask, deleteTask, loading } = useHousehold();
   const [tier, setTier] = useState<Tier>("daily");
   const [title, setTitle] = useState("");
   const [recurrence, setRecurrence] = useState<Recurrence>("none");
+  const [weekday, setWeekday] = useState<number>(new Date().getDay());
+  const [monthDay, setMonthDay] = useState<number>(new Date().getDate());
   const [busy, setBusy] = useState(false);
 
   if (loading || !activeProfile) {
@@ -33,7 +54,11 @@ export function TasksPage() {
     if (!title.trim()) return;
     setBusy(true);
     try {
-      await addTask({ profile_id: activeProfile.id, title: title.trim(), tier, recurrence });
+      let due_at: string | null = null;
+      if (recurrence === "weekly") due_at = nextWeeklyDue(weekday);
+      else if (recurrence === "monthly" || recurrence === "quarterly" || recurrence === "yearly")
+        due_at = nextMonthlyDue(monthDay);
+      await addTask({ profile_id: activeProfile.id, title: title.trim(), tier, recurrence, due_at });
       setTitle("");
       setRecurrence("none");
     } catch {
