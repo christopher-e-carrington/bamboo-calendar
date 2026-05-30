@@ -18,11 +18,25 @@ export interface Profile {
 export interface CalendarEvent {
   id: string;
   profile_id: string;
+  profile_ids: string[];
   title: string;
   start_at: string;
   end_at?: string | null;
   location?: string | null;
   notes?: string | null;
+  recurrence: "none" | "yearly";
+  contact_id?: string | null;
+}
+
+export interface Contact {
+  id: string;
+  name: string;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  birthday?: string | null;
+  notes?: string | null;
+  created_at: string;
 }
 
 export type Recurrence = "none" | "daily" | "weekly" | "monthly";
