@@ -431,12 +431,14 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     profiles,
     events,
     tasks,
+    goals,
     contacts: contactsQ.data ?? [],
     activeProfileId: effectiveActiveId,
     setActiveProfileId,
     toggleTask: (id, done) => toggleMut.mutate({ id, done }),
     visibleEvents,
     visibleTasks,
+    visibleGoals,
     activeProfile,
     familyProfile,
     loading: profilesQ.isLoading || eventsQ.isLoading || tasksQ.isLoading,
@@ -447,10 +449,15 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     addTask: (input) => addTaskMut.mutateAsync(input).then(() => undefined),
     deleteEvent: (id) => deleteEventMut.mutateAsync(id).then(() => undefined),
     deleteTask: (id) => deleteTaskMut.mutateAsync(id).then(() => undefined),
+    addGoal: (input) => addGoalMut.mutateAsync(input).then(() => undefined),
+    updateGoalProgress: (id, progress) => updateGoalProgressMut.mutateAsync({ id, progress }).then(() => undefined),
+    toggleGoalDone: (id, done) => toggleGoalDoneMut.mutateAsync({ id, done }).then(() => undefined),
+    deleteGoal: (id) => deleteGoalMut.mutateAsync(id).then(() => undefined),
     addContact: (input) => addContactMut.mutateAsync(input).then(() => undefined),
     updateContact: (id, patch) => updateContactMut.mutateAsync({ id, patch }).then(() => undefined),
     deleteContact: (id) => deleteContactMut.mutateAsync(id).then(() => undefined),
   };
+
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
