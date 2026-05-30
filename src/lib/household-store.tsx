@@ -135,10 +135,15 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   const events = eventsQ.data ?? [];
   const tasks = tasksQ.data ?? [];
 
+  const includesProfile = (e: CalendarEvent, id: string) =>
+    (e.profile_ids?.length ? e.profile_ids.includes(id) : e.profile_id === id);
+
   const visibleEvents = useMemo(() => {
     if (!activeProfile) return [];
     if (activeProfile.id === familyProfile?.id) return events;
-    return events.filter((e) => e.profile_id === activeProfile.id || e.profile_id === familyProfile?.id);
+    return events.filter(
+      (e) => includesProfile(e, activeProfile.id) || (familyProfile && includesProfile(e, familyProfile.id)),
+    );
   }, [events, activeProfile, familyProfile]);
 
   const visibleTasks = useMemo(() => {
