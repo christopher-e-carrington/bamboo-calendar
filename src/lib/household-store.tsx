@@ -25,12 +25,15 @@ export interface CalendarEvent {
   notes?: string | null;
 }
 
+export type Recurrence = "none" | "daily" | "weekly" | "monthly";
+
 export interface TaskItem {
   id: string;
   profile_id: string;
   title: string;
   done: boolean;
   due_at?: string | null;
+  recurrence: Recurrence;
 }
 
 interface HouseholdState {
