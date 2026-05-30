@@ -16,14 +16,32 @@ function formatDay(iso: string) {
 }
 
 export function Dashboard() {
-  const { visibleEvents, visibleTasks, profiles, toggleTask, activeProfile, familyProfile, loading } =
+  const { visibleEvents, visibleTasks, profiles, toggleTask, activeProfile, familyProfile, loading, addTask, deleteTask } =
     useHousehold();
+  const [newTask, setNewTask] = useState("");
+  const [adding, setAdding] = useState(false);
 
   if (loading || !activeProfile) {
     return (
       <div className="px-5 py-10 text-center text-muted-foreground text-sm">Loading your household…</div>
     );
   }
+
+  const quickAddTask = async () => {
+    if (!newTask.trim()) return;
+    setAdding(true);
+    try {
+      await addTask({
+        profile_id: activeProfile.id,
+        title: newTask.trim(),
+      });
+      setNewTask("");
+    } catch {
+      toast.error("Couldn't add task");
+    } finally {
+      setAdding(false);
+    }
+  };
 
   const sorted = [...visibleEvents].sort((a, b) => +new Date(a.start_at) - +new Date(b.start_at));
   const grouped = new Map<string, typeof sorted>();
