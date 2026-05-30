@@ -311,6 +311,74 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", user.id] }),
   });
 
+  // Goals
+  const goalsQ = useQuery({
+    queryKey: ["goals", user.id],
+    queryFn: async (): Promise<Goal[]> => {
+      const { data, error } = await (supabase as any)
+        .from("goals")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as Goal[];
+    },
+  });
+
+  const goals = goalsQ.data ?? [];
+  const visibleGoals = useMemo(() => {
+    if (!activeProfile) return [];
+    if (activeProfile.id === familyProfile?.id) return goals;
+    return goals.filter((g) => g.profile_id === activeProfile.id || g.profile_id === familyProfile?.id);
+  }, [goals, activeProfile, familyProfile]);
+
+  const addGoalMut = useMutation({
+    mutationFn: async (input: { profile_id: string; title: string; tier: Tier; target?: number; notes?: string | null }) => {
+      const { error } = await (supabase as any).from("goals").insert({
+        owner_id: user.id,
+        profile_id: input.profile_id,
+        title: input.title,
+        tier: input.tier,
+        target: input.target ?? 1,
+        notes: input.notes ?? null,
+      });
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", user.id] }),
+  });
+
+  const updateGoalProgressMut = useMutation({
+    mutationFn: async ({ id, progress }: { id: string; progress: number }) => {
+      const cur = goals.find((g) => g.id === id);
+      const target = cur?.target ?? 1;
+      const clamped = Math.max(0, Math.min(progress, target));
+      const done = clamped >= target;
+      const { error } = await (supabase as any).from("goals").update({ progress: clamped, done }).eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", user.id] }),
+  });
+
+  const toggleGoalDoneMut = useMutation({
+    mutationFn: async ({ id, done }: { id: string; done: boolean }) => {
+      const cur = goals.find((g) => g.id === id);
+      const target = cur?.target ?? 1;
+      const { error } = await (supabase as any)
+        .from("goals")
+        .update({ done, progress: done ? target : 0 })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", user.id] }),
+  });
+
+  const deleteGoalMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await (supabase as any).from("goals").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", user.id] }),
+  });
+
   const contactsQ = useQuery({
     queryKey: ["contacts", user.id],
     queryFn: async (): Promise<Contact[]> => {
@@ -322,6 +390,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       return (data ?? []) as Contact[];
     },
   });
+
 
   const addContactMut = useMutation({
     mutationFn: async (input: Omit<Contact, "id" | "created_at">) => {
