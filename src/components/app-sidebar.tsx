@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { PinDialog } from "./pin-dialog";
 import type { Profile } from "@/lib/household-store";
+import { ManageProfilesDialog } from "./manage-profiles-dialog";
 
 const navItems = [
   { id: "calendar", title: "Calendar", icon: Calendar },
