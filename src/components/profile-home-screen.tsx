@@ -1,5 +1,9 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useHousehold } from "@/lib/household-store";
+import { getWeather, type WeatherKind as ApiWeatherKind } from "@/lib/weather.functions";
+import { CloudOff, Loader2 } from "lucide-react";
 import { ProfileAvatar } from "./profile-avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
