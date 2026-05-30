@@ -47,6 +47,18 @@ interface HouseholdState {
   loading: boolean;
   addProfile: (input: { name: string; role: ProfileRole; color: string }) => Promise<void>;
   removeProfile: (id: string) => Promise<void>;
+  setProfilePin: (id: string, pin: string | null) => Promise<void>;
+  addEvent: (input: {
+    profile_id: string;
+    title: string;
+    start_at: string;
+    end_at?: string | null;
+    location?: string | null;
+    notes?: string | null;
+  }) => Promise<void>;
+  addTask: (input: { profile_id: string; title: string; due_at?: string | null }) => Promise<void>;
+  deleteEvent: (id: string) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
 }
 
 const Ctx = createContext<HouseholdState | null>(null);
