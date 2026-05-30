@@ -282,18 +282,20 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   });
 
   const addTaskMut = useMutation({
-    mutationFn: async (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence }) => {
+    mutationFn: async (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence; tier?: Tier }) => {
       const { error } = await supabase.from("tasks").insert({
         profile_id: input.profile_id,
         title: input.title,
         due_at: input.due_at ?? null,
         recurrence: input.recurrence ?? "none",
+        tier: input.tier ?? "daily",
         owner_id: user.id,
-      });
+      } as any);
       if (error) throw error;
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", user.id] }),
   });
+
 
   const deleteEventMut = useMutation({
     mutationFn: async (id: string) => {
