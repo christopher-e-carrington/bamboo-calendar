@@ -178,6 +178,146 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          low_stock: boolean
+          name: string
+          owner_id: string
+          quantity: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          low_stock?: boolean
+          name: string
+          owner_id: string
+          quantity?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          low_stock?: boolean
+          name?: string
+          owner_id?: string
+          quantity?: string | null
+        }
+        Relationships: []
+      }
+      meal_plan: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          event_id: string | null
+          id: string
+          meal_type: string
+          owner_id: string
+          recipe_id: string | null
+          recipe_name: string
+          show_on_calendar: boolean
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          event_id?: string | null
+          id?: string
+          meal_type: string
+          owner_id: string
+          recipe_id?: string | null
+          recipe_name: string
+          show_on_calendar?: boolean
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          event_id?: string | null
+          id?: string
+          meal_type?: string
+          owner_id?: string
+          recipe_id?: string | null
+          recipe_name?: string
+          show_on_calendar?: boolean
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_plan_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recipes: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          ingredients: string[]
+          instructions: string | null
+          name: string
+          owner_id: string
+          prep_time: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          ingredients?: string[]
+          instructions?: string | null
+          name: string
+          owner_id: string
+          prep_time?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          ingredients?: string[]
+          instructions?: string | null
+          name?: string
+          owner_id?: string
+          prep_time?: number | null
+        }
+        Relationships: []
+      }
+      shopping_items: {
+        Row: {
+          created_at: string
+          done: boolean
+          id: string
+          name: string
+          owner_id: string
+          quantity: string | null
+          source: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          name: string
+          owner_id: string
+          quantity?: string | null
+          source?: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          name?: string
+          owner_id?: string
+          quantity?: string | null
+          source?: string
+        }
+        Relationships: []
+      }
       tasks: {
         Row: {
           created_at: string
