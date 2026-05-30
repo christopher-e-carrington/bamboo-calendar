@@ -47,6 +47,18 @@ interface HouseholdState {
   loading: boolean;
   addProfile: (input: { name: string; role: ProfileRole; color: string }) => Promise<void>;
   removeProfile: (id: string) => Promise<void>;
+  setProfilePin: (id: string, pin: string | null) => Promise<void>;
+  addEvent: (input: {
+    profile_id: string;
+    title: string;
+    start_at: string;
+    end_at?: string | null;
+    location?: string | null;
+    notes?: string | null;
+  }) => Promise<void>;
+  addTask: (input: { profile_id: string; title: string; due_at?: string | null }) => Promise<void>;
+  deleteEvent: (id: string) => Promise<void>;
+  deleteTask: (id: string) => Promise<void>;
 }
 
 const Ctx = createContext<HouseholdState | null>(null);
@@ -164,6 +176,53 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     },
   });
 
+  const setPinMut = useMutation({
+    mutationFn: async ({ id, pin }: { id: string; pin: string | null }) => {
+      const { error } = await supabase.from("household_profiles").update({ pin }).eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["profiles", user.id] }),
+  });
+
+  const addEventMut = useMutation({
+    mutationFn: async (input: {
+      profile_id: string;
+      title: string;
+      start_at: string;
+      end_at?: string | null;
+      location?: string | null;
+      notes?: string | null;
+    }) => {
+      const { error } = await supabase.from("events").insert({ ...input, owner_id: user.id });
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["events", user.id] }),
+  });
+
+  const addTaskMut = useMutation({
+    mutationFn: async (input: { profile_id: string; title: string; due_at?: string | null }) => {
+      const { error } = await supabase.from("tasks").insert({ ...input, owner_id: user.id });
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", user.id] }),
+  });
+
+  const deleteEventMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("events").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["events", user.id] }),
+  });
+
+  const deleteTaskMut = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("tasks").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", user.id] }),
+  });
+
   const value: HouseholdState = {
     profiles,
     events,
@@ -176,12 +235,13 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     activeProfile,
     familyProfile,
     loading: profilesQ.isLoading || eventsQ.isLoading || tasksQ.isLoading,
-    addProfile: async (input) => {
-      await addMut.mutateAsync(input);
-    },
-    removeProfile: async (id) => {
-      await removeMut.mutateAsync(id);
-    },
+    addProfile: (input) => addMut.mutateAsync(input).then(() => undefined),
+    removeProfile: (id) => removeMut.mutateAsync(id).then(() => undefined),
+    setProfilePin: (id, pin) => setPinMut.mutateAsync({ id, pin }).then(() => undefined),
+    addEvent: (input) => addEventMut.mutateAsync(input).then(() => undefined),
+    addTask: (input) => addTaskMut.mutateAsync(input).then(() => undefined),
+    deleteEvent: (id) => deleteEventMut.mutateAsync(id).then(() => undefined),
+    deleteTask: (id) => deleteTaskMut.mutateAsync(id).then(() => undefined),
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

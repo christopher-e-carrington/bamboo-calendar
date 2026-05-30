@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { useHousehold } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar as CalIcon, MapPin, Sparkles } from "lucide-react";
+import { Calendar as CalIcon, MapPin, Sparkles, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { EventDialog } from "./event-dialog";
+import { toast } from "sonner";
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
@@ -12,14 +16,32 @@ function formatDay(iso: string) {
 }
 
 export function Dashboard() {
-  const { visibleEvents, visibleTasks, profiles, toggleTask, activeProfile, familyProfile, loading } =
+  const { visibleEvents, visibleTasks, profiles, toggleTask, activeProfile, familyProfile, loading, addTask, deleteTask } =
     useHousehold();
+  const [newTask, setNewTask] = useState("");
+  const [adding, setAdding] = useState(false);
 
   if (loading || !activeProfile) {
     return (
       <div className="px-5 py-10 text-center text-muted-foreground text-sm">Loading your household…</div>
     );
   }
+
+  const quickAddTask = async () => {
+    if (!newTask.trim()) return;
+    setAdding(true);
+    try {
+      await addTask({
+        profile_id: activeProfile.id,
+        title: newTask.trim(),
+      });
+      setNewTask("");
+    } catch {
+      toast.error("Couldn't add task");
+    } finally {
+      setAdding(false);
+    }
+  };
 
   const sorted = [...visibleEvents].sort((a, b) => +new Date(a.start_at) - +new Date(b.start_at));
   const grouped = new Map<string, typeof sorted>();
@@ -47,10 +69,14 @@ export function Dashboard() {
               {visibleTasks.filter((t) => !t.done).length} open tasks
             </p>
           </div>
-          <Button className="rounded-full gap-1.5 self-start sm:self-center">
-            <Sparkles className="h-4 w-4" />
-            Add event
-          </Button>
+          <EventDialog
+            trigger={
+              <Button className="rounded-full gap-1.5 self-start sm:self-center">
+                <Sparkles className="h-4 w-4" />
+                Add event
+              </Button>
+            }
+          />
         </div>
       </section>
 
@@ -113,6 +139,25 @@ export function Dashboard() {
               {visibleTasks.filter((t) => !t.done).length} open
             </div>
           </header>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              quickAddTask();
+            }}
+            className="flex gap-2 mb-3"
+          >
+            <Input
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              placeholder="Quick add a task…"
+              className="h-9"
+            />
+            <Button type="submit" size="icon" disabled={!newTask.trim() || adding} aria-label="Add task">
+              <Plus className="h-4 w-4" />
+            </Button>
+          </form>
+
           {visibleTasks.length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">Nothing on the list.</p>
           ) : (
@@ -122,13 +167,20 @@ export function Dashboard() {
                 return (
                   <li
                     key={t.id}
-                    className="flex items-center gap-3 rounded-lg p-2.5 hover:bg-secondary/60 transition-colors"
+                    className="group flex items-center gap-3 rounded-lg p-2.5 hover:bg-secondary/60 transition-colors"
                   >
                     <Checkbox checked={t.done} onCheckedChange={(v) => toggleTask(t.id, Boolean(v))} />
                     <span className={`flex-1 text-sm ${t.done ? "line-through text-muted-foreground" : ""}`}>
                       {t.title}
                     </span>
                     {p && <ProfileAvatar profile={p} size={22} />}
+                    <button
+                      onClick={() => deleteTask(t.id)}
+                      className="text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all"
+                      aria-label="Delete task"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </li>
                 );
               })}

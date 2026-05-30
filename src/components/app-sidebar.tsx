@@ -19,6 +19,7 @@ import { useState } from "react";
 import { PinDialog } from "./pin-dialog";
 import type { Profile } from "@/lib/household-store";
 import { ManageProfilesDialog } from "./manage-profiles-dialog";
+import { ProfileSettingsSheet } from "./profile-settings-sheet";
 
 const navItems = [
   { id: "calendar", title: "Calendar", icon: Calendar },
@@ -122,10 +123,14 @@ export function AppSidebar({
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton>
-              <Settings className="h-4 w-4" />
-              <span>Settings</span>
-            </SidebarMenuButton>
+            <ProfileSettingsSheet
+              trigger={
+                <SidebarMenuButton>
+                  <Settings className="h-4 w-4" />
+                  <span>Settings</span>
+                </SidebarMenuButton>
+              }
+            />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
