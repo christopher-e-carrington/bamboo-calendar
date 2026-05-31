@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useHousehold, type ProfileRole } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
-import { Plus, Trash2, UserPlus } from "lucide-react";
+import { Plus, Trash2, UserPlus, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { HouseholdInvites } from "./household-invites";
 
 const PALETTE = ["#7BA37A", "#A7C29A", "#C9A36B", "#E8B774", "#9CB89A", "#B58A6B", "#8FB4C8", "#D49AA6"];
 
