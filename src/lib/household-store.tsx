@@ -72,6 +72,8 @@ interface HouseholdState {
   tasks: TaskItem[];
   goals: Goal[];
   contacts: Contact[];
+  householdId: string;
+  isHouseholdOwner: boolean;
   activeProfileId: string;
   setActiveProfileId: (id: string) => void;
   toggleTask: (id: string, done: boolean) => void;
