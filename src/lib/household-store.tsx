@@ -213,11 +213,11 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       const { error } = await supabase.from("tasks").update({ done }).eq("id", id);
       if (error) throw error;
       if (done) {
-        const t = (qc.getQueryData<TaskItem[]>(["tasks", user.id]) ?? []).find((x) => x.id === id);
+        const t = (qc.getQueryData<TaskItem[]>(["tasks", householdId]) ?? []).find((x) => x.id === id);
         if (t && t.recurrence && t.recurrence !== "none") {
           const next_due = advanceDate(t.due_at, t.recurrence);
           await supabase.from("tasks").insert({
-            owner_id: user.id,
+            owner_id: householdId,
             profile_id: t.profile_id,
             title: t.title,
             due_at: next_due,
@@ -227,17 +227,17 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       }
     },
     onMutate: async ({ id, done }) => {
-      await qc.cancelQueries({ queryKey: ["tasks", user.id] });
-      const prev = qc.getQueryData<TaskItem[]>(["tasks", user.id]);
-      qc.setQueryData<TaskItem[]>(["tasks", user.id], (old) =>
+      await qc.cancelQueries({ queryKey: ["tasks", householdId] });
+      const prev = qc.getQueryData<TaskItem[]>(["tasks", householdId]);
+      qc.setQueryData<TaskItem[]>(["tasks", householdId], (old) =>
         (old ?? []).map((t) => (t.id === id ? { ...t, done } : t)),
       );
       return { prev };
     },
     onError: (_e, _v, ctx) => {
-      if (ctx?.prev) qc.setQueryData(["tasks", user.id], ctx.prev);
+      if (ctx?.prev) qc.setQueryData(["tasks", householdId], ctx.prev);
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", user.id] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", householdId] }),
   });
 
   const addMut = useMutation({
@@ -245,7 +245,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       const initials = input.name.trim().slice(0, 2).toUpperCase() || "NP";
       const sort_order = (profiles.at(-1)?.sort_order ?? 0) + 1;
       const { error } = await supabase.from("household_profiles").insert({
-        owner_id: user.id,
+        owner_id: householdId,
         name: input.name.trim(),
         role: input.role,
         color: input.color,
@@ -254,7 +254,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       });
       if (error) throw error;
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["profiles", user.id] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["profiles", householdId] }),
   });
 
   const removeMut = useMutation({
@@ -265,9 +265,9 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       if (error) throw error;
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: ["profiles", user.id] });
-      qc.invalidateQueries({ queryKey: ["events", user.id] });
-      qc.invalidateQueries({ queryKey: ["tasks", user.id] });
+      qc.invalidateQueries({ queryKey: ["profiles", householdId] });
+      qc.invalidateQueries({ queryKey: ["events", householdId] });
+      qc.invalidateQueries({ queryKey: ["tasks", householdId] });
     },
   });
 
@@ -276,7 +276,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       const { error } = await supabase.from("household_profiles").update({ pin }).eq("id", id);
       if (error) throw error;
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["profiles", user.id] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["profiles", householdId] }),
   });
 
   const addEventMut = useMutation({
@@ -291,7 +291,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       const primary = input.profile_ids[0];
       if (!primary) throw new Error("Assign at least one profile");
       const { error } = await supabase.from("events").insert({
-        owner_id: user.id,
+        owner_id: householdId,
         profile_id: primary,
         profile_ids: input.profile_ids,
         title: input.title,
@@ -302,7 +302,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       });
       if (error) throw error;
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["events", user.id] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["events", householdId] }),
   });
 
   const addTaskMut = useMutation({
@@ -313,11 +313,11 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
         due_at: input.due_at ?? null,
         recurrence: input.recurrence ?? "none",
         tier: input.tier ?? "daily",
-        owner_id: user.id,
+        owner_id: householdId,
       } as any);
       if (error) throw error;
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", user.id] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", householdId] }),
   });
 
 
@@ -326,7 +326,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       const { error } = await supabase.from("events").delete().eq("id", id);
       if (error) throw error;
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["events", user.id] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["events", householdId] }),
   });
 
   const deleteTaskMut = useMutation({
@@ -334,12 +334,12 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       const { error } = await supabase.from("tasks").delete().eq("id", id);
       if (error) throw error;
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", user.id] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", householdId] }),
   });
 
   // Goals
   const goalsQ = useQuery({
-    queryKey: ["goals", user.id],
+    queryKey: ["goals", householdId],
     queryFn: async (): Promise<Goal[]> => {
       const { data, error } = await (supabase as any)
         .from("goals")
@@ -360,7 +360,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   const addGoalMut = useMutation({
     mutationFn: async (input: { profile_id: string; title: string; tier: Tier; target?: number; notes?: string | null }) => {
       const { error } = await (supabase as any).from("goals").insert({
-        owner_id: user.id,
+        owner_id: householdId,
         profile_id: input.profile_id,
         title: input.title,
         tier: input.tier,
@@ -369,7 +369,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       });
       if (error) throw error;
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", user.id] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", householdId] }),
   });
 
   const updateGoalProgressMut = useMutation({
@@ -381,7 +381,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       const { error } = await (supabase as any).from("goals").update({ progress: clamped, done }).eq("id", id);
       if (error) throw error;
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", user.id] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", householdId] }),
   });
 
   const toggleGoalDoneMut = useMutation({
@@ -394,7 +394,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
         .eq("id", id);
       if (error) throw error;
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", user.id] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", householdId] }),
   });
 
   const deleteGoalMut = useMutation({
@@ -402,11 +402,11 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       const { error } = await (supabase as any).from("goals").delete().eq("id", id);
       if (error) throw error;
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", user.id] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goals", householdId] }),
   });
 
   const contactsQ = useQuery({
-    queryKey: ["contacts", user.id],
+    queryKey: ["contacts", householdId],
     queryFn: async (): Promise<Contact[]> => {
       const { data, error } = await supabase
         .from("contacts")
@@ -420,12 +420,12 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
 
   const addContactMut = useMutation({
     mutationFn: async (input: Omit<Contact, "id" | "created_at">) => {
-      const { error } = await supabase.from("contacts").insert({ ...input, owner_id: user.id });
+      const { error } = await supabase.from("contacts").insert({ ...input, owner_id: householdId });
       if (error) throw error;
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: ["contacts", user.id] });
-      qc.invalidateQueries({ queryKey: ["events", user.id] });
+      qc.invalidateQueries({ queryKey: ["contacts", householdId] });
+      qc.invalidateQueries({ queryKey: ["events", householdId] });
     },
   });
 
@@ -435,8 +435,8 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       if (error) throw error;
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: ["contacts", user.id] });
-      qc.invalidateQueries({ queryKey: ["events", user.id] });
+      qc.invalidateQueries({ queryKey: ["contacts", householdId] });
+      qc.invalidateQueries({ queryKey: ["events", householdId] });
     },
   });
 
@@ -446,8 +446,8 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       if (error) throw error;
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: ["contacts", user.id] });
-      qc.invalidateQueries({ queryKey: ["events", user.id] });
+      qc.invalidateQueries({ queryKey: ["contacts", householdId] });
+      qc.invalidateQueries({ queryKey: ["events", householdId] });
     },
   });
 
