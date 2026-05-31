@@ -110,10 +110,10 @@ function InvitePage() {
       const { error } = await supabase.rpc("accept_invitation", {
         _token: token,
         _name: parsed.data.name,
-        _phone: parsed.data.phone || null,
-        _address: parsed.data.address || null,
-        _birthday: parsed.data.birthday || null,
-        _email: email || null,
+        _phone: parsed.data.phone || undefined,
+        _address: parsed.data.address || undefined,
+        _birthday: parsed.data.birthday || undefined,
+        _email: email || undefined,
       });
       if (error) throw error;
       toast.success("Welcome to the household 🌿");
