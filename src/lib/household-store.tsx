@@ -463,6 +463,8 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     tasks,
     goals,
     contacts: contactsQ.data ?? [],
+    householdId,
+    isHouseholdOwner: householdId === user.id,
     activeProfileId: effectiveActiveId,
     setActiveProfileId,
     toggleTask: (id, done) => toggleMut.mutate({ id, done }),
