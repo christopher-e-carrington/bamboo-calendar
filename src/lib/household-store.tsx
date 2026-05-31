@@ -340,10 +340,12 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   // Goals
   const goalsQ = useQuery({
     queryKey: ["goals", householdId],
+    enabled: !!membershipQ.data,
     queryFn: async (): Promise<Goal[]> => {
       const { data, error } = await (supabase as any)
         .from("goals")
         .select("*")
+        .eq("owner_id", householdId)
         .order("created_at", { ascending: true });
       if (error) throw error;
       return (data ?? []) as Goal[];
