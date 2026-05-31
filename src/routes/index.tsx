@@ -13,6 +13,7 @@ import { MealsPage } from "@/components/meals-page";
 import { ShoppingListPage } from "@/components/shopping-list-page";
 import { InventoryPage } from "@/components/inventory-page";
 import { MemoriesPage } from "@/components/memories-page";
+import { HouseholdPage } from "@/components/household-page";
 import { AuthScreen } from "@/components/auth-screen";
 import { useAuth } from "@/hooks/use-auth";
 import { Leaf } from "lucide-react";
