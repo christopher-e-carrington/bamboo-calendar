@@ -105,3 +105,21 @@ export const getWeather = createServerFn({ method: "GET" })
     };
     return payload;
   });
+
+export const geocodeLocation = createServerFn({ method: "GET" })
+  .inputValidator(z.object({ query: z.string().min(1).max(120) }))
+  .handler(async ({ data }) => {
+    const key = process.env.OPENWEATHER_API_KEY;
+    if (!key) throw new Error("OPENWEATHER_API_KEY is not configured");
+    const url = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(data.query)}&limit=1&appid=${key}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Geocoding error: ${res.status}`);
+    const list = (await res.json()) as Array<{ lat: number; lon: number; name: string; state?: string; country?: string }>;
+    if (!list.length) throw new Error("Location not found");
+    const hit = list[0];
+    return {
+      lat: hit.lat,
+      lon: hit.lon,
+      label: [hit.name, hit.state, hit.country].filter(Boolean).join(", "),
+    };
+  });
