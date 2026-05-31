@@ -81,12 +81,26 @@ function InvitePage() {
     setAuthBusy(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: window.location.href },
         });
         if (error) throw error;
+        // If signup didn't return a session (email confirmation enabled),
+        // try to sign in immediately so the accept step has auth.uid().
+        if (!signUpData.session) {
+          const { error: signInErr } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          if (signInErr) {
+            toast.error(
+              "Account created. Please check your email to confirm, then return to this link.",
+            );
+            return;
+          }
+        }
         toast.success("Account created — finish your profile below");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
