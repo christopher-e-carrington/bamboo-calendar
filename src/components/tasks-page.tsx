@@ -19,6 +19,19 @@ const TIER_LABEL: Record<Tier, string> = {
 };
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const WEEKDAYS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function recurrenceLabel(rec: string, due_at: string | null): string {
+  if (!rec || rec === "none") return "";
+  if (rec === "daily") return "daily";
+  if (!due_at) return rec;
+  const d = new Date(due_at);
+  if (rec === "weekly") return `every ${WEEKDAYS_SHORT[d.getDay()]}`;
+  if (rec === "monthly") return `monthly · day ${d.getDate()}`;
+  if (rec === "quarterly") return `quarterly · day ${d.getDate()}`;
+  if (rec === "yearly") return `yearly · ${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
+  return rec;
+}
 
 function nextWeeklyDue(weekday: number): string {
   const d = new Date();
