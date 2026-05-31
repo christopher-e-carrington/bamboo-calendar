@@ -122,7 +122,7 @@ export function TasksPage() {
               placeholder={`Add a ${TIER_LABEL[tier].toLowerCase()} to-do…`}
               className="flex-1"
             />
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Select value={recurrence} onValueChange={(v) => setRecurrence(v as Recurrence)}>
                 <SelectTrigger className="w-[140px]">
                   <div className="flex items-center gap-1.5">
@@ -141,8 +141,11 @@ export function TasksPage() {
               </Select>
               {recurrence === "weekly" && (
                 <Select value={String(weekday)} onValueChange={(v) => setWeekday(Number(v))}>
-                  <SelectTrigger className="w-[130px]">
-                    <SelectValue />
+                  <SelectTrigger className="w-[150px]">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs text-muted-foreground">Every</span>
+                      <SelectValue />
+                    </div>
                   </SelectTrigger>
                   <SelectContent>
                     {WEEKDAYS.map((d, i) => (
