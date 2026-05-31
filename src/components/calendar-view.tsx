@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { useHousehold, type CalendarEvent } from "@/lib/household-store";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus, Cake } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Cake, Image as ImageIcon } from "lucide-react";
 import { EventDialog } from "./event-dialog";
 import { cn } from "@/lib/utils";
 
