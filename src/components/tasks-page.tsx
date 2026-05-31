@@ -173,7 +173,11 @@ export function TasksPage() {
           </form>
 
           {TIERS.map((t) => {
-            const items = visibleTasks.filter((x) => x.tier === t);
+            const endOfToday = new Date();
+            endOfToday.setHours(23, 59, 59, 999);
+            const items = visibleTasks.filter(
+              (x) => x.tier === t && (!x.due_at || new Date(x.due_at) <= endOfToday),
+            );
             const open = items.filter((x) => !x.done).length;
             return (
               <TabsContent key={t} value={t} className="mt-4">
