@@ -75,6 +75,8 @@ function Index() {
                 <InventoryPage />
               ) : active === "memories" ? (
                 <MemoriesPage />
+              ) : active === "household" ? (
+                <HouseholdPage />
               ) : (
                 <ProfileHomeScreen />
               )}
