@@ -85,50 +85,27 @@ const WEATHER_ICONS: Record<ApiWeatherKind, typeof Sun> = {
   fog: CloudFog,
 };
 
-type Coords = { lat: number; lon: number };
-
-function useGeolocation() {
-  const [coords, setCoords] = useState<Coords | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    if (typeof window === "undefined" || !("geolocation" in navigator)) {
-      setError("Geolocation not supported");
-      return;
-    }
-    const cached = localStorage.getItem("weather:coords");
-    if (cached) {
-      try {
-        setCoords(JSON.parse(cached));
-      } catch {
-        /* ignore */
-      }
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const c = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-        setCoords(c);
-        localStorage.setItem("weather:coords", JSON.stringify(c));
-      },
-      (err) => setError(err.message),
-      { timeout: 8000, maximumAge: 5 * 60 * 1000 },
-    );
-  }, []);
-  return { coords, error };
-}
+const MOCK_WEATHER = {
+  location: "Your area",
+  today: {
+    kind: "cloudSun" as ApiWeatherKind,
+    description: "Partly sunny",
+    temp: 72,
+    hi: 78,
+    lo: 61,
+    wind: 6,
+    humidity: 48,
+  },
+  forecast: [
+    { day: "Tomorrow", kind: "sun" as ApiWeatherKind, hi: 80, lo: 63 },
+    { day: "Wed", kind: "cloud" as ApiWeatherKind, hi: 74, lo: 60 },
+    { day: "Thu", kind: "rain" as ApiWeatherKind, hi: 68, lo: 57 },
+  ],
+};
 
 function WeatherWidget() {
-  const { coords, error: geoError } = useGeolocation();
-  const fetchWeather = useServerFn(getWeather);
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["weather", coords?.lat, coords?.lon],
-    queryFn: () => fetchWeather({ data: coords! }),
-    enabled: !!coords,
-    staleTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
-  });
-
-  const Icon = data ? WEATHER_ICONS[data.today.kind] : Sun;
-  const fatal = geoError || (error as Error | null)?.message;
+  const data = MOCK_WEATHER;
+  const Icon = WEATHER_ICONS[data.today.kind];
 
   return (
     <section className="bamboo-card p-5 relative overflow-hidden">
@@ -139,59 +116,41 @@ function WeatherWidget() {
           <h2 className="font-display text-lg">Today's weather</h2>
         </div>
         <span className="text-xs text-muted-foreground truncate max-w-[50%] text-right">
-          {data?.location ?? (isLoading || !coords ? "Locating…" : "—")}
+          {data.location}
         </span>
       </header>
 
-      {fatal && !data ? (
-        <div className="flex items-center gap-3 text-sm text-muted-foreground py-4">
-          <CloudOff className="h-5 w-5 shrink-0" />
-          <span className="text-xs">
-            {geoError ? "Allow location access to see live weather." : "Couldn't reach the weather service."}
-          </span>
+      <div className="flex items-center gap-4 relative">
+        <div className="h-16 w-16 rounded-2xl bg-primary/10 text-primary grid place-items-center">
+          <Icon className="h-9 w-9" />
         </div>
-      ) : !data ? (
-        <div className="flex items-center gap-3 text-sm text-muted-foreground py-6">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          <span className="text-xs">Fetching the forecast…</span>
+        <div className="flex-1 min-w-0">
+          <div className="font-display text-4xl leading-none">{data.today.temp}°</div>
+          <div className="text-xs text-muted-foreground mt-1 capitalize truncate">
+            {data.today.description}
+          </div>
         </div>
-      ) : (
-        <>
-          <div className="flex items-center gap-4 relative">
-            <div className="h-16 w-16 rounded-2xl bg-primary/10 text-primary grid place-items-center">
-              <Icon className="h-9 w-9" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-display text-4xl leading-none">{data.today.temp}°</div>
-              <div className="text-xs text-muted-foreground mt-1 capitalize truncate">
-                {data.today.description}
+        <div className="text-right text-xs text-muted-foreground space-y-1">
+          <div>H {data.today.hi}° · L {data.today.lo}°</div>
+          <div className="flex items-center justify-end gap-1"><Wind className="h-3 w-3" /> {data.today.wind} mph</div>
+          <div className="flex items-center justify-end gap-1"><Droplets className="h-3 w-3" /> {data.today.humidity}%</div>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-2 mt-5">
+        {data.forecast.map((d) => {
+          const I = WEATHER_ICONS[d.kind];
+          return (
+            <div key={d.day} className="rounded-xl border border-border bg-background/50 p-3 flex flex-col items-center gap-1">
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{d.day}</div>
+              <I className="h-5 w-5 text-primary" />
+              <div className="text-xs">
+                <span className="font-medium">{d.hi}°</span>
+                <span className="text-muted-foreground"> / {d.lo}°</span>
               </div>
             </div>
-            <div className="text-right text-xs text-muted-foreground space-y-1">
-              <div>H {data.today.hi}° · L {data.today.lo}°</div>
-              <div className="flex items-center justify-end gap-1"><Wind className="h-3 w-3" /> {data.today.wind} mph</div>
-              <div className="flex items-center justify-end gap-1"><Droplets className="h-3 w-3" /> {data.today.humidity}%</div>
-            </div>
-          </div>
-          {data.forecast.length > 0 && (
-            <div className="grid grid-cols-3 gap-2 mt-5">
-              {data.forecast.map((d) => {
-                const I = WEATHER_ICONS[d.kind];
-                return (
-                  <div key={d.day} className="rounded-xl border border-border bg-background/50 p-3 flex flex-col items-center gap-1">
-                    <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{d.day}</div>
-                    <I className="h-5 w-5 text-primary" />
-                    <div className="text-xs">
-                      <span className="font-medium">{d.hi}°</span>
-                      <span className="text-muted-foreground"> / {d.lo}°</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </>
-      )}
+          );
+        })}
+      </div>
     </section>
   );
 }
