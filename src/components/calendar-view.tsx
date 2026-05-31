@@ -283,7 +283,17 @@ export function CalendarView() {
                     >
                       {d.getDate()}
                     </span>
-                    <Plus className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="flex items-center gap-1">
+                      {hasMemory(d) && (
+                        <span
+                          title="Has memories"
+                          className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-accent text-accent-foreground"
+                        >
+                          <ImageIcon className="h-2.5 w-2.5" />
+                        </span>
+                      )}
+                      <Plus className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                   </div>
                   <ul className="space-y-1">
                     {dayEvents.slice(0, limit).map((ev) => {
