@@ -86,6 +86,23 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
           })}
         </div>
 
+        <div className="border-t border-border pt-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full gap-1.5"
+            onClick={() => setShowInvites((v) => !v)}
+          >
+            <Mail className="h-4 w-4" />
+            {showInvites ? "Hide invites" : "Invite new user"}
+          </Button>
+          {showInvites && (
+            <div className="pt-3">
+              <HouseholdInvites />
+            </div>
+          )}
+        </div>
+
         <div className="border-t border-border pt-4 space-y-3">
           <div className="text-xs uppercase tracking-wider text-muted-foreground">Add profile</div>
           <div className="grid grid-cols-2 gap-3">
