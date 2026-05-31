@@ -58,6 +58,7 @@ function expandEvents(events: CalendarEvent[], rangeStart: Date, rangeEnd: Date)
 }
 
 export function CalendarView() {
+  const { user } = useAuth();
   const { visibleEvents, profiles, activeProfile, loading } = useHousehold();
   const [mode, setMode] = useState<Mode>("week");
   const [cursor, setCursor] = useState(() => new Date());
