@@ -6,14 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useHousehold, type ProfileRole } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
-import { Plus, Trash2, UserPlus } from "lucide-react";
+import { Plus, Trash2, UserPlus, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { HouseholdInvites } from "./household-invites";
 
 const PALETTE = ["#7BA37A", "#A7C29A", "#C9A36B", "#E8B774", "#9CB89A", "#B58A6B", "#8FB4C8", "#D49AA6"];
 
 export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode }) {
   const { profiles, familyProfile, addProfile, removeProfile } = useHousehold();
   const [open, setOpen] = useState(false);
+  const [showInvites, setShowInvites] = useState(false);
   const [name, setName] = useState("");
   const [role, setRole] = useState<ProfileRole>("kid");
   const [color, setColor] = useState(PALETTE[3]);
@@ -52,7 +54,7 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display">Household profiles</DialogTitle>
         </DialogHeader>
@@ -82,6 +84,23 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
               </div>
             );
           })}
+        </div>
+
+        <div className="border-t border-border pt-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full gap-1.5"
+            onClick={() => setShowInvites((v) => !v)}
+          >
+            <Mail className="h-4 w-4" />
+            {showInvites ? "Hide invites" : "Invite new user"}
+          </Button>
+          {showInvites && (
+            <div className="pt-3">
+              <HouseholdInvites />
+            </div>
+          )}
         </div>
 
         <div className="border-t border-border pt-4 space-y-3">
