@@ -255,6 +255,45 @@ export type Database = {
           },
         ]
       }
+      memories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          location: string | null
+          memory_date: string
+          memory_time: string | null
+          owner_id: string
+          photo_url: string | null
+          profile_id: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          memory_date: string
+          memory_time?: string | null
+          owner_id: string
+          photo_url?: string | null
+          profile_id?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          memory_date?: string
+          memory_time?: string | null
+          owner_id?: string
+          photo_url?: string | null
+          profile_id?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       recipes: {
         Row: {
           created_at: string

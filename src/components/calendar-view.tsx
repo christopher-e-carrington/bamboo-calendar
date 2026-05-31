@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { useHousehold, type CalendarEvent } from "@/lib/household-store";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus, Cake } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Cake, Image as ImageIcon } from "lucide-react";
 import { EventDialog } from "./event-dialog";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +58,7 @@ function expandEvents(events: CalendarEvent[], rangeStart: Date, rangeEnd: Date)
 }
 
 export function CalendarView() {
+  const { user } = useAuth();
   const { visibleEvents, profiles, activeProfile, loading } = useHousehold();
   const [mode, setMode] = useState<Mode>("week");
   const [cursor, setCursor] = useState(() => new Date());
@@ -93,6 +97,24 @@ export function CalendarView() {
     for (const list of m.values()) list.sort((a, b) => +new Date(a.start_at) - +new Date(b.start_at));
     return m;
   }, [expanded]);
+
+  const { data: memoryDays } = useQuery({
+    queryKey: ["memories-days", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("memories").select("memory_date");
+      if (error) throw error;
+      const set = new Set<string>();
+      for (const row of data ?? []) {
+        const [y, m, d] = (row.memory_date as string).split("-").map(Number);
+        set.add(`${y}-${m - 1}-${d}`);
+      }
+      return set;
+    },
+    enabled: !!user,
+  });
+  const hasMemory = (d: Date) => memoryDays?.has(dayKey(d)) ?? false;
+
+
 
   const shift = (dir: -1 | 1) => {
     const x = new Date(cursor);
@@ -261,7 +283,17 @@ export function CalendarView() {
                     >
                       {d.getDate()}
                     </span>
-                    <Plus className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="flex items-center gap-1">
+                      {hasMemory(d) && (
+                        <span
+                          title="Has memories"
+                          className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-accent text-accent-foreground"
+                        >
+                          <ImageIcon className="h-2.5 w-2.5" />
+                        </span>
+                      )}
+                      <Plus className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                   </div>
                   <ul className="space-y-1">
                     {dayEvents.slice(0, limit).map((ev) => {
