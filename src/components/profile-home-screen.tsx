@@ -2,7 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useHousehold } from "@/lib/household-store";
-import { getWeather, type WeatherKind as ApiWeatherKind } from "@/lib/weather.functions";
+import { getWeather, geocodeLocation, type WeatherKind as ApiWeatherKind } from "@/lib/weather.functions";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 import { CloudOff, Loader2 } from "lucide-react";
 import { ProfileAvatar } from "./profile-avatar";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -89,10 +91,11 @@ const WEATHER_ICONS: Record<ApiWeatherKind, typeof Sun> = {
 
 type Coords = { lat: number; lon: number };
 
-function useGeolocation() {
+function useGeolocation(enabled: boolean) {
   const [coords, setCoords] = useState<Coords | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
+    if (!enabled) return;
     if (typeof window === "undefined" || !("geolocation" in navigator)) {
       setError("Geolocation not supported");
       return;
@@ -110,42 +113,111 @@ function useGeolocation() {
       (err) => setError(err.message),
       { timeout: 8000, maximumAge: 5 * 60 * 1000 },
     );
-  }, []);
+  }, [enabled]);
   return { coords, error };
 }
 
+type ManualLocation = { lat: number; lon: number; label: string };
+
 function WeatherWidget() {
-  const { coords, error: geoError } = useGeolocation();
+  const [manual, setManual] = useState<ManualLocation | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = localStorage.getItem("weather:manual");
+      return raw ? (JSON.parse(raw) as ManualLocation) : null;
+    } catch { return null; }
+  });
+  const [editing, setEditing] = useState(false);
+  const [query, setQuery] = useState("");
+  const [searching, setSearching] = useState(false);
+
+  const { coords: geoCoords, error: geoError } = useGeolocation(!manual);
   const fetchWeather = useServerFn(getWeather);
+  const geocode = useServerFn(geocodeLocation);
+
+  const activeCoords: Coords | null = manual
+    ? { lat: manual.lat, lon: manual.lon }
+    : geoCoords;
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ["weather", coords?.lat, coords?.lon],
-    queryFn: () => fetchWeather({ data: coords! }),
-    enabled: !!coords,
+    queryKey: ["weather", activeCoords?.lat, activeCoords?.lon],
+    queryFn: () => fetchWeather({ data: activeCoords! }),
+    enabled: !!activeCoords,
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 
   const Icon = data ? WEATHER_ICONS[data.today.kind] : Sun;
-  const fatal = geoError || (error as Error | null)?.message;
+  const fatal = (!manual && geoError) || (error as Error | null)?.message;
+
+  const submitManual = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setSearching(true);
+    try {
+      const hit = await geocode({ data: { query: query.trim() } });
+      const loc: ManualLocation = { lat: hit.lat, lon: hit.lon, label: hit.label };
+      localStorage.setItem("weather:manual", JSON.stringify(loc));
+      setManual(loc);
+      setEditing(false);
+      setQuery("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't find that location");
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const clearManual = () => {
+    localStorage.removeItem("weather:manual");
+    setManual(null);
+  };
 
   return (
     <section className="bamboo-card p-5 relative overflow-hidden">
       <div className="absolute -top-12 -right-10 h-40 w-40 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
-      <header className="flex items-center justify-between mb-4 relative">
+      <header className="flex items-center justify-between mb-4 relative gap-2">
         <div className="flex items-center gap-2">
           <Leaf className="h-4 w-4 text-primary" />
           <h2 className="font-display text-lg">Today's weather</h2>
         </div>
-        <span className="text-xs text-muted-foreground truncate max-w-[50%] text-right">
-          {data?.location ?? (isLoading || !coords ? "Locating…" : "—")}
-        </span>
+        <button
+          type="button"
+          onClick={() => setEditing((v) => !v)}
+          className="text-xs text-muted-foreground hover:text-foreground truncate max-w-[55%] text-right underline-offset-2 hover:underline"
+          title="Set location"
+        >
+          {manual?.label ?? data?.location ?? (isLoading || !activeCoords ? "Set location" : "—")}
+        </button>
       </header>
+
+      {editing && (
+        <form onSubmit={submitManual} className="mb-3 flex gap-2 relative">
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="City, ZIP, or 'Paris, FR'"
+            className="h-9"
+            autoFocus
+          />
+          <Button type="submit" size="sm" disabled={!query.trim() || searching}>
+            {searching ? "…" : "Set"}
+          </Button>
+          {manual && (
+            <Button type="button" size="sm" variant="ghost" onClick={clearManual}>
+              Use GPS
+            </Button>
+          )}
+        </form>
+      )}
 
       {fatal && !data ? (
         <div className="flex items-center gap-3 text-sm text-muted-foreground py-4">
           <CloudOff className="h-5 w-5 shrink-0" />
           <span className="text-xs">
-            {geoError ? "Allow location access to see live weather." : "Couldn't reach the weather service."}
+            {geoError
+              ? "Location blocked. Tap the location label above to set one manually."
+              : "Couldn't reach the weather service."}
           </span>
         </div>
       ) : !data ? (
