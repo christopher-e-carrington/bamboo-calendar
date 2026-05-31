@@ -15,6 +15,7 @@ const PALETTE = ["#7BA37A", "#A7C29A", "#C9A36B", "#E8B774", "#9CB89A", "#B58A6B
 export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode }) {
   const { profiles, familyProfile, addProfile, removeProfile } = useHousehold();
   const [open, setOpen] = useState(false);
+  const [showInvites, setShowInvites] = useState(false);
   const [name, setName] = useState("");
   const [role, setRole] = useState<ProfileRole>("kid");
   const [color, setColor] = useState(PALETTE[3]);
