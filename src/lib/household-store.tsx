@@ -409,10 +409,12 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
 
   const contactsQ = useQuery({
     queryKey: ["contacts", householdId],
+    enabled: !!membershipQ.data,
     queryFn: async (): Promise<Contact[]> => {
       const { data, error } = await supabase
         .from("contacts")
         .select("*")
+        .eq("owner_id", householdId)
         .order("name", { ascending: true });
       if (error) throw error;
       return (data ?? []) as Contact[];
