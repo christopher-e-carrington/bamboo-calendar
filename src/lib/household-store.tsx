@@ -110,12 +110,32 @@ const Ctx = createContext<HouseholdState | null>(null);
 export function HouseholdProvider({ children, user }: { children: ReactNode; user: User }) {
   const qc = useQueryClient();
 
+  // Determine which household this user belongs to. If they have joined
+  // someone else's household via invitation, use that; otherwise they are
+  // the creator of their own household (household_id = their user.id).
+  const membershipQ = useQuery({
+    queryKey: ["my-household", user.id],
+    queryFn: async (): Promise<string> => {
+      const { data, error } = await supabase
+        .from("household_members")
+        .select("household_id")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true })
+        .limit(1);
+      if (error) throw error;
+      return (data?.[0]?.household_id as string | undefined) ?? user.id;
+    },
+  });
+  const householdId = membershipQ.data ?? user.id;
+
   const profilesQ = useQuery({
-    queryKey: ["profiles", user.id],
+    queryKey: ["profiles", householdId],
+    enabled: !!membershipQ.data,
     queryFn: async (): Promise<Profile[]> => {
       const { data, error } = await supabase
         .from("household_profiles")
         .select("*")
+        .eq("owner_id", householdId)
         .order("sort_order", { ascending: true });
       if (error) throw error;
       return (data ?? []) as Profile[];
@@ -123,11 +143,13 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   });
 
   const eventsQ = useQuery({
-    queryKey: ["events", user.id],
+    queryKey: ["events", householdId],
+    enabled: !!membershipQ.data,
     queryFn: async (): Promise<CalendarEvent[]> => {
       const { data, error } = await supabase
         .from("events")
         .select("*")
+        .eq("owner_id", householdId)
         .order("start_at", { ascending: true });
       if (error) throw error;
       return (data ?? []) as CalendarEvent[];
@@ -135,11 +157,13 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   });
 
   const tasksQ = useQuery({
-    queryKey: ["tasks", user.id],
+    queryKey: ["tasks", householdId],
+    enabled: !!membershipQ.data,
     queryFn: async (): Promise<TaskItem[]> => {
       const { data, error } = await supabase
         .from("tasks")
         .select("*")
+        .eq("owner_id", householdId)
         .order("created_at", { ascending: true });
       if (error) throw error;
       return (data ?? []) as TaskItem[];
