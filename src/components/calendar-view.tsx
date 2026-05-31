@@ -98,6 +98,24 @@ export function CalendarView() {
     return m;
   }, [expanded]);
 
+  const { data: memoryDays } = useQuery({
+    queryKey: ["memories-days", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("memories").select("memory_date");
+      if (error) throw error;
+      const set = new Set<string>();
+      for (const row of data ?? []) {
+        const [y, m, d] = (row.memory_date as string).split("-").map(Number);
+        set.add(`${y}-${m - 1}-${d}`);
+      }
+      return set;
+    },
+    enabled: !!user,
+  });
+  const hasMemory = (d: Date) => memoryDays?.has(dayKey(d)) ?? false;
+
+
+
   const shift = (dir: -1 | 1) => {
     const x = new Date(cursor);
     if (mode === "day") x.setDate(x.getDate() + dir);
