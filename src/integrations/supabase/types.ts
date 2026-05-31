@@ -142,6 +142,72 @@ export type Database = {
         }
         Relationships: []
       }
+      household_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          expires_at: string
+          household_id: string
+          id: string
+          invited_email: string | null
+          invited_name: string | null
+          status: string
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          expires_at?: string
+          household_id: string
+          id?: string
+          invited_email?: string | null
+          invited_name?: string | null
+          status?: string
+          token: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          expires_at?: string
+          household_id?: string
+          id?: string
+          invited_email?: string | null
+          invited_name?: string | null
+          status?: string
+          token?: string
+        }
+        Relationships: []
+      }
+      household_members: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          household_id: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          household_id: string
+          id?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          household_id?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       household_profiles: {
         Row: {
           color: string
@@ -406,7 +472,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      accept_invitation: {
+        Args: {
+          _address?: string
+          _birthday?: string
+          _email?: string
+          _name: string
+          _phone?: string
+          _token: string
+        }
+        Returns: string
+      }
+      get_invitation_by_token: {
+        Args: { _token: string }
+        Returns: {
+          expires_at: string
+          household_id: string
+          household_name: string
+          id: string
+          invited_email: string
+          invited_name: string
+          status: string
+        }[]
+      }
+      is_household_member: {
+        Args: { _household: string; _user: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
