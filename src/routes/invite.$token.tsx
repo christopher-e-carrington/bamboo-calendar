@@ -121,7 +121,15 @@ function InvitePage() {
     }
     setAccepting(true);
     try {
-      const { error } = await supabase.rpc("accept_invitation", {
+      // Confirm we actually have a session — accept_invitation requires
+      // auth.uid(); without it the RPC throws "Not authenticated".
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        toast.error("You're not signed in. Create your account above, then try again.");
+        return;
+      }
+
+      const { data, error } = await supabase.rpc("accept_invitation", {
         _token: token,
         _name: parsed.data.name,
         _phone: parsed.data.phone || undefined,
@@ -129,11 +137,22 @@ function InvitePage() {
         _birthday: parsed.data.birthday || undefined,
         _email: email || undefined,
       });
-      if (error) throw error;
+      if (error) {
+        console.error("[invite] accept_invitation error:", error);
+        throw error;
+      }
+      console.log("[invite] joined household:", data);
       toast.success("Welcome to the household 🌿");
       navigate({ to: "/" });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not accept invitation");
+      console.error("[invite] accept failed:", e);
+      const msg =
+        e instanceof Error
+          ? e.message
+          : typeof e === "object" && e && "message" in e
+            ? String((e as { message: unknown }).message)
+            : "Could not accept invitation";
+      toast.error(msg);
     } finally {
       setAccepting(false);
     }
