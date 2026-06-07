@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EventDialog } from "./event-dialog";
 import { ProgressDashboard } from "./progress-dashboard";
 import { toast } from "sonner";
+import { TaskDetailsDialog } from "./task-details-dialog";
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
