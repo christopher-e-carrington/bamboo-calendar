@@ -9,6 +9,7 @@ import { Plus, Trash2, Repeat, ListChecks } from "lucide-react";
 import { ProfileAvatar } from "./profile-avatar";
 import { ProgressDashboard } from "./progress-dashboard";
 import { toast } from "sonner";
+import { TaskDetailsDialog } from "./task-details-dialog";
 
 const TIER_LABEL: Record<Tier, string> = {
   daily: "Daily",
