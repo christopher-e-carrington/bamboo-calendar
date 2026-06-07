@@ -192,15 +192,23 @@ export function Dashboard() {
                     className="group flex items-center gap-3 rounded-lg p-2.5 hover:bg-secondary/60 transition-colors"
                   >
                     <Checkbox checked={t.done} onCheckedChange={(v) => toggleTask(t.id, Boolean(v))} />
-                    <span className={`flex-1 text-sm flex items-center gap-1.5 ${t.done ? "line-through text-muted-foreground" : ""}`}>
-                      {t.title}
-                      {t.recurrence && t.recurrence !== "none" && (
-                        <span className="inline-flex items-center gap-0.5 text-[10px] uppercase tracking-wide text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded-full">
-                          <Repeat className="h-2.5 w-2.5" />
-                          {t.recurrence}
-                        </span>
-                      )}
-                    </span>
+                    <TaskDetailsDialog
+                      task={t}
+                      trigger={
+                        <button
+                          type="button"
+                          className={`flex-1 text-left text-sm flex items-center gap-1.5 hover:text-primary transition-colors ${t.done ? "line-through text-muted-foreground" : ""}`}
+                        >
+                          {t.title}
+                          {t.recurrence && t.recurrence !== "none" && (
+                            <span className="inline-flex items-center gap-0.5 text-[10px] uppercase tracking-wide text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded-full">
+                              <Repeat className="h-2.5 w-2.5" />
+                              {t.recurrence}
+                            </span>
+                          )}
+                        </button>
+                      }
+                    />
                     {p && <ProfileAvatar profile={p} size={22} />}
                     <button
                       onClick={() => deleteTask(t.id)}
