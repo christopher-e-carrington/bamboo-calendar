@@ -9,6 +9,7 @@ import { Plus, Trash2, Repeat, ListChecks } from "lucide-react";
 import { ProfileAvatar } from "./profile-avatar";
 import { ProgressDashboard } from "./progress-dashboard";
 import { toast } from "sonner";
+import { TaskDetailsDialog } from "./task-details-dialog";
 
 const TIER_LABEL: Record<Tier, string> = {
   daily: "Daily",
@@ -199,15 +200,23 @@ export function TasksPage() {
                           className="group flex items-center gap-3 rounded-lg p-2.5 hover:bg-secondary/60 transition-colors border border-transparent hover:border-border"
                         >
                           <Checkbox checked={task.done} onCheckedChange={(v) => toggleTask(task.id, Boolean(v))} />
-                          <span className={`flex-1 text-sm flex items-center gap-1.5 ${task.done ? "line-through text-muted-foreground" : ""}`}>
-                            {task.title}
-                            {task.recurrence && task.recurrence !== "none" && (
-                              <span className="inline-flex items-center gap-0.5 text-[10px] uppercase tracking-wide text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded-full">
-                                <Repeat className="h-2.5 w-2.5" />
-                                {recurrenceLabel(task.recurrence, task.due_at ?? null)}
-                              </span>
-                            )}
-                          </span>
+                          <TaskDetailsDialog
+                            task={task}
+                            trigger={
+                              <button
+                                type="button"
+                                className={`flex-1 text-left text-sm flex items-center gap-1.5 hover:text-primary transition-colors ${task.done ? "line-through text-muted-foreground" : ""}`}
+                              >
+                                {task.title}
+                                {task.recurrence && task.recurrence !== "none" && (
+                                  <span className="inline-flex items-center gap-0.5 text-[10px] uppercase tracking-wide text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded-full">
+                                    <Repeat className="h-2.5 w-2.5" />
+                                    {recurrenceLabel(task.recurrence, task.due_at ?? null)}
+                                  </span>
+                                )}
+                              </button>
+                            }
+                          />
                           {p && <ProfileAvatar profile={p} size={22} />}
                           <button
                             onClick={() => deleteTask(task.id)}
