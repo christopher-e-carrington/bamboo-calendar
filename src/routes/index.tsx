@@ -8,6 +8,7 @@ import { ProfileHomeScreen } from "@/components/profile-home-screen";
 import { CalendarView } from "@/components/calendar-view";
 import { ContactsPage } from "@/components/contacts-page";
 import { TasksPage } from "@/components/tasks-page";
+import { RoutinesPage } from "@/components/routines-page";
 import { GoalsPage } from "@/components/goals-page";
 import { MealsPage } from "@/components/meals-page";
 import { ShoppingListPage } from "@/components/shopping-list-page";
@@ -65,6 +66,8 @@ function Index() {
                 <ContactsPage />
               ) : active === "tasks" ? (
                 <TasksPage />
+              ) : active === "routines" ? (
+                <RoutinesPage />
               ) : active === "goals" ? (
                 <GoalsPage />
               ) : active === "meals" ? (

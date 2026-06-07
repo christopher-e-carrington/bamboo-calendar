@@ -393,6 +393,53 @@ export type Database = {
         }
         Relationships: []
       }
+      routines: {
+        Row: {
+          created_at: string
+          id: string
+          items: Json
+          name: string
+          notes: string | null
+          owner_id: string
+          profile_id: string
+          recurrence: string
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          items?: Json
+          name: string
+          notes?: string | null
+          owner_id: string
+          profile_id: string
+          recurrence?: string
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          items?: Json
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          profile_id?: string
+          recurrence?: string
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "routines_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "household_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shopping_items: {
         Row: {
           created_at: string
