@@ -177,7 +177,12 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     profiles.find((p) => p.name.toLowerCase() === "household") ??
     profiles.find((p) => p.name.toLowerCase() === "family") ??
     profiles[0];
-  const [activeProfileId, setActiveProfileId] = useState<string>("");
+  const defaultKey = `bamboo.defaultProfile.${user.id}`;
+  const [activeProfileId, setActiveProfileIdState] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    return window.localStorage.getItem(defaultKey) ?? "";
+  });
+  const setActiveProfileId = (id: string) => setActiveProfileIdState(id);
   const effectiveActiveId = activeProfileId || familyProfile?.id || "";
   const activeProfile = profiles.find((p) => p.id === effectiveActiveId);
 
