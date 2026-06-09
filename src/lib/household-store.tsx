@@ -486,6 +486,8 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     isHouseholdOwner: householdId === user.id,
     activeProfileId: effectiveActiveId,
     setActiveProfileId,
+    defaultProfileId,
+    setDefaultProfileId,
     toggleTask: (id, done) => toggleMut.mutate({ id, done }),
     visibleEvents,
     visibleTasks,
