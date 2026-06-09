@@ -2,9 +2,9 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 
 export const THEMES = [
   { id: "parchment", name: "Parchment", description: "Warm cream, bamboo greens. The original.", swatches: ["#f6f1e4", "#7a9a72", "#c2a878", "#4a5a3c"] },
-  { id: "fauna", name: "Fauna", description: "Deep walnut, copper and amber.", swatches: ["#2a1f17", "#6b4a2b", "#c98c4a", "#e8c884"] },
-  { id: "flora", name: "Flora", description: "Sage backdrop, mossy greens and earth.", swatches: ["#cfd8c2", "#5e7a4f", "#8a6b46", "#2f3a26"] },
-  { id: "sky", name: "Sky", description: "Soft blues, ocean accents.", swatches: ["#eaf2fa", "#6fa4d6", "#2e6ea6", "#1c3a5e"] },
+  { id: "fauna", name: "Fauna", description: "Deep walnut, copper, amber and forest moss.", swatches: ["#2a1f17", "#5a7045", "#c98c4a", "#e8c884"] },
+  { id: "flora", name: "Flora", description: "Sage, mossy greens, terracotta and seafoam.", swatches: ["#cfd8c2", "#5e7a4f", "#b86e52", "#4a9080"] },
+  { id: "sky", name: "Sky", description: "Soft blues, warm sand and seafoam.", swatches: ["#eaf2fa", "#6fa4d6", "#f2a882", "#4a9e8e"] },
   { id: "light", name: "Light", description: "Material light. Clean and neutral.", swatches: ["#ffffff", "#f5f5f5", "#1976d2", "#212121"] },
   { id: "dark", name: "Dark", description: "Material dark. Easy on the eyes.", swatches: ["#121212", "#1e1e1e", "#90caf9", "#e0e0e0"] },
 ] as const;
