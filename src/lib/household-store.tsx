@@ -76,6 +76,8 @@ interface HouseholdState {
   isHouseholdOwner: boolean;
   activeProfileId: string;
   setActiveProfileId: (id: string) => void;
+  defaultProfileId: string;
+  setDefaultProfileId: (id: string) => void;
   toggleTask: (id: string, done: boolean) => void;
   visibleEvents: CalendarEvent[];
   visibleTasks: TaskItem[];
@@ -177,7 +179,24 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     profiles.find((p) => p.name.toLowerCase() === "household") ??
     profiles.find((p) => p.name.toLowerCase() === "family") ??
     profiles[0];
-  const [activeProfileId, setActiveProfileId] = useState<string>("");
+  const defaultKey = `bamboo.defaultProfile.${user.id}`;
+  const [activeProfileId, setActiveProfileIdState] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    return window.localStorage.getItem(defaultKey) ?? "";
+  });
+  const setActiveProfileId = (id: string) => setActiveProfileIdState(id);
+  const [defaultProfileId, setDefaultProfileIdState] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    return window.localStorage.getItem(defaultKey) ?? "";
+  });
+  const setDefaultProfileId = (id: string) => {
+    setDefaultProfileIdState(id);
+    if (typeof window !== "undefined") {
+      if (id) window.localStorage.setItem(defaultKey, id);
+      else window.localStorage.removeItem(defaultKey);
+    }
+    setActiveProfileIdState(id);
+  };
   const effectiveActiveId = activeProfileId || familyProfile?.id || "";
   const activeProfile = profiles.find((p) => p.id === effectiveActiveId);
 
@@ -467,6 +486,8 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     isHouseholdOwner: householdId === user.id,
     activeProfileId: effectiveActiveId,
     setActiveProfileId,
+    defaultProfileId,
+    setDefaultProfileId,
     toggleTask: (id, done) => toggleMut.mutate({ id, done }),
     visibleEvents,
     visibleTasks,

@@ -133,6 +133,47 @@ function ViewMenu() {
   );
 }
 
+function DefaultProfileMenu() {
+  const { profiles, defaultProfileId, setDefaultProfileId, familyProfile } = useHousehold();
+  const current = defaultProfileId || familyProfile?.id || "";
+  return (
+    <div className="rounded-xl border border-border bg-background/60 p-3 space-y-3">
+      <div>
+        <div className="text-sm font-medium">Default profile</div>
+        <div className="text-xs text-muted-foreground">
+          Loads this profile each time you open the app. Saved to this device for your account.
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-2">
+        {profiles.map((p) => {
+          const active = current === p.id;
+          return (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => {
+                setDefaultProfileId(p.id);
+                toast.success(`Default profile: ${p.name}`);
+              }}
+              className={cn(
+                "flex items-center gap-3 rounded-lg border p-2.5 text-left transition-colors hover:border-primary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                active ? "border-primary bg-primary/5" : "border-border bg-background",
+              )}
+            >
+              <ProfileAvatar profile={p} size={32} />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium truncate">{p.name}</div>
+                <div className="text-xs text-muted-foreground capitalize">{p.role}</div>
+              </div>
+              {active && <Check className="h-4 w-4 text-primary" />}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode }) {
   const { profiles } = useHousehold();
   return (
@@ -148,10 +189,11 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
         <SheetHeader>
           <SheetTitle className="font-display">Settings</SheetTitle>
           <SheetDescription>
-            Manage profile PINs and choose how the app looks.
+            Manage profile PINs, default view, and how the app looks.
           </SheetDescription>
         </SheetHeader>
         <div className="mt-4 space-y-4">
+          <DefaultProfileMenu />
           <ViewMenu />
           <div className="space-y-3">
             <div className="text-xs uppercase tracking-wide text-muted-foreground px-1">Profiles</div>
