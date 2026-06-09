@@ -185,6 +185,18 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     return window.localStorage.getItem(defaultKey) ?? "";
   });
   const setActiveProfileId = (id: string) => setActiveProfileIdState(id);
+  const [defaultProfileId, setDefaultProfileIdState] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    return window.localStorage.getItem(defaultKey) ?? "";
+  });
+  const setDefaultProfileId = (id: string) => {
+    setDefaultProfileIdState(id);
+    if (typeof window !== "undefined") {
+      if (id) window.localStorage.setItem(defaultKey, id);
+      else window.localStorage.removeItem(defaultKey);
+    }
+    setActiveProfileIdState(id);
+  };
   const effectiveActiveId = activeProfileId || familyProfile?.id || "";
   const activeProfile = profiles.find((p) => p.id === effectiveActiveId);
 
