@@ -193,13 +193,13 @@
   --sidebar-ring: oklch(0.55 0.12 55);
 }
 
-/* Flora — sage backdrop, mossy greens + browns */
+/* Flora — sage backdrop, mossy greens, terracotta + seafoam */
 .theme-flora {
   --cream: oklch(0.92 0.04 135);
-  --sage: oklch(0.7 0.07 140);
-  --sage-deep: oklch(0.42 0.08 145);
-  --bamboo: oklch(0.55 0.1 140);
-  --bamboo-light: oklch(0.82 0.06 135);
+  --sage: oklch(0.68 0.08 145);
+  --sage-deep: oklch(0.4 0.09 150);
+  --bamboo: oklch(0.55 0.1 120);
+  --bamboo-light: oklch(0.82 0.06 125);
   --wood: oklch(0.5 0.1 55);
 
   --background: oklch(0.88 0.045 140);
@@ -210,12 +210,12 @@
   --popover-foreground: oklch(0.24 0.05 145);
   --primary: oklch(0.42 0.09 145);
   --primary-foreground: oklch(0.97 0.02 130);
-  --secondary: oklch(0.82 0.05 130);
-  --secondary-foreground: oklch(0.28 0.06 145);
-  --muted: oklch(0.85 0.04 135);
-  --muted-foreground: oklch(0.42 0.05 140);
-  --accent: oklch(0.6 0.1 55);
-  --accent-foreground: oklch(0.97 0.02 80);
+  --secondary: oklch(0.82 0.06 165);
+  --secondary-foreground: oklch(0.25 0.07 165);
+  --muted: oklch(0.83 0.05 160);
+  --muted-foreground: oklch(0.42 0.05 150);
+  --accent: oklch(0.72 0.12 30);
+  --accent-foreground: oklch(0.98 0.01 30);
   --border: oklch(0.78 0.05 135);
   --input: oklch(0.82 0.045 135);
   --ring: oklch(0.55 0.1 140);
@@ -224,8 +224,8 @@
   --sidebar-foreground: oklch(0.26 0.05 145);
   --sidebar-primary: oklch(0.42 0.09 145);
   --sidebar-primary-foreground: oklch(0.97 0.02 130);
-  --sidebar-accent: oklch(0.75 0.07 135);
-  --sidebar-accent-foreground: oklch(0.26 0.06 145);
+  --sidebar-accent: oklch(0.75 0.08 160);
+  --sidebar-accent-foreground: oklch(0.25 0.07 160);
   --sidebar-border: oklch(0.72 0.06 135);
   --sidebar-ring: oklch(0.55 0.1 140);
 }
