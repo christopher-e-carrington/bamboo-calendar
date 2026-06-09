@@ -76,6 +76,8 @@ interface HouseholdState {
   isHouseholdOwner: boolean;
   activeProfileId: string;
   setActiveProfileId: (id: string) => void;
+  defaultProfileId: string;
+  setDefaultProfileId: (id: string) => void;
   toggleTask: (id: string, done: boolean) => void;
   visibleEvents: CalendarEvent[];
   visibleTasks: TaskItem[];
