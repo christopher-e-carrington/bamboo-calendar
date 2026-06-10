@@ -131,6 +131,7 @@ export function RoutinesPage() {
         tier,
         items: cleanItems,
         notes: notes.trim() || null,
+        loaded_at: null,
       });
       toast.success("Routine created");
       setOpen(false);
