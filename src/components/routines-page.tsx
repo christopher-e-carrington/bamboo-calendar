@@ -28,6 +28,7 @@ interface Routine {
   tier: Tier;
   items: string[];
   notes: string | null;
+  loaded_at: string | null;
 }
 
 const HABIT_IDEAS = [
@@ -130,6 +131,7 @@ export function RoutinesPage() {
         tier,
         items: cleanItems,
         notes: notes.trim() || null,
+        loaded_at: null,
       });
       toast.success("Routine created");
       setOpen(false);
@@ -139,6 +141,10 @@ export function RoutinesPage() {
   };
 
   const loadIntoTodos = async (r: Routine) => {
+    if (r.loaded_at) {
+      toast.info(`"${r.name}" has already been loaded`);
+      return;
+    }
     try {
       const tier: Tier = r.recurrence === "none" ? "daily" : (r.tier ?? "daily");
       for (const title of r.items) {
@@ -150,6 +156,12 @@ export function RoutinesPage() {
           due_at: nextDueFor(r.recurrence),
         });
       }
+      const { error } = await (supabase as any)
+        .from("routines")
+        .update({ loaded_at: new Date().toISOString() })
+        .eq("id", r.id);
+      if (error) throw error;
+      qc.invalidateQueries({ queryKey: ["routines", householdId] });
       toast.success(`Added ${r.items.length} to-dos from "${r.name}"`);
     } catch {
       toast.error("Couldn't load routine into to-dos");
@@ -234,8 +246,14 @@ export function RoutinesPage() {
                       {r.notes && <p className="mt-2 text-xs text-muted-foreground italic">{r.notes}</p>}
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <Button size="sm" onClick={() => loadIntoTodos(r)} className="gap-1.5">
-                        <PlayCircle className="h-4 w-4" /> Load
+                      <Button
+                        size="sm"
+                        onClick={() => loadIntoTodos(r)}
+                        disabled={!!r.loaded_at}
+                        className="gap-1.5"
+                        title={r.loaded_at ? `Loaded ${new Date(r.loaded_at).toLocaleDateString()}` : "Load into to-dos"}
+                      >
+                        <PlayCircle className="h-4 w-4" /> {r.loaded_at ? "Loaded" : "Load"}
                       </Button>
                       <Button
                         size="sm"

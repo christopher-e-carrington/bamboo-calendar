@@ -1,0 +1,1 @@
+ALTER TABLE public.routines ADD COLUMN IF NOT EXISTS loaded_at timestamptz;
