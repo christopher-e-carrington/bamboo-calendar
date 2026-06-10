@@ -140,6 +140,10 @@ export function RoutinesPage() {
   };
 
   const loadIntoTodos = async (r: Routine) => {
+    if (r.loaded_at) {
+      toast.info(`"${r.name}" has already been loaded`);
+      return;
+    }
     try {
       const tier: Tier = r.recurrence === "none" ? "daily" : (r.tier ?? "daily");
       for (const title of r.items) {
@@ -151,6 +155,12 @@ export function RoutinesPage() {
           due_at: nextDueFor(r.recurrence),
         });
       }
+      const { error } = await (supabase as any)
+        .from("routines")
+        .update({ loaded_at: new Date().toISOString() })
+        .eq("id", r.id);
+      if (error) throw error;
+      qc.invalidateQueries({ queryKey: ["routines", householdId] });
       toast.success(`Added ${r.items.length} to-dos from "${r.name}"`);
     } catch {
       toast.error("Couldn't load routine into to-dos");
