@@ -164,6 +164,10 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
                 ))}
               </div>
             </div>
+            <div className="col-span-2">
+              <Label className="text-xs">Birthday (optional)</Label>
+              <Input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} />
+            </div>
           </div>
           <Button onClick={submit} disabled={!name.trim() || busy} className="w-full gap-1.5">
             <Plus className="h-4 w-4" /> Add profile
