@@ -545,6 +545,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     familyProfile,
     loading: profilesQ.isLoading || eventsQ.isLoading || tasksQ.isLoading,
     addProfile: (input) => addMut.mutateAsync(input).then(() => undefined),
+    updateProfile: (id, patch) => updateProfileMut.mutateAsync({ id, patch }).then(() => undefined),
     removeProfile: (id) => removeMut.mutateAsync(id).then(() => undefined),
     setProfilePin: (id, pin) => setPinMut.mutateAsync({ id, pin }).then(() => undefined),
     addEvent: (input) => addEventMut.mutateAsync(input).then(() => undefined),
