@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useHousehold, type Profile } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
-import { Lock, LockOpen, Settings2, Check, Palette } from "lucide-react";
+import { Lock, LockOpen, Settings2, Check, Palette, ChevronDown, User, Eye, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { THEMES, useTheme, type ThemeId } from "@/lib/theme-store";
 import { cn } from "@/lib/utils";
@@ -174,6 +174,43 @@ function DefaultProfileMenu() {
   );
 }
 
+function SettingsSection({
+  title,
+  icon: Icon,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="rounded-xl border border-border bg-background/60 overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center gap-3 p-3 text-left transition-colors hover:bg-muted/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          <Icon className="h-4 w-4 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium">{title}</div>
+        </div>
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 text-muted-foreground transition-transform shrink-0",
+            open && "rotate-180"
+          )}
+        />
+      </button>
+      {open && <div className="px-3 pb-3 border-t border-border/60 space-y-3">{children}</div>}
+    </div>
+  );
+}
+
 export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode }) {
   const { profiles } = useHousehold();
   return (
@@ -189,18 +226,23 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
         <SheetHeader>
           <SheetTitle className="font-display">Settings</SheetTitle>
           <SheetDescription>
-            Manage profile PINs, default view, and how the app looks.
+            Manage your default view, appearance, and profile security.
           </SheetDescription>
         </SheetHeader>
-        <div className="mt-4 space-y-4">
-          <DefaultProfileMenu />
-          <ViewMenu />
-          <div className="space-y-3">
-            <div className="text-xs uppercase tracking-wide text-muted-foreground px-1">Profiles</div>
-            {profiles.map((p) => (
-              <PinRow key={p.id} profile={p} />
-            ))}
-          </div>
+        <div className="mt-4 space-y-3">
+          <SettingsSection title="Default profile" icon={User} defaultOpen>
+            <DefaultProfileMenu />
+          </SettingsSection>
+          <SettingsSection title="View" icon={Eye}>
+            <ViewMenu />
+          </SettingsSection>
+          <SettingsSection title="Profile PINs" icon={Shield}>
+            <div className="space-y-3">
+              {profiles.map((p) => (
+                <PinRow key={p.id} profile={p} />
+              ))}
+            </div>
+          </SettingsSection>
         </div>
       </SheetContent>
     </Sheet>
