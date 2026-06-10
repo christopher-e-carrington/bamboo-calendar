@@ -13,25 +13,36 @@ import { HouseholdInvites } from "./household-invites";
 const PALETTE = ["#7BA37A", "#A7C29A", "#C9A36B", "#E8B774", "#9CB89A", "#B58A6B", "#8FB4C8", "#D49AA6"];
 
 export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode }) {
-  const { profiles, familyProfile, addProfile, removeProfile } = useHousehold();
+  const { profiles, familyProfile, addProfile, updateProfile, removeProfile } = useHousehold();
   const [open, setOpen] = useState(false);
   const [showInvites, setShowInvites] = useState(false);
   const [name, setName] = useState("");
   const [role, setRole] = useState<ProfileRole>("kid");
   const [color, setColor] = useState(PALETTE[3]);
+  const [birthday, setBirthday] = useState("");
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
     if (!name.trim()) return;
     setBusy(true);
     try {
-      await addProfile({ name, role, color });
+      await addProfile({ name, role, color, birthday: birthday || null });
       toast.success(`${name} added`);
       setName("");
+      setBirthday("");
     } catch (e) {
       toast.error("Could not add profile");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const saveBirthday = async (id: string, value: string) => {
+    try {
+      await updateProfile(id, { birthday: value || null });
+      toast.success("Birthday saved");
+    } catch {
+      toast.error("Could not save birthday");
     }
   };
 
