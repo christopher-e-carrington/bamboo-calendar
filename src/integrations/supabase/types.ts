@@ -210,6 +210,7 @@ export type Database = {
       }
       household_profiles: {
         Row: {
+          birthday: string | null
           color: string
           created_at: string
           id: string
@@ -221,6 +222,7 @@ export type Database = {
           sort_order: number
         }
         Insert: {
+          birthday?: string | null
           color?: string
           created_at?: string
           id?: string
@@ -232,6 +234,7 @@ export type Database = {
           sort_order?: number
         }
         Update: {
+          birthday?: string | null
           color?: string
           created_at?: string
           id?: string

@@ -13,25 +13,36 @@ import { HouseholdInvites } from "./household-invites";
 const PALETTE = ["#7BA37A", "#A7C29A", "#C9A36B", "#E8B774", "#9CB89A", "#B58A6B", "#8FB4C8", "#D49AA6"];
 
 export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode }) {
-  const { profiles, familyProfile, addProfile, removeProfile } = useHousehold();
+  const { profiles, familyProfile, addProfile, updateProfile, removeProfile } = useHousehold();
   const [open, setOpen] = useState(false);
   const [showInvites, setShowInvites] = useState(false);
   const [name, setName] = useState("");
   const [role, setRole] = useState<ProfileRole>("kid");
   const [color, setColor] = useState(PALETTE[3]);
+  const [birthday, setBirthday] = useState("");
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
     if (!name.trim()) return;
     setBusy(true);
     try {
-      await addProfile({ name, role, color });
+      await addProfile({ name, role, color, birthday: birthday || null });
       toast.success(`${name} added`);
       setName("");
+      setBirthday("");
     } catch (e) {
       toast.error("Could not add profile");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const saveBirthday = async (id: string, value: string) => {
+    try {
+      await updateProfile(id, { birthday: value || null });
+      toast.success("Birthday saved");
+    } catch {
+      toast.error("Could not save birthday");
     }
   };
 
@@ -59,7 +70,7 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
           <DialogTitle className="font-display">Household profiles</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-2 max-h-60 overflow-y-auto -mx-1 px-1">
+        <div className="space-y-2 max-h-72 overflow-y-auto -mx-1 px-1">
           {profiles.map((p) => {
             const isHousehold = p.id === familyProfile?.id;
             return (
@@ -70,6 +81,20 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
                   <div className="text-xs text-muted-foreground capitalize">
                     {isHousehold ? "shared · combined view" : p.role}
                   </div>
+                  {!isHousehold && (
+                    <div className="pt-1.5 flex items-center gap-1.5">
+                      <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Birthday</Label>
+                      <Input
+                        type="date"
+                        defaultValue={p.birthday ?? ""}
+                        onBlur={(e) => {
+                          const v = e.target.value;
+                          if ((p.birthday ?? "") !== v) saveBirthday(p.id, v);
+                        }}
+                        className="h-7 text-xs flex-1"
+                      />
+                    </div>
+                  )}
                 </div>
                 <Button
                   size="icon"
@@ -138,6 +163,10 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
                   />
                 ))}
               </div>
+            </div>
+            <div className="col-span-2">
+              <Label className="text-xs">Birthday (optional)</Label>
+              <Input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} />
             </div>
           </div>
           <Button onClick={submit} disabled={!name.trim() || busy} className="w-full gap-1.5">
