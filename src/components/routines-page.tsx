@@ -28,6 +28,7 @@ interface Routine {
   tier: Tier;
   items: string[];
   notes: string | null;
+  loaded_at: string | null;
 }
 
 const HABIT_IDEAS = [

@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -202,6 +202,38 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
 
   const events = eventsQ.data ?? [];
   const tasks = tasksQ.data ?? [];
+
+  // Auto-cleanup: remove uncompleted recurring tasks whose due date passed.
+  // One-time tasks (recurrence === "none") are left alone so users can still
+  // finish or delete them on their own time.
+  const cleanupRanRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!tasksQ.data || !householdId) return;
+    const todayKey = new Date().toDateString();
+    if (cleanupRanRef.current === `${householdId}:${todayKey}`) return;
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const stale = (tasksQ.data ?? []).filter(
+      (t) =>
+        !t.done &&
+        t.recurrence &&
+        t.recurrence !== "none" &&
+        t.due_at &&
+        new Date(t.due_at) < startOfToday,
+    );
+    if (stale.length === 0) {
+      cleanupRanRef.current = `${householdId}:${todayKey}`;
+      return;
+    }
+    cleanupRanRef.current = `${householdId}:${todayKey}`;
+    (async () => {
+      const { error } = await supabase
+        .from("tasks")
+        .delete()
+        .in("id", stale.map((t) => t.id));
+      if (!error) qc.invalidateQueries({ queryKey: ["tasks", householdId] });
+    })();
+  }, [tasksQ.data, householdId, qc]);
 
   const includesProfile = (e: CalendarEvent, id: string) =>
     (e.profile_ids?.length ? e.profile_ids.includes(id) : e.profile_id === id);
