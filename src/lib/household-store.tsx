@@ -13,6 +13,7 @@ export interface Profile {
   initials: string;
   pin?: string | null;
   sort_order: number;
+  birthday?: string | null;
 }
 
 export interface CalendarEvent {
