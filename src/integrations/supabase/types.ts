@@ -398,6 +398,7 @@ export type Database = {
           created_at: string
           id: string
           items: Json
+          loaded_at: string | null
           name: string
           notes: string | null
           owner_id: string
@@ -410,6 +411,7 @@ export type Database = {
           created_at?: string
           id?: string
           items?: Json
+          loaded_at?: string | null
           name: string
           notes?: string | null
           owner_id: string
@@ -422,6 +424,7 @@ export type Database = {
           created_at?: string
           id?: string
           items?: Json
+          loaded_at?: string | null
           name?: string
           notes?: string | null
           owner_id?: string
