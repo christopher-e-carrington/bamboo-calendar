@@ -246,8 +246,14 @@ export function RoutinesPage() {
                       {r.notes && <p className="mt-2 text-xs text-muted-foreground italic">{r.notes}</p>}
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <Button size="sm" onClick={() => loadIntoTodos(r)} className="gap-1.5">
-                        <PlayCircle className="h-4 w-4" /> Load
+                      <Button
+                        size="sm"
+                        onClick={() => loadIntoTodos(r)}
+                        disabled={!!r.loaded_at}
+                        className="gap-1.5"
+                        title={r.loaded_at ? `Loaded ${new Date(r.loaded_at).toLocaleDateString()}` : "Load into to-dos"}
+                      >
+                        <PlayCircle className="h-4 w-4" /> {r.loaded_at ? "Loaded" : "Load"}
                       </Button>
                       <Button
                         size="sm"
