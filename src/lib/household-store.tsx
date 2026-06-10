@@ -296,7 +296,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   });
 
   const addMut = useMutation({
-    mutationFn: async (input: { name: string; role: ProfileRole; color: string }) => {
+    mutationFn: async (input: { name: string; role: ProfileRole; color: string; birthday?: string | null }) => {
       const initials = input.name.trim().slice(0, 2).toUpperCase() || "NP";
       const sort_order = (profiles.at(-1)?.sort_order ?? 0) + 1;
       const { error } = await supabase.from("household_profiles").insert({
@@ -306,10 +306,25 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
         color: input.color,
         initials,
         sort_order,
-      });
+        birthday: input.birthday ?? null,
+      } as any);
       if (error) throw error;
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["profiles", householdId] }),
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["profiles", householdId] });
+      qc.invalidateQueries({ queryKey: ["events", householdId] });
+    },
+  });
+
+  const updateProfileMut = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: { name?: string; role?: ProfileRole; color?: string; birthday?: string | null } }) => {
+      const { error } = await supabase.from("household_profiles").update(patch as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["profiles", householdId] });
+      qc.invalidateQueries({ queryKey: ["events", householdId] });
+    },
   });
 
   const removeMut = useMutation({
