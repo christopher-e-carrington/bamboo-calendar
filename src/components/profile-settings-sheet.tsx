@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useHousehold, type Profile } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
-import { Lock, LockOpen, Settings2, Check, Palette } from "lucide-react";
+import { Lock, LockOpen, Settings2, Check, Palette, ChevronDown, User, Eye, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { THEMES, useTheme, type ThemeId } from "@/lib/theme-store";
 import { cn } from "@/lib/utils";
