@@ -70,7 +70,7 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
           <DialogTitle className="font-display">Household profiles</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-2 max-h-60 overflow-y-auto -mx-1 px-1">
+        <div className="space-y-2 max-h-72 overflow-y-auto -mx-1 px-1">
           {profiles.map((p) => {
             const isHousehold = p.id === familyProfile?.id;
             return (
@@ -81,6 +81,20 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
                   <div className="text-xs text-muted-foreground capitalize">
                     {isHousehold ? "shared · combined view" : p.role}
                   </div>
+                  {!isHousehold && (
+                    <div className="pt-1.5 flex items-center gap-1.5">
+                      <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Birthday</Label>
+                      <Input
+                        type="date"
+                        defaultValue={p.birthday ?? ""}
+                        onBlur={(e) => {
+                          const v = e.target.value;
+                          if ((p.birthday ?? "") !== v) saveBirthday(p.id, v);
+                        }}
+                        className="h-7 text-xs flex-1"
+                      />
+                    </div>
+                  )}
                 </div>
                 <Button
                   size="icon"
