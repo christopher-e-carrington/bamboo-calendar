@@ -50,6 +50,51 @@ export type Database = {
         }
         Relationships: []
       }
+      documents: {
+        Row: {
+          created_at: string
+          details: string | null
+          doc_date: string | null
+          file_name: string | null
+          file_path: string | null
+          id: string
+          mime_type: string | null
+          name: string
+          notes: string | null
+          owner_id: string
+          size_bytes: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          doc_date?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          mime_type?: string | null
+          name: string
+          notes?: string | null
+          owner_id: string
+          size_bytes?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          doc_date?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          mime_type?: string | null
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          size_bytes?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           contact_id: string | null
@@ -360,6 +405,42 @@ export type Database = {
           photo_url?: string | null
           profile_id?: string | null
           title?: string
+        }
+        Relationships: []
+      }
+      passwords: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          password: string | null
+          site_name: string
+          updated_at: string
+          url: string | null
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          password?: string | null
+          site_name: string
+          updated_at?: string
+          url?: string | null
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          password?: string | null
+          site_name?: string
+          updated_at?: string
+          url?: string | null
+          username?: string | null
         }
         Relationships: []
       }
