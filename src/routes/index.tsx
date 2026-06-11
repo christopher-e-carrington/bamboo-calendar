@@ -7,6 +7,8 @@ import { TopNav } from "@/components/top-nav";
 import { ProfileHomeScreen } from "@/components/profile-home-screen";
 import { CalendarView } from "@/components/calendar-view";
 import { ContactsPage } from "@/components/contacts-page";
+import { DocumentsPage } from "@/components/documents-page";
+import { PasswordsPage } from "@/components/passwords-page";
 import { TasksPage } from "@/components/tasks-page";
 import { RoutinesPage } from "@/components/routines-page";
 import { GoalsPage } from "@/components/goals-page";
@@ -64,6 +66,10 @@ function Index() {
                 <CalendarView />
               ) : active === "contacts" ? (
                 <ContactsPage />
+              ) : active === "documents" ? (
+                <DocumentsPage />
+              ) : active === "passwords" ? (
+                <PasswordsPage />
               ) : active === "tasks" ? (
                 <TasksPage />
               ) : active === "routines" ? (
