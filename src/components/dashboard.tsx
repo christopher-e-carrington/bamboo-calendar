@@ -58,6 +58,10 @@ export function Dashboard() {
   });
 
   const findProfile = (id: string) => profiles.find((p) => p.id === id);
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+  const todaysTasks = visibleTasks.filter((t) => !t.due_at || new Date(t.due_at) <= endOfToday);
+  const openTodayCount = todaysTasks.filter((t) => !t.done).length;
   const isFamilyView = activeProfile.id === familyProfile?.id;
 
   return (
@@ -72,7 +76,7 @@ export function Dashboard() {
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {sorted.length} upcoming {sorted.length === 1 ? "event" : "events"} ·{" "}
-              {visibleTasks.filter((t) => !t.done).length} open tasks
+              {openTodayCount} open tasks today
             </p>
           </div>
           <EventDialog
@@ -142,7 +146,7 @@ export function Dashboard() {
           <header className="flex items-center justify-between mb-4">
             <h2 className="font-display text-lg">Tasks</h2>
             <div className="text-xs text-muted-foreground">
-              {visibleTasks.filter((t) => !t.done).length} open
+              {openTodayCount} open today
             </div>
           </header>
 
@@ -180,11 +184,11 @@ export function Dashboard() {
             </Select>
           </form>
 
-          {visibleTasks.length === 0 ? (
+          {todaysTasks.length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">Nothing on the list.</p>
           ) : (
             <ul className="space-y-2">
-              {visibleTasks.map((t) => {
+              {todaysTasks.map((t) => {
                 const p = findProfile(t.profile_id);
                 return (
                   <li
