@@ -58,6 +58,10 @@ export function Dashboard() {
   });
 
   const findProfile = (id: string) => profiles.find((p) => p.id === id);
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+  const todaysTasks = visibleTasks.filter((t) => !t.due_at || new Date(t.due_at) <= endOfToday);
+  const openTodayCount = todaysTasks.filter((t) => !t.done).length;
   const isFamilyView = activeProfile.id === familyProfile?.id;
 
   return (
