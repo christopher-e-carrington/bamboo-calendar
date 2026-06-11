@@ -76,7 +76,7 @@ export function Dashboard() {
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {sorted.length} upcoming {sorted.length === 1 ? "event" : "events"} ·{" "}
-              {visibleTasks.filter((t) => !t.done).length} open tasks
+              {openTodayCount} open tasks today
             </p>
           </div>
           <EventDialog
