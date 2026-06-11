@@ -146,7 +146,7 @@ export function Dashboard() {
           <header className="flex items-center justify-between mb-4">
             <h2 className="font-display text-lg">Tasks</h2>
             <div className="text-xs text-muted-foreground">
-              {visibleTasks.filter((t) => !t.done).length} open
+              {openTodayCount} open today
             </div>
           </header>
 
