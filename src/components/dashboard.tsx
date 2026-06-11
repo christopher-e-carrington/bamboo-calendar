@@ -184,11 +184,11 @@ export function Dashboard() {
             </Select>
           </form>
 
-          {visibleTasks.length === 0 ? (
+          {todaysTasks.length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">Nothing on the list.</p>
           ) : (
             <ul className="space-y-2">
-              {visibleTasks.map((t) => {
+              {todaysTasks.map((t) => {
                 const p = findProfile(t.profile_id);
                 return (
                   <li
