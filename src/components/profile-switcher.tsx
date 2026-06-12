@@ -54,7 +54,6 @@ export function ProfileSwitcher() {
                       {p.name}
                       {p.pin && <Lock className="h-3 w-3 text-muted-foreground" />}
                     </div>
-                    <div className="text-xs text-muted-foreground capitalize">{p.role}</div>
                   </div>
                   {active && <Check className="h-4 w-4 text-primary" />}
                 </button>

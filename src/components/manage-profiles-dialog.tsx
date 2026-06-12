@@ -3,8 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useHousehold, type ProfileRole } from "@/lib/household-store";
+import { useHousehold } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
 import { Plus, Trash2, UserPlus, Mail } from "lucide-react";
 import { toast } from "sonner";
@@ -17,7 +16,6 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
   const [open, setOpen] = useState(false);
   const [showInvites, setShowInvites] = useState(false);
   const [name, setName] = useState("");
-  const [role, setRole] = useState<ProfileRole>("kid");
   const [color, setColor] = useState(PALETTE[3]);
   const [birthday, setBirthday] = useState("");
   const [busy, setBusy] = useState(false);
@@ -26,7 +24,7 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
     if (!name.trim()) return;
     setBusy(true);
     try {
-      await addProfile({ name, role, color, birthday: birthday || null });
+      await addProfile({ name, role: "shared", color, birthday: birthday || null });
       toast.success(`${name} added`);
       setName("");
       setBirthday("");
@@ -78,9 +76,9 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
                 <ProfileAvatar profile={p} size={32} />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{p.name}</div>
-                  <div className="text-xs text-muted-foreground capitalize">
-                    {isHousehold ? "shared · combined view" : p.role}
-                  </div>
+                  {isHousehold && (
+                    <div className="text-xs text-muted-foreground capitalize">shared · combined view</div>
+                  )}
                   {!isHousehold && (
                     <div className="pt-1.5 flex items-center gap-1.5">
                       <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Birthday</Label>
@@ -130,21 +128,10 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
 
         <div className="border-t border-border pt-4 space-y-3">
           <div className="text-xs uppercase tracking-wider text-muted-foreground">Add profile</div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2">
+          <div className="space-y-3">
+            <div>
               <Label className="text-xs">Name</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Grandma" />
-            </div>
-            <div>
-              <Label className="text-xs">Role</Label>
-              <Select value={role} onValueChange={(v) => setRole(v as ProfileRole)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="parent">Parent</SelectItem>
-                  <SelectItem value="kid">Kid</SelectItem>
-                  <SelectItem value="shared">Shared</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             <div>
               <Label className="text-xs">Color</Label>
@@ -164,7 +151,7 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
                 ))}
               </div>
             </div>
-            <div className="col-span-2">
+            <div>
               <Label className="text-xs">Birthday (optional)</Label>
               <Input type="date" value={birthday} onChange={(e) => setBirthday(e.target.value)} />
             </div>
