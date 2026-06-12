@@ -51,6 +51,7 @@ export interface TaskItem {
   title: string;
   done: boolean;
   due_at?: string | null;
+  completed_at?: string | null;
   recurrence: Recurrence;
   tier: Tier;
 }
@@ -205,9 +206,11 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   const events = eventsQ.data ?? [];
   const tasks = tasksQ.data ?? [];
 
-  // Auto-cleanup: remove uncompleted recurring tasks whose due date passed.
-  // One-time tasks (recurrence === "none") are left alone so users can still
-  // finish or delete them on their own time.
+  // Daily housekeeping for recurring tasks:
+  // - Reset done=false on recurring tasks completed before today so they
+  //   reappear once per new day (instead of spawning duplicates on toggle).
+  // - Delete uncompleted recurring tasks whose due date already passed so
+  //   stale items don't pile up.
   const cleanupRanRef = useRef<string | null>(null);
   useEffect(() => {
     if (!tasksQ.data || !householdId) return;
@@ -215,6 +218,14 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     if (cleanupRanRef.current === `${householdId}:${todayKey}`) return;
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
+
+    const toReset = (tasksQ.data ?? []).filter(
+      (t: any) =>
+        t.done &&
+        t.recurrence &&
+        t.recurrence !== "none" &&
+        (!t.completed_at || new Date(t.completed_at) < startOfToday),
+    );
     const stale = (tasksQ.data ?? []).filter(
       (t) =>
         !t.done &&
@@ -223,17 +234,23 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
         t.due_at &&
         new Date(t.due_at) < startOfToday,
     );
-    if (stale.length === 0) {
+
+    if (toReset.length === 0 && stale.length === 0) {
       cleanupRanRef.current = `${householdId}:${todayKey}`;
       return;
     }
     cleanupRanRef.current = `${householdId}:${todayKey}`;
     (async () => {
-      const { error } = await supabase
-        .from("tasks")
-        .delete()
-        .in("id", stale.map((t) => t.id));
-      if (!error) qc.invalidateQueries({ queryKey: ["tasks", householdId] });
+      if (toReset.length > 0) {
+        await supabase
+          .from("tasks")
+          .update({ done: false, completed_at: null } as any)
+          .in("id", toReset.map((t) => t.id));
+      }
+      if (stale.length > 0) {
+        await supabase.from("tasks").delete().in("id", stale.map((t) => t.id));
+      }
+      qc.invalidateQueries({ queryKey: ["tasks", householdId] });
     })();
   }, [tasksQ.data, householdId, qc]);
 
@@ -254,32 +271,16 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     return tasks.filter((t) => t.profile_id === activeProfile.id || t.profile_id === familyProfile?.id);
   }, [tasks, activeProfile, familyProfile]);
 
-  const advanceDate = (iso: string | null | undefined, rec: Recurrence): string | null => {
-    const base = iso ? new Date(iso) : new Date();
-    if (rec === "daily") base.setDate(base.getDate() + 1);
-    else if (rec === "weekly") base.setDate(base.getDate() + 7);
-    else if (rec === "monthly") base.setMonth(base.getMonth() + 1);
-    else return null;
-    return base.toISOString();
-  };
+
+
 
   const toggleMut = useMutation({
     mutationFn: async ({ id, done }: { id: string; done: boolean }) => {
-      const { error } = await supabase.from("tasks").update({ done }).eq("id", id);
+      const { error } = await supabase
+        .from("tasks")
+        .update({ done, completed_at: done ? new Date().toISOString() : null } as any)
+        .eq("id", id);
       if (error) throw error;
-      if (done) {
-        const t = (qc.getQueryData<TaskItem[]>(["tasks", householdId]) ?? []).find((x) => x.id === id);
-        if (t && t.recurrence && t.recurrence !== "none") {
-          const next_due = advanceDate(t.due_at, t.recurrence);
-          await supabase.from("tasks").insert({
-            owner_id: householdId,
-            profile_id: t.profile_id,
-            title: t.title,
-            due_at: next_due,
-            recurrence: t.recurrence,
-          });
-        }
-      }
     },
     onMutate: async ({ id, done }) => {
       await qc.cancelQueries({ queryKey: ["tasks", householdId] });
