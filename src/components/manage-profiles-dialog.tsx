@@ -16,7 +16,6 @@ export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode })
   const [open, setOpen] = useState(false);
   const [showInvites, setShowInvites] = useState(false);
   const [name, setName] = useState("");
-  const [role, setRole] = useState<ProfileRole>("kid");
   const [color, setColor] = useState(PALETTE[3]);
   const [birthday, setBirthday] = useState("");
   const [busy, setBusy] = useState(false);
