@@ -84,7 +84,7 @@ export function AppSidebar({
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
+              {NAV_ITEMS.filter((item) => !hidden.includes(item.id) || ALWAYS_VISIBLE_PAGES.has(item.id)).map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton
                     isActive={active === item.id}
