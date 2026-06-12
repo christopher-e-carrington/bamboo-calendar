@@ -53,6 +53,7 @@ export function AppSidebar({
   const { profiles, activeProfileId, setActiveProfileId } = useHousehold();
   const [pinFor, setPinFor] = useState<Profile | null>(null);
   const [pinOpen, setPinOpen] = useState(false);
+  const { hidden } = useHiddenPages();
 
   const chooseProfile = (p: Profile) => {
     if (p.pin && p.id !== activeProfileId) {
