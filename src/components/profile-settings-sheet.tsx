@@ -214,6 +214,49 @@ function SettingsSection({
   );
 }
 
+function PagesMenu() {
+  const { hidden, togglePage } = useHiddenPages();
+  return (
+    <div className="rounded-xl border border-border bg-background/60 p-3 space-y-3">
+      <div>
+        <div className="text-sm font-medium">Pages</div>
+        <div className="text-xs text-muted-foreground">
+          Hide pages from the sidebar. Their data and features stay active — they're just out of sight.
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-1">
+        {NAV_ITEMS.map((item) => {
+          const locked = ALWAYS_VISIBLE_PAGES.has(item.id);
+          const isHidden = hidden.includes(item.id);
+          const checkboxId = `hide-page-${item.id}`;
+          return (
+            <label
+              key={item.id}
+              htmlFor={checkboxId}
+              className={cn(
+                "flex items-center gap-3 rounded-lg border border-transparent p-2 transition-colors",
+                locked ? "opacity-60" : "hover:border-border hover:bg-muted/40 cursor-pointer",
+              )}
+            >
+              <item.icon className="h-4 w-4 text-primary shrink-0" />
+              <div className="flex-1 min-w-0 text-sm">{item.title}</div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Hide page</span>
+                <Checkbox
+                  id={checkboxId}
+                  checked={isHidden}
+                  disabled={locked}
+                  onCheckedChange={(v) => togglePage(item.id, !!v)}
+                />
+              </div>
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode }) {
   const { profiles } = useHousehold();
   return (
