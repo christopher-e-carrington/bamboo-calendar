@@ -239,6 +239,9 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
           <SettingsSection title="View" icon={Eye}>
             <ViewMenu />
           </SettingsSection>
+          <SettingsSection title="Pages" icon={LayoutGrid}>
+            <PagesMenu />
+          </SettingsSection>
           <SettingsSection title="Profile PINs" icon={Shield}>
             <div className="space-y-3">
               {profiles.map((p) => (
