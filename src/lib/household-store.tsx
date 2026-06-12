@@ -205,9 +205,11 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   const events = eventsQ.data ?? [];
   const tasks = tasksQ.data ?? [];
 
-  // Auto-cleanup: remove uncompleted recurring tasks whose due date passed.
-  // One-time tasks (recurrence === "none") are left alone so users can still
-  // finish or delete them on their own time.
+  // Daily housekeeping for recurring tasks:
+  // - Reset done=false on recurring tasks completed before today so they
+  //   reappear once per new day (instead of spawning duplicates on toggle).
+  // - Delete uncompleted recurring tasks whose due date already passed so
+  //   stale items don't pile up.
   const cleanupRanRef = useRef<string | null>(null);
   useEffect(() => {
     if (!tasksQ.data || !householdId) return;
@@ -215,6 +217,14 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     if (cleanupRanRef.current === `${householdId}:${todayKey}`) return;
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
+
+    const toReset = (tasksQ.data ?? []).filter(
+      (t: any) =>
+        t.done &&
+        t.recurrence &&
+        t.recurrence !== "none" &&
+        (!t.completed_at || new Date(t.completed_at) < startOfToday),
+    );
     const stale = (tasksQ.data ?? []).filter(
       (t) =>
         !t.done &&
@@ -223,17 +233,23 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
         t.due_at &&
         new Date(t.due_at) < startOfToday,
     );
-    if (stale.length === 0) {
+
+    if (toReset.length === 0 && stale.length === 0) {
       cleanupRanRef.current = `${householdId}:${todayKey}`;
       return;
     }
     cleanupRanRef.current = `${householdId}:${todayKey}`;
     (async () => {
-      const { error } = await supabase
-        .from("tasks")
-        .delete()
-        .in("id", stale.map((t) => t.id));
-      if (!error) qc.invalidateQueries({ queryKey: ["tasks", householdId] });
+      if (toReset.length > 0) {
+        await supabase
+          .from("tasks")
+          .update({ done: false, completed_at: null } as any)
+          .in("id", toReset.map((t) => t.id));
+      }
+      if (stale.length > 0) {
+        await supabase.from("tasks").delete().in("id", stale.map((t) => t.id));
+      }
+      qc.invalidateQueries({ queryKey: ["tasks", householdId] });
     })();
   }, [tasksQ.data, householdId, qc]);
 
