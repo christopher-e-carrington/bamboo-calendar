@@ -51,6 +51,7 @@ export interface TaskItem {
   title: string;
   done: boolean;
   due_at?: string | null;
+  completed_at?: string | null;
   recurrence: Recurrence;
   tier: Tier;
 }
