@@ -74,7 +74,7 @@ export function AppSidebar({
           {!collapsed && (
             <div className="leading-tight">
               <div className="font-display text-lg">Bamboo</div>
-              <div className="text-[11px] text-muted-foreground -mt-0.5">family calendar</div>
+              <div className="text-[11px] text-muted-foreground -mt-0.5">calendar</div>
             </div>
           )}
         </div>

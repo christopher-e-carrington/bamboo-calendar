@@ -65,11 +65,10 @@ export function AuthScreen() {
             <Leaf className="h-3.5 w-3.5 text-primary" /> Bamboo
           </div>
           <h1 className="font-display text-4xl mt-5 leading-tight">
-            A calm home for your family's days.
+            A calm home for your days.
           </h1>
           <p className="text-muted-foreground mt-3">
-            One shared calendar. Quiet greens, warm wood. Switch between Mom, Dad, kids, or
-            the kitchen with a tap.
+            One shared calendar. Quiet greens, warm wood. Switch between profiles with a tap.
           </p>
         </div>
       </aside>

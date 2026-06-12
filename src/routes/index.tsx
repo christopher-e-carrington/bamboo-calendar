@@ -24,13 +24,13 @@ import { Leaf } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Bamboo — Calm Family Calendar" },
+      { title: "Bamboo Calendar" },
       {
         name: "description",
         content:
-          "A calming, nature-inspired family calendar with multi-profile household accounts, shared events, tasks and PIN-protected profile switching.",
+          "A calming, nature-inspired calendar with multi-profile household accounts, shared events, tasks and PIN-protected profile switching.",
       },
-      { property: "og:title", content: "Bamboo — Calm Family Calendar" },
+      { property: "og:title", content: "Bamboo Calendar" },
       {
         property: "og:description",
         content: "Multi-profile household calendar with a sage and bamboo aesthetic.",
