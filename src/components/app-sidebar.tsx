@@ -20,8 +20,9 @@ import { PinDialog } from "./pin-dialog";
 import type { Profile } from "@/lib/household-store";
 import { ManageProfilesDialog } from "./manage-profiles-dialog";
 import { ProfileSettingsSheet } from "./profile-settings-sheet";
+import { useHiddenPages } from "@/lib/hidden-pages-store";
 
-const navItems = [
+export const NAV_ITEMS = [
   { id: "today", title: "Today", icon: Home },
   { id: "calendar", title: "Calendar", icon: Calendar },
   { id: "tasks", title: "To-Dos", icon: CheckSquare },
@@ -36,6 +37,8 @@ const navItems = [
   { id: "memories", title: "Memories", icon: ImageIcon },
   { id: "household", title: "Household", icon: Users },
 ];
+// Pages that can never be hidden from the sidebar.
+export const ALWAYS_VISIBLE_PAGES = new Set(["today"]);
 
 
 export function AppSidebar({
@@ -50,6 +53,7 @@ export function AppSidebar({
   const { profiles, activeProfileId, setActiveProfileId } = useHousehold();
   const [pinFor, setPinFor] = useState<Profile | null>(null);
   const [pinOpen, setPinOpen] = useState(false);
+  const { hidden } = useHiddenPages();
 
   const chooseProfile = (p: Profile) => {
     if (p.pin && p.id !== activeProfileId) {
@@ -81,7 +85,7 @@ export function AppSidebar({
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
+              {NAV_ITEMS.filter((item) => !hidden.includes(item.id) || ALWAYS_VISIBLE_PAGES.has(item.id)).map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton
                     isActive={active === item.id}
