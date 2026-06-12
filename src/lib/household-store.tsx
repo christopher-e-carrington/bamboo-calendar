@@ -281,21 +281,11 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
 
   const toggleMut = useMutation({
     mutationFn: async ({ id, done }: { id: string; done: boolean }) => {
-      const { error } = await supabase.from("tasks").update({ done }).eq("id", id);
+      const { error } = await supabase
+        .from("tasks")
+        .update({ done, completed_at: done ? new Date().toISOString() : null } as any)
+        .eq("id", id);
       if (error) throw error;
-      if (done) {
-        const t = (qc.getQueryData<TaskItem[]>(["tasks", householdId]) ?? []).find((x) => x.id === id);
-        if (t && t.recurrence && t.recurrence !== "none") {
-          const next_due = advanceDate(t.due_at, t.recurrence);
-          await supabase.from("tasks").insert({
-            owner_id: householdId,
-            profile_id: t.profile_id,
-            title: t.title,
-            due_at: next_due,
-            recurrence: t.recurrence,
-          });
-        }
-      }
     },
     onMutate: async ({ id, done }) => {
       await qc.cancelQueries({ queryKey: ["tasks", householdId] });
