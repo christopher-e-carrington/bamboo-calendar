@@ -61,7 +61,6 @@ function PinRow({ profile }: { profile: Profile }) {
                 <LockOpen className="h-3 w-3" /> Open
               </>
             )}
-            · {profile.role}
           </div>
         </div>
       </div>
@@ -166,7 +165,6 @@ function DefaultProfileMenu() {
               <ProfileAvatar profile={p} size={32} />
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium truncate">{p.name}</div>
-                <div className="text-xs text-muted-foreground capitalize">{p.role}</div>
               </div>
               {active && <Check className="h-4 w-4 text-primary" />}
             </button>
