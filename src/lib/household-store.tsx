@@ -271,14 +271,8 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     return tasks.filter((t) => t.profile_id === activeProfile.id || t.profile_id === familyProfile?.id);
   }, [tasks, activeProfile, familyProfile]);
 
-  const advanceDate = (iso: string | null | undefined, rec: Recurrence): string | null => {
-    const base = iso ? new Date(iso) : new Date();
-    if (rec === "daily") base.setDate(base.getDate() + 1);
-    else if (rec === "weekly") base.setDate(base.getDate() + 7);
-    else if (rec === "monthly") base.setMonth(base.getMonth() + 1);
-    else return null;
-    return base.toISOString();
-  };
+
+
 
   const toggleMut = useMutation({
     mutationFn: async ({ id, done }: { id: string; done: boolean }) => {
