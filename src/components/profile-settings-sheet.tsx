@@ -373,6 +373,9 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
           <SettingsSection title="Default profile" icon={User} defaultOpen>
             <DefaultProfileMenu />
           </SettingsSection>
+          <SettingsSection title="Users" icon={UsersIcon}>
+            <UsersMenu />
+          </SettingsSection>
           <SettingsSection title="View" icon={Eye}>
             <ViewMenu />
           </SettingsSection>
