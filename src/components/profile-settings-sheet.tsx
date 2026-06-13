@@ -5,13 +5,109 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useHousehold, type Profile } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
-import { Lock, LockOpen, Settings2, Check, Palette, ChevronDown, User, Eye, Shield, LayoutGrid } from "lucide-react";
+import { Lock, LockOpen, Settings2, Check, Palette, ChevronDown, User, Eye, Shield, LayoutGrid, Users as UsersIcon, Share2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { THEMES, useTheme, type ThemeId } from "@/lib/theme-store";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, ALWAYS_VISIBLE_PAGES } from "./app-sidebar";
 import { useHiddenPages } from "@/lib/hidden-pages-store";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ManageProfilesDialog } from "./manage-profiles-dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+
+function randomToken() {
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function UsersMenu() {
+  const { profiles, familyProfile } = useHousehold();
+  const { user } = useAuth();
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const shareAccount = async (profile: Profile) => {
+    if (!user) {
+      toast.error("Sign in required");
+      return;
+    }
+    setBusyId(profile.id);
+    try {
+      const token = randomToken();
+      const { error } = await supabase.from("household_invitations").insert({
+        household_id: user.id,
+        token,
+        invited_name: profile.name,
+        invited_email: null,
+      });
+      if (error) throw error;
+      const link = `${window.location.origin}/invite/${token}`;
+      await navigator.clipboard.writeText(link);
+      toast.success(`Invite link for ${profile.name} copied — send it to them`);
+    } catch (e) {
+      console.error(e);
+      toast.error("Could not create share link");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-border bg-background/60 p-3 space-y-3">
+      <div>
+        <div className="text-sm font-medium">Users</div>
+        <div className="text-xs text-muted-foreground">
+          Share an account to let someone take control of their own profile. They'll go through the
+          setup wizard, then join the household.
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-2">
+        {profiles.map((p) => {
+          const isShared = p.id === familyProfile?.id;
+          return (
+            <div
+              key={p.id}
+              className="flex items-center gap-3 rounded-lg border border-border bg-background p-2"
+            >
+              <ProfileAvatar profile={p} size={32} />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium truncate">{p.name}</div>
+                {isShared && (
+                  <div className="text-[11px] text-muted-foreground">Shared · combined view</div>
+                )}
+              </div>
+              {!isShared && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5"
+                  disabled={busyId === p.id}
+                  onClick={() => shareAccount(p)}
+                >
+                  {busyId === p.id ? (
+                    <>Sharing…</>
+                  ) : (
+                    <>
+                      <Share2 className="h-3.5 w-3.5" /> Share account
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <ManageProfilesDialog
+        trigger={
+          <Button variant="default" size="sm" className="w-full gap-1.5">
+            <Plus className="h-4 w-4" /> Add new user
+          </Button>
+        }
+      />
+    </div>
+  );
+}
 
 function PinRow({ profile }: { profile: Profile }) {
   const { setProfilePin } = useHousehold();
@@ -276,6 +372,9 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
         <div className="mt-4 space-y-3">
           <SettingsSection title="Default profile" icon={User} defaultOpen>
             <DefaultProfileMenu />
+          </SettingsSection>
+          <SettingsSection title="Users" icon={UsersIcon}>
+            <UsersMenu />
           </SettingsSection>
           <SettingsSection title="View" icon={Eye}>
             <ViewMenu />
