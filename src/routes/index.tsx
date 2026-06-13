@@ -18,6 +18,7 @@ import { InventoryPage } from "@/components/inventory-page";
 import { MemoriesPage } from "@/components/memories-page";
 import { HouseholdPage } from "@/components/household-page";
 import { AuthScreen } from "@/components/auth-screen";
+import { OnboardingWizard } from "@/components/onboarding-wizard";
 import { useAuth } from "@/hooks/use-auth";
 import { Leaf } from "lucide-react";
 
@@ -56,6 +57,7 @@ function Index() {
 
   return (
     <HouseholdProvider user={user}>
+      <OnboardingWizard user={user} />
       <SidebarProvider>
         <div className="min-h-screen flex w-full">
           <AppSidebar active={active} onSelect={setActive} />
