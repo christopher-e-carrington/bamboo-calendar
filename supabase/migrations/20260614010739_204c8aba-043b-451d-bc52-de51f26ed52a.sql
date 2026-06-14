@@ -1,0 +1,1 @@
+ALTER TABLE public.household_profiles ADD COLUMN IF NOT EXISTS nickname text;
