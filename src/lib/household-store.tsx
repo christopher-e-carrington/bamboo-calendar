@@ -8,6 +8,7 @@ export type ProfileRole = "parent" | "kid" | "shared";
 export interface Profile {
   id: string;
   name: string;
+  nickname?: string | null;
   role: ProfileRole;
   color: string;
   initials: string;
@@ -88,7 +89,7 @@ interface HouseholdState {
   familyProfile: Profile | undefined;
   loading: boolean;
   addProfile: (input: { name: string; role: ProfileRole; color: string; birthday?: string | null }) => Promise<void>;
-  updateProfile: (id: string, patch: { name?: string; role?: ProfileRole; color?: string; birthday?: string | null }) => Promise<void>;
+  updateProfile: (id: string, patch: { name?: string; nickname?: string | null; role?: ProfileRole; color?: string; birthday?: string | null }) => Promise<void>;
   removeProfile: (id: string) => Promise<void>;
   setProfilePin: (id: string, pin: string | null) => Promise<void>;
   addEvent: (input: {
@@ -145,7 +146,10 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
         .eq("owner_id", householdId)
         .order("sort_order", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as Profile[];
+      return (data ?? []).map((r: any) => ({
+        ...r,
+        name: (r.nickname && String(r.nickname).trim()) ? String(r.nickname).trim() : r.name,
+      })) as Profile[];
     },
   });
 

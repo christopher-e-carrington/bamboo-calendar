@@ -261,6 +261,7 @@ export type Database = {
           id: string
           initials: string
           name: string
+          nickname: string | null
           owner_id: string
           pin: string | null
           role: string
@@ -273,6 +274,7 @@ export type Database = {
           id?: string
           initials?: string
           name: string
+          nickname?: string | null
           owner_id: string
           pin?: string | null
           role?: string
@@ -285,6 +287,7 @@ export type Database = {
           id?: string
           initials?: string
           name?: string
+          nickname?: string | null
           owner_id?: string
           pin?: string | null
           role?: string
