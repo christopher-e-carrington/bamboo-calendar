@@ -81,7 +81,13 @@ export function OnboardingWizard({ user }: { user: User }) {
   const canNext = () => {
     if (step === 0) return myName.trim().length > 0;
     if (step === 2) return memberCount >= 1 && memberCount <= 20;
-    if (step === 3) return memberNames.every((n) => n.trim().length > 0);
+    if (step === 3) {
+      const needed = Math.max(0, memberCount - 1);
+      for (let i = 0; i < needed; i++) {
+        if (!(memberNames[i] ?? "").trim()) return false;
+      }
+      return true;
+    }
     return true;
   };
 
