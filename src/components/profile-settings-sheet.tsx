@@ -22,6 +22,40 @@ function randomToken() {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+function NicknameRow({ profile }: { profile: Profile }) {
+  const { updateProfile } = useHousehold();
+  const [value, setValue] = useState(profile.nickname ?? "");
+  const [saving, setSaving] = useState(false);
+  const dirty = (profile.nickname ?? "") !== value;
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await updateProfile(profile.id, { nickname: value.trim() || null });
+      toast.success("Nickname updated");
+    } catch {
+      toast.error("Couldn't save nickname");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <Input
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Nickname (display name)"
+        className="h-8 text-sm"
+        maxLength={40}
+      />
+      <Button size="sm" variant="outline" disabled={!dirty || saving} onClick={save}>
+        {saving ? "Saving…" : "Save"}
+      </Button>
+    </div>
+  );
+}
+
 function UsersMenu() {
   const { profiles, familyProfile } = useHousehold();
   const { user } = useAuth();
@@ -58,8 +92,8 @@ function UsersMenu() {
       <div>
         <div className="text-sm font-medium">Users</div>
         <div className="text-xs text-muted-foreground">
-          Share an account to let someone take control of their own profile. They'll go through the
-          setup wizard, then join the household.
+          Set a nickname to change what's displayed, or share an account to let someone take control
+          of their own profile.
         </div>
       </div>
       <div className="grid grid-cols-1 gap-2">
@@ -68,32 +102,35 @@ function UsersMenu() {
           return (
             <div
               key={p.id}
-              className="flex items-center gap-3 rounded-lg border border-border bg-background p-2"
+              className="flex flex-col gap-2 rounded-lg border border-border bg-background p-2"
             >
-              <ProfileAvatar profile={p} size={32} />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium truncate">{p.name}</div>
-                {isShared && (
-                  <div className="text-[11px] text-muted-foreground">Shared · combined view</div>
+              <div className="flex items-center gap-3">
+                <ProfileAvatar profile={p} size={32} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{p.name}</div>
+                  {isShared && (
+                    <div className="text-[11px] text-muted-foreground">Shared · combined view</div>
+                  )}
+                </div>
+                {!isShared && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5"
+                    disabled={busyId === p.id}
+                    onClick={() => shareAccount(p)}
+                  >
+                    {busyId === p.id ? (
+                      <>Sharing…</>
+                    ) : (
+                      <>
+                        <Share2 className="h-3.5 w-3.5" /> Share
+                      </>
+                    )}
+                  </Button>
                 )}
               </div>
-              {!isShared && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="gap-1.5"
-                  disabled={busyId === p.id}
-                  onClick={() => shareAccount(p)}
-                >
-                  {busyId === p.id ? (
-                    <>Sharing…</>
-                  ) : (
-                    <>
-                      <Share2 className="h-3.5 w-3.5" /> Share account
-                    </>
-                  )}
-                </Button>
-              )}
+              <NicknameRow profile={p} />
             </div>
           );
         })}
