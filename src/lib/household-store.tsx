@@ -8,6 +8,7 @@ export type ProfileRole = "parent" | "kid" | "shared";
 export interface Profile {
   id: string;
   name: string;
+  nickname?: string | null;
   role: ProfileRole;
   color: string;
   initials: string;
