@@ -146,7 +146,10 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
         .eq("owner_id", householdId)
         .order("sort_order", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as Profile[];
+      return (data ?? []).map((r: any) => ({
+        ...r,
+        name: (r.nickname && String(r.nickname).trim()) ? String(r.nickname).trim() : r.name,
+      })) as Profile[];
     },
   });
 
