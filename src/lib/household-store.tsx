@@ -89,7 +89,7 @@ interface HouseholdState {
   familyProfile: Profile | undefined;
   loading: boolean;
   addProfile: (input: { name: string; role: ProfileRole; color: string; birthday?: string | null }) => Promise<void>;
-  updateProfile: (id: string, patch: { name?: string; role?: ProfileRole; color?: string; birthday?: string | null }) => Promise<void>;
+  updateProfile: (id: string, patch: { name?: string; nickname?: string | null; role?: ProfileRole; color?: string; birthday?: string | null }) => Promise<void>;
   removeProfile: (id: string) => Promise<void>;
   setProfilePin: (id: string, pin: string | null) => Promise<void>;
   addEvent: (input: {
