@@ -6,6 +6,8 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { TopNav } from "@/components/top-nav";
 import { ProfileHomeScreen } from "@/components/profile-home-screen";
 import { CalendarView } from "@/components/calendar-view";
+import { EventsPage } from "@/components/events-page";
+import { NotesPage } from "@/components/notes-page";
 import { ContactsPage } from "@/components/contacts-page";
 import { DocumentsPage } from "@/components/documents-page";
 import { PasswordsPage } from "@/components/passwords-page";
@@ -66,6 +68,10 @@ function Index() {
             <main className="flex-1">
               {active === "calendar" ? (
                 <CalendarView />
+              ) : active === "events" ? (
+                <EventsPage />
+              ) : active === "notes" ? (
+                <NotesPage />
               ) : active === "contacts" ? (
                 <ContactsPage />
               ) : active === "documents" ? (

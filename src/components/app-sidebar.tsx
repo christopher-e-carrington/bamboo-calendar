@@ -1,4 +1,4 @@
-import { Calendar, CheckSquare, Image as ImageIcon, Home, Users, Settings, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound } from "lucide-react";
+import { Calendar, CheckSquare, Image as ImageIcon, Home, Users, Settings, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -25,6 +25,8 @@ import { useHiddenPages } from "@/lib/hidden-pages-store";
 export const NAV_ITEMS = [
   { id: "today", title: "Today", icon: Home },
   { id: "calendar", title: "Calendar", icon: Calendar },
+  { id: "events", title: "Events", icon: CalendarPlus },
+  { id: "notes", title: "Notes", icon: NotebookPen },
   { id: "tasks", title: "To-Dos", icon: CheckSquare },
   { id: "routines", title: "Routines", icon: Repeat },
   { id: "goals", title: "Goals", icon: Target },
