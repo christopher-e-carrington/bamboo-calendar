@@ -1,9 +1,21 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useHousehold } from "@/lib/household-store";
 import { EventDialog } from "./event-dialog";
 import { ProfileAvatar } from "./profile-avatar";
-import { CalendarPlus, CalendarClock, MapPin } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { CalendarPlus, CalendarClock, MapPin, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 function fmt(d: Date) {
   return d.toLocaleString(undefined, {
