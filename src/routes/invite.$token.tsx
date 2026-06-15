@@ -74,6 +74,8 @@ function InvitePage() {
     }
   }, [inviteQ.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const signupFn = useServerFn(signupFromInvite);
+
   const doAuth = async () => {
     const parsed = SignupSchema.safeParse({ email, password });
     if (!parsed.success) {
@@ -83,26 +85,14 @@ function InvitePage() {
     setAuthBusy(true);
     try {
       if (mode === "signup") {
-        const { data: signUpData, error } = await supabase.auth.signUp({
+        // Create the user pre-confirmed on the server so we can sign in
+        // immediately, regardless of project-level email confirmation settings.
+        await signupFn({ data: { token, email, password } });
+        const { error: signInErr } = await supabase.auth.signInWithPassword({
           email,
           password,
-          options: { emailRedirectTo: window.location.href },
         });
-        if (error) throw error;
-        // If signup didn't return a session (email confirmation enabled),
-        // try to sign in immediately so the accept step has auth.uid().
-        if (!signUpData.session) {
-          const { error: signInErr } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-          if (signInErr) {
-            toast.error(
-              "Account created. Please check your email to confirm, then return to this link.",
-            );
-            return;
-          }
-        }
+        if (signInErr) throw signInErr;
         toast.success("Account created — finish your profile below");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
