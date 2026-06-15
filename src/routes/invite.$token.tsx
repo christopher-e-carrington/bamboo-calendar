@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Leaf } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
+import { signupFromInvite } from "@/lib/invite.functions";
 
 export const Route = createFileRoute("/invite/$token")({
   head: () => ({
