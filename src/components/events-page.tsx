@@ -1,9 +1,21 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useHousehold } from "@/lib/household-store";
 import { EventDialog } from "./event-dialog";
 import { ProfileAvatar } from "./profile-avatar";
-import { CalendarPlus, CalendarClock, MapPin } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { CalendarPlus, CalendarClock, MapPin, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 function fmt(d: Date) {
   return d.toLocaleString(undefined, {
@@ -16,7 +28,8 @@ function fmt(d: Date) {
 }
 
 export function EventsPage() {
-  const { events, profiles, visibleEvents } = useHousehold();
+  const { events, profiles, visibleEvents, deleteEvent } = useHousehold();
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const upcoming = useMemo(() => {
     const now = Date.now();
@@ -31,6 +44,18 @@ export function EventsPage() {
     () => Object.fromEntries(profiles.map((p) => [p.id, p])),
     [profiles],
   );
+
+  const handleDelete = async (id: string) => {
+    setBusyId(id);
+    try {
+      await deleteEvent(id);
+      toast.success("Event deleted");
+    } catch {
+      toast.error("Could not delete event");
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   return (
     <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-5">
@@ -79,6 +104,36 @@ export function EventsPage() {
                       </div>
                     )}
                   </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
+                        disabled={busyId === e.id}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete event</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete event?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will remove <span className="font-medium">{e.title}</span> from the calendar. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(e.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </li>
               );
             })}
