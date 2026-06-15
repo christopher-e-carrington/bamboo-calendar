@@ -1,4 +1,4 @@
-import { Calendar, CheckSquare, Image as ImageIcon, Home, Users, Settings, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen } from "lucide-react";
+import { Calendar, CheckSquare, Image as ImageIcon, Home, Users, Settings, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -66,18 +66,31 @@ export function AppSidebar({
     }
   };
 
+  const { toggleSidebar } = useSidebar();
+
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="px-3 pt-4 pb-2">
-        <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-xl bg-primary text-primary-foreground grid place-items-center shadow-sm">
-            <Leaf className="h-5 w-5" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-9 w-9 rounded-xl bg-primary text-primary-foreground grid place-items-center shadow-sm">
+              <Leaf className="h-5 w-5" />
+            </div>
+            {!collapsed && (
+              <div className="leading-tight">
+                <div className="font-display text-lg">Bamboo</div>
+                <div className="text-[11px] text-muted-foreground -mt-0.5">calendar</div>
+              </div>
+            )}
           </div>
           {!collapsed && (
-            <div className="leading-tight">
-              <div className="font-display text-lg">Bamboo</div>
-              <div className="text-[11px] text-muted-foreground -mt-0.5">calendar</div>
-            </div>
+            <button
+              onClick={toggleSidebar}
+              className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+              aria-label="Collapse menu"
+            >
+              <PanelLeftClose className="h-4 w-4" />
+            </button>
           )}
         </div>
       </SidebarHeader>
