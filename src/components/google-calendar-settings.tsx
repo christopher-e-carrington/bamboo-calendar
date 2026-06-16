@@ -95,7 +95,7 @@ function ImportFromGoogleDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline" className="w-full gap-1.5">
-          <CalendarDown className="h-4 w-4" /> Import events from Google
+          <CalendarPlus className="h-4 w-4" /> Import events from Google
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md max-h-[85vh] flex flex-col">
