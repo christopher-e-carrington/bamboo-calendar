@@ -370,7 +370,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     }) => {
       const primary = input.profile_ids[0];
       if (!primary) throw new Error("Assign at least one profile");
-      const { error } = await supabase.from("events").insert({
+      const { data, error } = await supabase.from("events").insert({
         owner_id: householdId,
         profile_id: primary,
         profile_ids: input.profile_ids,
@@ -379,8 +379,12 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
         end_at: input.end_at ?? null,
         location: input.location ?? null,
         notes: input.notes ?? null,
-      });
+      }).select("id").single();
       if (error) throw error;
+      return data?.id as string | undefined;
+    },
+    onSuccess: (id) => {
+      if (id) fireAndForget(pushEventToGoogle({ data: { eventId: id } }));
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ["events", householdId] }),
   });
