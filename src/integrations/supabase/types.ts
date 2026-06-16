@@ -95,6 +95,44 @@ export type Database = {
         }
         Relationships: []
       }
+      event_google_sync: {
+        Row: {
+          created_at: string
+          direction: string
+          event_id: string
+          google_calendar_id: string
+          google_event_id: string
+          household_id: string
+          last_synced_at: string
+        }
+        Insert: {
+          created_at?: string
+          direction: string
+          event_id: string
+          google_calendar_id: string
+          google_event_id: string
+          household_id: string
+          last_synced_at?: string
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          event_id?: string
+          google_calendar_id?: string
+          google_event_id?: string
+          household_id?: string
+          last_synced_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_google_sync_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           contact_id: string | null
@@ -184,6 +222,30 @@ export type Database = {
           target?: number
           tier?: string
           title?: string
+        }
+        Relationships: []
+      }
+      google_calendar_settings: {
+        Row: {
+          calendar_id: string
+          created_at: string
+          household_id: string
+          sync_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          calendar_id?: string
+          created_at?: string
+          household_id: string
+          sync_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          calendar_id?: string
+          created_at?: string
+          household_id?: string
+          sync_enabled?: boolean
+          updated_at?: string
         }
         Relationships: []
       }
