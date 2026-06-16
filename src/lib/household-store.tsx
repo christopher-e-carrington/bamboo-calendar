@@ -1,7 +1,12 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { pushEventToGoogle, deleteEventFromGoogle } from "@/lib/google-calendar.functions";
 import type { User } from "@supabase/supabase-js";
+
+const fireAndForget = (p: Promise<unknown>) => {
+  p.catch((e) => console.warn("[google-sync]", e));
+};
 
 export type ProfileRole = "parent" | "kid" | "shared";
 
@@ -365,7 +370,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     }) => {
       const primary = input.profile_ids[0];
       if (!primary) throw new Error("Assign at least one profile");
-      const { error } = await supabase.from("events").insert({
+      const { data, error } = await supabase.from("events").insert({
         owner_id: householdId,
         profile_id: primary,
         profile_ids: input.profile_ids,
@@ -374,8 +379,12 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
         end_at: input.end_at ?? null,
         location: input.location ?? null,
         notes: input.notes ?? null,
-      });
+      }).select("id").single();
       if (error) throw error;
+      return data?.id as string | undefined;
+    },
+    onSuccess: (id) => {
+      if (id) fireAndForget(pushEventToGoogle({ data: { eventId: id } }));
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ["events", householdId] }),
   });
@@ -398,6 +407,13 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
 
   const deleteEventMut = useMutation({
     mutationFn: async (id: string) => {
+      // Best-effort: delete on Google first; the mapping row cascades when the
+      // event row is removed below, so we need to call this before the delete.
+      try {
+        await deleteEventFromGoogle({ data: { eventId: id } });
+      } catch (e) {
+        console.warn("[google-sync] delete failed", e);
+      }
       const { error } = await supabase.from("events").delete().eq("id", id);
       if (error) throw error;
     },
