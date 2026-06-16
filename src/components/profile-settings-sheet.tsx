@@ -420,6 +420,9 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
           <SettingsSection title="Pages" icon={LayoutGrid}>
             <PagesMenu />
           </SettingsSection>
+          <SettingsSection title="Google Calendar" icon={CalendarCheck}>
+            <GoogleCalendarMenu />
+          </SettingsSection>
           <SettingsSection title="Profile PINs" icon={Shield}>
             <div className="space-y-3">
               {profiles.map((p) => (
