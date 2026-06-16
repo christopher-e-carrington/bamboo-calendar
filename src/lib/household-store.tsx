@@ -407,6 +407,13 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
 
   const deleteEventMut = useMutation({
     mutationFn: async (id: string) => {
+      // Best-effort: delete on Google first; the mapping row cascades when the
+      // event row is removed below, so we need to call this before the delete.
+      try {
+        await deleteEventFromGoogle({ data: { eventId: id } });
+      } catch (e) {
+        console.warn("[google-sync] delete failed", e);
+      }
       const { error } = await supabase.from("events").delete().eq("id", id);
       if (error) throw error;
     },
