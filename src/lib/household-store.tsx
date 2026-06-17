@@ -268,7 +268,12 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
 
   const visibleEvents = useMemo(() => {
     if (!activeProfile) return [];
-    if (activeProfile.id === familyProfile?.id) return events;
+    // Shared/household view: show only events explicitly assigned to the
+    // shared profile. Personal-only events stay on their owner's calendar so
+    // the same event no longer appears on both views.
+    if (activeProfile.id === familyProfile?.id) {
+      return events.filter((e) => includesProfile(e, activeProfile.id));
+    }
     return events.filter(
       (e) => includesProfile(e, activeProfile.id) || (familyProfile && includesProfile(e, familyProfile.id)),
     );
