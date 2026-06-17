@@ -8,7 +8,8 @@ import { ProfileAvatar } from "./profile-avatar";
 import { Lock, LockOpen, Settings2, Check, Palette, ChevronDown, User, Eye, Shield, LayoutGrid, Users as UsersIcon, Share2, Plus, CalendarCheck } from "lucide-react";
 import { GoogleCalendarMenu } from "./google-calendar-settings";
 import { toast } from "sonner";
-import { THEMES, useTheme, type ThemeId } from "@/lib/theme-store";
+import { THEMES, useTheme, type ThemeId, type CustomThemeColors } from "@/lib/theme-store";
+import { Trash2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, ALWAYS_VISIBLE_PAGES } from "./app-sidebar";
 import { useHiddenPages } from "@/lib/hidden-pages-store";
@@ -221,50 +222,214 @@ function PinRow({ profile }: { profile: Profile }) {
 }
 
 function ViewMenu() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, customThemes, saveCustomTheme, deleteCustomTheme } = useTheme();
+  const [creating, setCreating] = useState(false);
+  const [name, setName] = useState("");
+  const [colors, setColors] = useState<CustomThemeColors>({
+    background: "#f6f1e4",
+    foreground: "#2a2a22",
+    card: "#fbf7ec",
+    primary: "#7a9a72",
+    accent: "#c2a878",
+    border: "#e2dac6",
+  });
+
+  const COLOR_FIELDS: { key: keyof CustomThemeColors; label: string }[] = [
+    { key: "background", label: "Background" },
+    { key: "foreground", label: "Text" },
+    { key: "card", label: "Card" },
+    { key: "primary", label: "Primary" },
+    { key: "accent", label: "Accent" },
+    { key: "border", label: "Border" },
+  ];
+
+  const handleSave = () => {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      toast.error("Give your theme a name");
+      return;
+    }
+    saveCustomTheme(trimmed, colors);
+    toast.success(`Saved theme: ${trimmed}`);
+    setCreating(false);
+    setName("");
+  };
+
+  const allOptions = [
+    ...THEMES.map((t) => ({
+      id: t.id as string,
+      name: t.name,
+      description: t.description,
+      swatches: [...t.swatches] as string[],
+      custom: false,
+    })),
+    ...customThemes.map((c) => ({
+      id: c.id,
+      name: c.name,
+      description: "Your custom scheme",
+      swatches: [c.colors.background, c.colors.primary, c.colors.accent, c.colors.foreground],
+      custom: true,
+    })),
+  ];
+
   return (
     <div className="rounded-xl border border-border bg-background/60 p-3 space-y-3">
       <div className="flex items-center gap-2">
         <Palette className="h-4 w-4 text-primary" />
         <div>
           <div className="text-sm font-medium">View</div>
-          <div className="text-xs text-muted-foreground">Pick a color scheme for the app.</div>
+          <div className="text-xs text-muted-foreground">Pick a color scheme — or build your own.</div>
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        {THEMES.map((t) => {
+        {allOptions.map((t) => {
           const active = theme === t.id;
           return (
-            <button
+            <div
               key={t.id}
-              type="button"
-              onClick={() => {
-                setTheme(t.id as ThemeId);
-                toast.success(`Theme: ${t.name}`);
-              }}
               className={cn(
-                "text-left rounded-lg border p-2.5 transition-colors hover:border-primary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "relative text-left rounded-lg border p-2.5 transition-colors hover:border-primary/60",
                 active ? "border-primary bg-primary/5" : "border-border bg-background",
               )}
             >
-              <div className="flex items-center justify-between gap-2">
-                <div className="text-sm font-medium">{t.name}</div>
-                {active && <Check className="h-4 w-4 text-primary" />}
-              </div>
-              <div className="mt-1 text-[11px] text-muted-foreground line-clamp-2">{t.description}</div>
-              <div className="mt-2 flex gap-1">
-                {t.swatches.map((c, i) => (
-                  <span
-                    key={i}
-                    className="h-4 w-4 rounded-full border border-black/10"
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-              </div>
-            </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setTheme(t.id as ThemeId);
+                  toast.success(`Theme: ${t.name}`);
+                }}
+                className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-sm font-medium truncate">{t.name}</div>
+                  {active && <Check className="h-4 w-4 text-primary shrink-0" />}
+                </div>
+                <div className="mt-1 text-[11px] text-muted-foreground line-clamp-2">{t.description}</div>
+                <div className="mt-2 flex gap-1">
+                  {t.swatches.map((c, i) => (
+                    <span
+                      key={i}
+                      className="h-4 w-4 rounded-full border border-black/10"
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
+              </button>
+              {t.custom && (
+                <button
+                  type="button"
+                  aria-label={`Delete ${t.name}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteCustomTheme(t.id);
+                    toast.success(`Deleted ${t.name}`);
+                  }}
+                  className="absolute top-1.5 right-1.5 h-6 w-6 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
           );
         })}
       </div>
+
+      {!creating ? (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full gap-1.5"
+          onClick={() => setCreating(true)}
+        >
+          <Sparkles className="h-4 w-4" /> Create custom scheme
+        </Button>
+      ) : (
+        <div className="rounded-lg border border-border bg-background p-3 space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="custom-theme-name" className="text-xs">
+              Theme name
+            </Label>
+            <Input
+              id="custom-theme-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Sunset"
+              maxLength={40}
+              className="h-8 text-sm"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {COLOR_FIELDS.map((f) => (
+              <div key={f.key} className="space-y-1">
+                <Label htmlFor={`color-${f.key}`} className="text-[11px] text-muted-foreground">
+                  {f.label}
+                </Label>
+                <div className="flex items-center gap-2 rounded-md border border-input px-2 py-1">
+                  <input
+                    id={`color-${f.key}`}
+                    type="color"
+                    value={colors[f.key]}
+                    onChange={(e) => setColors((c) => ({ ...c, [f.key]: e.target.value }))}
+                    className="h-6 w-8 cursor-pointer border-0 bg-transparent p-0"
+                  />
+                  <span className="text-xs font-mono uppercase text-muted-foreground">
+                    {colors[f.key]}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div
+            className="rounded-md border p-3 text-sm"
+            style={{
+              backgroundColor: colors.background,
+              color: colors.foreground,
+              borderColor: colors.border,
+            }}
+          >
+            <div className="font-medium" style={{ color: colors.foreground }}>
+              Preview
+            </div>
+            <div className="mt-2 flex gap-2">
+              <span
+                className="px-2 py-1 rounded text-xs"
+                style={{ backgroundColor: colors.primary, color: "#fff" }}
+              >
+                Primary
+              </span>
+              <span
+                className="px-2 py-1 rounded text-xs"
+                style={{ backgroundColor: colors.accent, color: "#fff" }}
+              >
+                Accent
+              </span>
+              <span
+                className="px-2 py-1 rounded text-xs border"
+                style={{ backgroundColor: colors.card, borderColor: colors.border }}
+              >
+                Card
+              </span>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button type="button" size="sm" onClick={handleSave} className="flex-1">
+              Save & apply
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setCreating(false);
+                setName("");
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
