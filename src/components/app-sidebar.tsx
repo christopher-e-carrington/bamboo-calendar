@@ -50,7 +50,7 @@ export function AppSidebar({
   active: string;
   onSelect: (id: string) => void;
 }) {
-  const { state } = useSidebar();
+  const { state, setOpen, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const { profiles, activeProfileId, setActiveProfileId } = useHousehold();
   const [pinFor, setPinFor] = useState<Profile | null>(null);
