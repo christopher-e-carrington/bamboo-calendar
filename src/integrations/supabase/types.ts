@@ -50,6 +50,39 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_themes: {
+        Row: {
+          background_image_url: string | null
+          card_opacity: number
+          colors: Json
+          created_at: string
+          created_by: string
+          household_id: string
+          id: string
+          name: string
+        }
+        Insert: {
+          background_image_url?: string | null
+          card_opacity?: number
+          colors: Json
+          created_at?: string
+          created_by?: string
+          household_id: string
+          id?: string
+          name: string
+        }
+        Update: {
+          background_image_url?: string | null
+          card_opacity?: number
+          colors?: Json
+          created_at?: string
+          created_by?: string
+          household_id?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string

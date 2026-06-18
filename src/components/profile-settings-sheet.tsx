@@ -221,9 +221,47 @@ function PinRow({ profile }: { profile: Profile }) {
   );
 }
 
+const MAX_BG_BYTES = 1_500_000; // ~1.5 MB after downscale
+
+async function fileToDownscaledDataUrl(file: File): Promise<string> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = () => reject(new Error("Could not load image"));
+    i.src = dataUrl;
+  });
+  const MAX_DIM = 1920;
+  let { width, height } = img;
+  if (width > MAX_DIM || height > MAX_DIM) {
+    const scale = MAX_DIM / Math.max(width, height);
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return dataUrl;
+  ctx.drawImage(img, 0, 0, width, height);
+  let quality = 0.82;
+  let out = canvas.toDataURL("image/jpeg", quality);
+  while (out.length > MAX_BG_BYTES && quality > 0.4) {
+    quality -= 0.12;
+    out = canvas.toDataURL("image/jpeg", quality);
+  }
+  return out;
+}
+
 function ViewMenu() {
   const { theme, setTheme, customThemes, saveCustomTheme, deleteCustomTheme } = useTheme();
   const [creating, setCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
   const [colors, setColors] = useState<CustomThemeColors>({
     background: "#f6f1e4",
@@ -233,6 +271,8 @@ function ViewMenu() {
     accent: "#c2a878",
     border: "#e2dac6",
   });
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
+  const [cardOpacity, setCardOpacity] = useState<number>(1);
 
   const COLOR_FIELDS: { key: keyof CustomThemeColors; label: string }[] = [
     { key: "background", label: "Background" },
@@ -243,17 +283,63 @@ function ViewMenu() {
     { key: "border", label: "Border" },
   ];
 
-  const handleSave = () => {
+  const resetForm = () => {
+    setCreating(false);
+    setName("");
+    setBackgroundImage(null);
+    setCardOpacity(1);
+  };
+
+  const handleSave = async () => {
     const trimmed = name.trim();
     if (!trimmed) {
       toast.error("Give your theme a name");
       return;
     }
-    saveCustomTheme(trimmed, colors);
-    toast.success(`Saved theme: ${trimmed}`);
-    setCreating(false);
-    setName("");
+    setSaving(true);
+    try {
+      const result = await saveCustomTheme({
+        name: trimmed,
+        colors,
+        backgroundImage,
+        cardOpacity,
+      });
+      if (!result) {
+        toast.error("Couldn't save theme");
+        return;
+      }
+      toast.success(`Saved theme: ${trimmed} (shared with your household)`);
+      resetForm();
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please choose an image file");
+      return;
+    }
+    try {
+      const dataUrl = await fileToDownscaledDataUrl(file);
+      setBackgroundImage(dataUrl);
+      toast.success("Background image added");
+    } catch {
+      toast.error("Couldn't load that image");
+    }
+  };
+
+  // Convert hex to rgba for the live preview card
+  const cardPreview = (() => {
+    const h = colors.card.replace("#", "");
+    const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+    const n = parseInt(full, 16);
+    const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    return `rgba(${r}, ${g}, ${b}, ${cardOpacity})`;
+  })();
 
   const allOptions = [
     ...THEMES.map((t) => ({
@@ -266,7 +352,7 @@ function ViewMenu() {
     ...customThemes.map((c) => ({
       id: c.id,
       name: c.name,
-      description: "Your custom scheme",
+      description: c.backgroundImage ? "Custom · with background image" : "Custom · shared with household",
       swatches: [c.colors.background, c.colors.primary, c.colors.accent, c.colors.foreground],
       custom: true,
     })),
@@ -380,50 +466,104 @@ function ViewMenu() {
               </div>
             ))}
           </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="card-opacity" className="text-xs">
+                Card opacity
+              </Label>
+              <span className="text-[11px] font-mono text-muted-foreground">
+                {Math.round(cardOpacity * 100)}%
+              </span>
+            </div>
+            <input
+              id="card-opacity"
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={cardOpacity}
+              onChange={(e) => setCardOpacity(parseFloat(e.target.value))}
+              className="w-full accent-primary"
+            />
+            <div className="text-[11px] text-muted-foreground">
+              Slide to fade cards from solid to fully transparent.
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs">Background image</Label>
+            <div className="flex items-center gap-2">
+              <label className="flex-1">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <span className="flex h-8 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-3 text-xs hover:bg-accent/30">
+                  {backgroundImage ? "Replace image…" : "Upload image…"}
+                </span>
+              </label>
+              {backgroundImage && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setBackgroundImage(null)}
+                >
+                  Remove
+                </Button>
+              )}
+            </div>
+            {backgroundImage && (
+              <div
+                className="h-20 w-full rounded-md border border-border bg-cover bg-center"
+                style={{ backgroundImage: `url(${backgroundImage})` }}
+              />
+            )}
+          </div>
+
           <div
-            className="rounded-md border p-3 text-sm"
+            className="relative rounded-md border p-3 text-sm overflow-hidden"
             style={{
               backgroundColor: colors.background,
               color: colors.foreground,
               borderColor: colors.border,
+              backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
             }}
           >
-            <div className="font-medium" style={{ color: colors.foreground }}>
-              Preview
-            </div>
-            <div className="mt-2 flex gap-2">
-              <span
-                className="px-2 py-1 rounded text-xs"
-                style={{ backgroundColor: colors.primary, color: "#fff" }}
-              >
-                Primary
-              </span>
-              <span
-                className="px-2 py-1 rounded text-xs"
-                style={{ backgroundColor: colors.accent, color: "#fff" }}
-              >
-                Accent
-              </span>
-              <span
-                className="px-2 py-1 rounded text-xs border"
-                style={{ backgroundColor: colors.card, borderColor: colors.border }}
-              >
-                Card
-              </span>
+            <div
+              className="rounded-md p-2"
+              style={{
+                backgroundColor: cardPreview,
+                color: colors.foreground,
+                border: `1px solid ${colors.border}`,
+              }}
+            >
+              <div className="font-medium">Preview card</div>
+              <div className="mt-2 flex gap-2">
+                <span className="px-2 py-1 rounded text-xs" style={{ backgroundColor: colors.primary, color: "#fff" }}>
+                  Primary
+                </span>
+                <span className="px-2 py-1 rounded text-xs" style={{ backgroundColor: colors.accent, color: "#fff" }}>
+                  Accent
+                </span>
+              </div>
             </div>
           </div>
           <div className="flex gap-2">
-            <Button type="button" size="sm" onClick={handleSave} className="flex-1">
-              Save & apply
+            <Button type="button" size="sm" onClick={handleSave} disabled={saving} className="flex-1">
+              {saving ? "Saving…" : "Save & apply"}
             </Button>
             <Button
               type="button"
               size="sm"
               variant="ghost"
-              onClick={() => {
-                setCreating(false);
-                setName("");
-              }}
+              onClick={resetForm}
+              disabled={saving}
             >
               Cancel
             </Button>
