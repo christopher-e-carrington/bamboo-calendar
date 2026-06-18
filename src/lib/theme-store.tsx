@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const THEMES = [
   { id: "parchment", name: "Parchment", description: "Warm cream, bamboo greens. The original.", swatches: ["#f6f1e4", "#7a9a72", "#c2a878", "#4a5a3c"] },
@@ -22,47 +23,25 @@ export type CustomThemeColors = {
 };
 
 export type CustomTheme = {
-  id: string; // "custom-<slug>"
+  id: string;
   name: string;
   colors: CustomThemeColors;
+  backgroundImage?: string | null;
+  cardOpacity?: number;
 };
 
 const STORAGE_KEY = "bamboo.theme";
-const CUSTOM_KEY = "bamboo.custom-themes";
 const DEFAULT_THEME: ThemeId = "parchment";
 
 const CUSTOM_VARS = [
-  "--background",
-  "--foreground",
-  "--card",
-  "--card-foreground",
-  "--popover",
-  "--popover-foreground",
-  "--primary",
-  "--primary-foreground",
-  "--secondary",
-  "--secondary-foreground",
-  "--muted",
-  "--muted-foreground",
-  "--accent",
-  "--accent-foreground",
-  "--border",
-  "--input",
-  "--ring",
-  "--sidebar",
-  "--sidebar-foreground",
-  "--sidebar-primary",
-  "--sidebar-primary-foreground",
-  "--sidebar-accent",
-  "--sidebar-accent-foreground",
-  "--sidebar-border",
-  "--sidebar-ring",
-  "--cream",
-  "--sage",
-  "--sage-deep",
-  "--bamboo",
-  "--bamboo-light",
-  "--wood",
+  "--background", "--foreground", "--card", "--card-foreground",
+  "--popover", "--popover-foreground", "--primary", "--primary-foreground",
+  "--secondary", "--secondary-foreground", "--muted", "--muted-foreground",
+  "--accent", "--accent-foreground", "--border", "--input", "--ring",
+  "--sidebar", "--sidebar-foreground", "--sidebar-primary",
+  "--sidebar-primary-foreground", "--sidebar-accent", "--sidebar-accent-foreground",
+  "--sidebar-border", "--sidebar-ring",
+  "--cream", "--sage", "--sage-deep", "--bamboo", "--bamboo-light", "--wood",
 ];
 
 function hexToRgb(hex: string): { r: number; g: number; b: number } {
@@ -93,11 +72,34 @@ function mix(a: string, b: string, t: number) {
   return `#${toHex(m(ar.r, br.r))}${toHex(m(ar.g, br.g))}${toHex(m(ar.b, br.b))}`;
 }
 
+function rgba(hex: string, alpha: number) {
+  const { r, g, b } = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${Math.max(0, Math.min(1, alpha))})`;
+}
+
 function clearCustomVars(root: HTMLElement) {
   CUSTOM_VARS.forEach((v) => root.style.removeProperty(v));
 }
 
-function applyCustomColors(root: HTMLElement, c: CustomThemeColors) {
+function clearBackgroundImage() {
+  if (typeof document === "undefined") return;
+  document.body.style.backgroundImage = "";
+  document.body.style.backgroundSize = "";
+  document.body.style.backgroundPosition = "";
+  document.body.style.backgroundAttachment = "";
+  document.body.style.backgroundRepeat = "";
+}
+
+function applyBackgroundImage(url: string) {
+  if (typeof document === "undefined") return;
+  document.body.style.backgroundImage = `url("${url.replace(/"/g, '\\"')}")`;
+  document.body.style.backgroundSize = "cover";
+  document.body.style.backgroundPosition = "center";
+  document.body.style.backgroundAttachment = "fixed";
+  document.body.style.backgroundRepeat = "no-repeat";
+}
+
+function applyCustomColors(root: HTMLElement, c: CustomThemeColors, cardOpacity = 1) {
   const isDark = luminance(c.background) < 0.4;
   const fgOnBg = c.foreground;
   const fgOnPrimary = contrastFg(c.primary);
@@ -107,12 +109,15 @@ function applyCustomColors(root: HTMLElement, c: CustomThemeColors) {
   const secondary = mix(c.background, isDark ? "#ffffff" : "#000000", 0.1);
   const sidebar = mix(c.background, isDark ? "#ffffff" : "#000000", 0.03);
 
+  const cardColor = cardOpacity >= 1 ? c.card : rgba(c.card, cardOpacity);
+  const sidebarColor = cardOpacity >= 1 ? sidebar : rgba(sidebar, Math.max(cardOpacity, 0.4));
+
   const map: Record<string, string> = {
     "--background": c.background,
     "--foreground": fgOnBg,
-    "--card": c.card,
+    "--card": cardColor,
     "--card-foreground": contrastFg(c.card),
-    "--popover": c.card,
+    "--popover": cardColor,
     "--popover-foreground": contrastFg(c.card),
     "--primary": c.primary,
     "--primary-foreground": fgOnPrimary,
@@ -125,7 +130,7 @@ function applyCustomColors(root: HTMLElement, c: CustomThemeColors) {
     "--border": c.border,
     "--input": c.border,
     "--ring": c.primary,
-    "--sidebar": sidebar,
+    "--sidebar": sidebarColor,
     "--sidebar-foreground": fgOnBg,
     "--sidebar-primary": c.primary,
     "--sidebar-primary-foreground": fgOnPrimary,
@@ -145,30 +150,23 @@ function applyCustomColors(root: HTMLElement, c: CustomThemeColors) {
   root.classList.toggle("dark", isDark);
 }
 
-function loadCustomThemes(): CustomTheme[] {
-  if (typeof localStorage === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(CUSTOM_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
-
 const ThemeContext = createContext<{
   theme: ThemeId;
   setTheme: (t: ThemeId) => void;
   customThemes: CustomTheme[];
-  saveCustomTheme: (name: string, colors: CustomThemeColors) => CustomTheme;
-  deleteCustomTheme: (id: string) => void;
+  saveCustomTheme: (input: {
+    name: string;
+    colors: CustomThemeColors;
+    backgroundImage?: string | null;
+    cardOpacity?: number;
+  }) => Promise<CustomTheme | null>;
+  deleteCustomTheme: (id: string) => Promise<void>;
 }>({
   theme: DEFAULT_THEME,
   setTheme: () => {},
   customThemes: [],
-  saveCustomTheme: () => ({ id: "", name: "", colors: {} as CustomThemeColors }),
-  deleteCustomTheme: () => {},
+  saveCustomTheme: async () => null,
+  deleteCustomTheme: async () => {},
 });
 
 function applyTheme(theme: ThemeId, customs: CustomTheme[]) {
@@ -176,11 +174,13 @@ function applyTheme(theme: ThemeId, customs: CustomTheme[]) {
   const root = document.documentElement;
   THEMES.forEach((t) => root.classList.remove(`theme-${t.id}`));
   clearCustomVars(root);
+  clearBackgroundImage();
 
   const custom = customs.find((c) => c.id === theme);
   if (custom) {
     root.classList.add("theme-custom");
-    applyCustomColors(root, custom.colors);
+    applyCustomColors(root, custom.colors, custom.cardOpacity ?? 1);
+    if (custom.backgroundImage) applyBackgroundImage(custom.backgroundImage);
     return;
   }
 
@@ -189,19 +189,80 @@ function applyTheme(theme: ThemeId, customs: CustomTheme[]) {
   root.classList.toggle("dark", builtIn === "dark");
 }
 
+type DbRow = {
+  id: string;
+  name: string;
+  colors: CustomThemeColors;
+  background_image_url: string | null;
+  card_opacity: number | string;
+};
+
+function rowToTheme(r: DbRow): CustomTheme {
+  return {
+    id: r.id,
+    name: r.name,
+    colors: r.colors,
+    backgroundImage: r.background_image_url,
+    cardOpacity: typeof r.card_opacity === "string" ? parseFloat(r.card_opacity) : r.card_opacity,
+  };
+}
+
+async function resolveHouseholdId(userId: string): Promise<string> {
+  const { data } = await supabase
+    .from("household_members")
+    .select("household_id")
+    .eq("user_id", userId)
+    .limit(1);
+  return (data?.[0]?.household_id as string | undefined) ?? userId;
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemeId>(DEFAULT_THEME);
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
 
+  const refresh = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("custom_themes")
+      .select("id, name, colors, background_image_url, card_opacity")
+      .order("created_at", { ascending: true });
+    if (error || !data) {
+      setCustomThemes([]);
+      return [] as CustomTheme[];
+    }
+    const themes = (data as unknown as DbRow[]).map(rowToTheme);
+    setCustomThemes(themes);
+    return themes;
+  }, []);
+
   useEffect(() => {
-    const customs = loadCustomThemes();
-    setCustomThemes(customs);
     const stored = (typeof localStorage !== "undefined" && localStorage.getItem(STORAGE_KEY)) || "";
-    const valid =
-      THEMES.some((t) => t.id === stored) || customs.some((c) => c.id === stored);
-    const initial = valid ? stored : DEFAULT_THEME;
+    const builtInValid = THEMES.some((t) => t.id === stored);
+    const initial = builtInValid ? stored : stored || DEFAULT_THEME;
     setThemeState(initial);
-    applyTheme(initial, customs);
+    applyTheme(initial, []);
+
+    let active = true;
+    refresh().then((themes) => {
+      if (!active) return;
+      const valid = THEMES.some((t) => t.id === initial) || themes.some((c) => c.id === initial);
+      const next = valid ? initial : DEFAULT_THEME;
+      setThemeState(next);
+      applyTheme(next, themes);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+        refresh().then((themes) => {
+          applyTheme(theme, themes);
+        });
+      }
+    });
+
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const setTheme = useCallback(
@@ -217,27 +278,39 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     [customThemes],
   );
 
-  const persistCustoms = (list: CustomTheme[]) => {
-    setCustomThemes(list);
-    try {
-      localStorage.setItem(CUSTOM_KEY, JSON.stringify(list));
-    } catch {
-      // ignore
-    }
-  };
-
   const saveCustomTheme = useCallback(
-    (name: string, colors: CustomThemeColors) => {
-      const slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "theme";
-      const id = `custom-${slug}-${Date.now().toString(36)}`;
-      const next: CustomTheme = { id, name: name.trim() || "Custom theme", colors };
+    async (input: {
+      name: string;
+      colors: CustomThemeColors;
+      backgroundImage?: string | null;
+      cardOpacity?: number;
+    }) => {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) return null;
+      const householdId = await resolveHouseholdId(user.id);
+
+      const { data, error } = await supabase
+        .from("custom_themes")
+        .insert({
+          household_id: householdId,
+          created_by: user.id,
+          name: input.name.trim() || "Custom theme",
+          colors: input.colors,
+          background_image_url: input.backgroundImage ?? null,
+          card_opacity: input.cardOpacity ?? 1,
+        })
+        .select("id, name, colors, background_image_url, card_opacity")
+        .single();
+      if (error || !data) return null;
+
+      const next = rowToTheme(data as unknown as DbRow);
       const list = [...customThemes, next];
-      persistCustoms(list);
-      // Apply immediately
-      setThemeState(id);
-      applyTheme(id, list);
+      setCustomThemes(list);
+      setThemeState(next.id);
+      applyTheme(next.id, list);
       try {
-        localStorage.setItem(STORAGE_KEY, id);
+        localStorage.setItem(STORAGE_KEY, next.id);
       } catch {
         // ignore
       }
@@ -247,9 +320,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   );
 
   const deleteCustomTheme = useCallback(
-    (id: string) => {
+    async (id: string) => {
+      await supabase.from("custom_themes").delete().eq("id", id);
       const list = customThemes.filter((c) => c.id !== id);
-      persistCustoms(list);
+      setCustomThemes(list);
       if (theme === id) {
         setThemeState(DEFAULT_THEME);
         applyTheme(DEFAULT_THEME, list);
