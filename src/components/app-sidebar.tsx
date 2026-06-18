@@ -50,7 +50,7 @@ export function AppSidebar({
   active: string;
   onSelect: (id: string) => void;
 }) {
-  const { state } = useSidebar();
+  const { state, setOpen, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const { profiles, activeProfileId, setActiveProfileId } = useHousehold();
   const [pinFor, setPinFor] = useState<Profile | null>(null);
@@ -104,7 +104,11 @@ export function AppSidebar({
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton
                     isActive={active === item.id}
-                    onClick={() => onSelect(item.id)}
+                    onClick={() => {
+                      onSelect(item.id);
+                      setOpen(false);
+                      setOpenMobile(false);
+                    }}
                     className="data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:font-medium"
                   >
                     <item.icon className="h-4 w-4" />
