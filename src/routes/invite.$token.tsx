@@ -95,10 +95,20 @@ function InvitePage() {
           password,
         });
         if (signInErr) throw signInErr;
+        // Suppress the new-account onboarding wizard — this user is joining
+        // an existing household via invitation, not setting up their own.
+        try {
+          const { data: u } = await supabase.auth.getUser();
+          if (u.user) localStorage.setItem(`bamboo.onboarded.${u.user.id}`, "1");
+        } catch { /* ignore */ }
         toast.success("Account created — finish your profile below");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        try {
+          const { data: u } = await supabase.auth.getUser();
+          if (u.user) localStorage.setItem(`bamboo.onboarded.${u.user.id}`, "1");
+        } catch { /* ignore */ }
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Authentication failed");
