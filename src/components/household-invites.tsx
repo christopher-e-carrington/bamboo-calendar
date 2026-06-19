@@ -132,6 +132,27 @@ export function HouseholdInvites() {
         <div className="flex items-center gap-2 text-sm font-medium">
           <UserPlus className="h-4 w-4 text-primary" /> Invite someone
         </div>
+        <div>
+          <Label className="text-xs">Which profile?</Label>
+          <Select value={profileId} onValueChange={setProfileId}>
+            <SelectTrigger>
+              <SelectValue placeholder="Choose a profile" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__new__">Create a new profile</SelectItem>
+              {profiles
+                .filter((p) => p.name.toLowerCase() !== "household")
+                .map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    Take over &ldquo;{p.name}&rdquo;
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Pick an existing person to let them claim that profile, or create a new one.
+          </p>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div>
             <Label htmlFor="invite-name" className="text-xs">Name (optional)</Label>
@@ -157,10 +178,11 @@ export function HouseholdInvites() {
           {creating ? "Creating…" : "Create invite link"}
         </Button>
         <p className="text-[11px] text-muted-foreground">
-          You'll get a shareable link to send them. They'll sign up, fill in their details,
-          and join your household.
+          You'll get a shareable link to send them. They'll create an account, confirm their
+          contact details, and {profileId === "__new__" ? "join your household." : "take over the selected profile."}
         </p>
       </div>
+
 
       <div>
         <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">
