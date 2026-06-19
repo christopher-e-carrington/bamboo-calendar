@@ -199,8 +199,16 @@ function InvitePage() {
 
         <h1 className="font-display text-3xl mb-1">You're invited</h1>
         <p className="text-sm text-muted-foreground mb-6">
-          Join <span className="font-medium text-foreground">{householdName}</span> on the shared
-          calendar.
+          {inv.profile_name ? (
+            <>
+              Take over the <span className="font-medium text-foreground">{inv.profile_name}</span>{" "}
+              profile in <span className="font-medium text-foreground">{householdName}</span>.
+            </>
+          ) : (
+            <>
+              Join <span className="font-medium text-foreground">{householdName}</span> on the shared calendar.
+            </>
+          )}
         </p>
 
         {!user ? (
