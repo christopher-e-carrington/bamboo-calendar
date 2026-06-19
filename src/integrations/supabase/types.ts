@@ -292,6 +292,7 @@ export type Database = {
           id: string
           invited_email: string | null
           invited_name: string | null
+          profile_id: string | null
           status: string
           token: string
         }
@@ -304,6 +305,7 @@ export type Database = {
           id?: string
           invited_email?: string | null
           invited_name?: string | null
+          profile_id?: string | null
           status?: string
           token: string
         }
@@ -316,10 +318,19 @@ export type Database = {
           id?: string
           invited_email?: string | null
           invited_name?: string | null
+          profile_id?: string | null
           status?: string
           token?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "household_invitations_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "household_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       household_members: {
         Row: {
@@ -351,6 +362,7 @@ export type Database = {
       household_profiles: {
         Row: {
           birthday: string | null
+          claimed_user_id: string | null
           color: string
           created_at: string
           id: string
@@ -364,6 +376,7 @@ export type Database = {
         }
         Insert: {
           birthday?: string | null
+          claimed_user_id?: string | null
           color?: string
           created_at?: string
           id?: string
@@ -377,6 +390,7 @@ export type Database = {
         }
         Update: {
           birthday?: string | null
+          claimed_user_id?: string | null
           color?: string
           created_at?: string
           id?: string
@@ -751,6 +765,8 @@ export type Database = {
           id: string
           invited_email: string
           invited_name: string
+          profile_id: string
+          profile_name: string
           status: string
         }[]
       }
