@@ -251,9 +251,13 @@ function InvitePage() {
           </div>
         ) : (
           <div className="bamboo-card p-5 space-y-3">
-            <h2 className="font-medium">Tell us a little about yourself</h2>
+            <h2 className="font-medium">
+              {inv.profile_name ? `Claim the ${inv.profile_name} profile` : "Tell us a little about yourself"}
+            </h2>
             <p className="text-xs text-muted-foreground -mt-2">
-              This creates your profile and contact entry in the household.
+              {inv.profile_name
+                ? `Your details will replace the placeholder on ${inv.profile_name}'s profile and add your contact entry.`
+                : "This creates your profile and contact entry in the household."}
             </p>
             <div>
               <Label htmlFor="name">Full name</Label>
