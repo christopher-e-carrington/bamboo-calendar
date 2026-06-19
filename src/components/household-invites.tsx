@@ -35,10 +35,11 @@ function randomToken() {
 
 export function HouseholdInvites() {
   const { user } = useAuth();
-  const { householdId, isHouseholdOwner } = useHousehold();
+  const { householdId, isHouseholdOwner, profiles } = useHousehold();
   const qc = useQueryClient();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [profileId, setProfileId] = useState<string>("__new__");
   const [creating, setCreating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
 
