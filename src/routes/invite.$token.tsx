@@ -283,7 +283,7 @@ function InvitePage() {
               <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} />
             </div>
             <Button onClick={accept} disabled={accepting} className="w-full">
-              {accepting ? "Joining…" : "Join household"}
+              {accepting ? "Joining…" : inv.profile_name ? `Claim ${inv.profile_name}` : "Join household"}
             </Button>
           </div>
         )}
