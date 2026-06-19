@@ -83,15 +83,19 @@ export function HouseholdInvites() {
     setCreating(true);
     try {
       const token = randomToken();
+      const isClaim = profileId !== "__new__";
+      const claimProfile = isClaim ? profiles.find((p) => p.id === profileId) : null;
       const { error } = await supabase.from("household_invitations").insert({
         household_id: householdId,
         token,
         invited_email: email.trim() || null,
-        invited_name: name.trim() || null,
+        invited_name: name.trim() || (claimProfile?.name ?? null),
+        profile_id: isClaim ? profileId : null,
       });
       if (error) throw error;
       setName("");
       setEmail("");
+      setProfileId("__new__");
       toast.success("Invite created — copy the link to share");
       qc.invalidateQueries({ queryKey: ["invites", householdId] });
     } catch (e) {
