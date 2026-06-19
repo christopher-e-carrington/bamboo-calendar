@@ -52,8 +52,15 @@ export function OnboardingWizard({ user }: { user: User }) {
 
   useEffect(() => {
     if (loading) return;
-    if (!isHouseholdOwner) return;
     if (typeof window === "undefined") return;
+    // If the user has joined someone else's household (no longer owner of
+    // their own), they didn't sign up to set up a household — never show
+    // onboarding and remember it.
+    if (!isHouseholdOwner) {
+      window.localStorage.setItem(STORAGE_KEY(user.id), "1");
+      setOpen(false);
+      return;
+    }
     const flagged = window.localStorage.getItem(STORAGE_KEY(user.id));
     if (flagged) return;
     setOpen(true);
