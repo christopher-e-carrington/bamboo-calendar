@@ -27,6 +27,8 @@ type Invitation = {
   status: string;
   expires_at: string;
   household_name: string | null;
+  profile_id: string | null;
+  profile_name: string | null;
 };
 
 const SignupSchema = z.object({
