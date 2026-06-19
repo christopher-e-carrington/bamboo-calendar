@@ -6,6 +6,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Copy, Mail, Trash2, UserPlus, Check } from "lucide-react";
 import { toast } from "sonner";
 
@@ -17,6 +24,7 @@ type Invitation = {
   status: string;
   created_at: string;
   expires_at: string;
+  profile_id: string | null;
 };
 
 function randomToken() {
