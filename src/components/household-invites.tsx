@@ -6,6 +6,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Copy, Mail, Trash2, UserPlus, Check } from "lucide-react";
 import { toast } from "sonner";
 
@@ -17,6 +24,7 @@ type Invitation = {
   status: string;
   created_at: string;
   expires_at: string;
+  profile_id: string | null;
 };
 
 function randomToken() {
@@ -27,10 +35,11 @@ function randomToken() {
 
 export function HouseholdInvites() {
   const { user } = useAuth();
-  const { householdId, isHouseholdOwner } = useHousehold();
+  const { householdId, isHouseholdOwner, profiles } = useHousehold();
   const qc = useQueryClient();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [profileId, setProfileId] = useState<string>("__new__");
   const [creating, setCreating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -74,15 +83,19 @@ export function HouseholdInvites() {
     setCreating(true);
     try {
       const token = randomToken();
+      const isClaim = profileId !== "__new__";
+      const claimProfile = isClaim ? profiles.find((p) => p.id === profileId) : null;
       const { error } = await supabase.from("household_invitations").insert({
         household_id: householdId,
         token,
         invited_email: email.trim() || null,
-        invited_name: name.trim() || null,
+        invited_name: name.trim() || (claimProfile?.name ?? null),
+        profile_id: isClaim ? profileId : null,
       });
       if (error) throw error;
       setName("");
       setEmail("");
+      setProfileId("__new__");
       toast.success("Invite created — copy the link to share");
       qc.invalidateQueries({ queryKey: ["invites", householdId] });
     } catch (e) {
@@ -119,6 +132,27 @@ export function HouseholdInvites() {
         <div className="flex items-center gap-2 text-sm font-medium">
           <UserPlus className="h-4 w-4 text-primary" /> Invite someone
         </div>
+        <div>
+          <Label className="text-xs">Which profile?</Label>
+          <Select value={profileId} onValueChange={setProfileId}>
+            <SelectTrigger>
+              <SelectValue placeholder="Choose a profile" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__new__">Create a new profile</SelectItem>
+              {profiles
+                .filter((p) => p.name.toLowerCase() !== "household")
+                .map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    Take over &ldquo;{p.name}&rdquo;
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Pick an existing person to let them claim that profile, or create a new one.
+          </p>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <div>
             <Label htmlFor="invite-name" className="text-xs">Name (optional)</Label>
@@ -144,10 +178,11 @@ export function HouseholdInvites() {
           {creating ? "Creating…" : "Create invite link"}
         </Button>
         <p className="text-[11px] text-muted-foreground">
-          You'll get a shareable link to send them. They'll sign up, fill in their details,
-          and join your household.
+          You'll get a shareable link to send them. They'll create an account, confirm their
+          contact details, and {profileId === "__new__" ? "join your household." : "take over the selected profile."}
         </p>
       </div>
+
 
       <div>
         <h4 className="text-xs uppercase tracking-wider text-muted-foreground mb-2">

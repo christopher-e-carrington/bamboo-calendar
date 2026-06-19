@@ -27,6 +27,8 @@ type Invitation = {
   status: string;
   expires_at: string;
   household_name: string | null;
+  profile_id: string | null;
+  profile_name: string | null;
 };
 
 const SignupSchema = z.object({
@@ -93,10 +95,20 @@ function InvitePage() {
           password,
         });
         if (signInErr) throw signInErr;
+        // Suppress the new-account onboarding wizard — this user is joining
+        // an existing household via invitation, not setting up their own.
+        try {
+          const { data: u } = await supabase.auth.getUser();
+          if (u.user) localStorage.setItem(`bamboo.onboarded.${u.user.id}`, "1");
+        } catch { /* ignore */ }
         toast.success("Account created — finish your profile below");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        try {
+          const { data: u } = await supabase.auth.getUser();
+          if (u.user) localStorage.setItem(`bamboo.onboarded.${u.user.id}`, "1");
+        } catch { /* ignore */ }
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Authentication failed");
@@ -187,8 +199,16 @@ function InvitePage() {
 
         <h1 className="font-display text-3xl mb-1">You're invited</h1>
         <p className="text-sm text-muted-foreground mb-6">
-          Join <span className="font-medium text-foreground">{householdName}</span> on the shared
-          calendar.
+          {inv.profile_name ? (
+            <>
+              Take over the <span className="font-medium text-foreground">{inv.profile_name}</span>{" "}
+              profile in <span className="font-medium text-foreground">{householdName}</span>.
+            </>
+          ) : (
+            <>
+              Join <span className="font-medium text-foreground">{householdName}</span> on the shared calendar.
+            </>
+          )}
         </p>
 
         {!user ? (
@@ -231,9 +251,13 @@ function InvitePage() {
           </div>
         ) : (
           <div className="bamboo-card p-5 space-y-3">
-            <h2 className="font-medium">Tell us a little about yourself</h2>
+            <h2 className="font-medium">
+              {inv.profile_name ? `Claim the ${inv.profile_name} profile` : "Tell us a little about yourself"}
+            </h2>
             <p className="text-xs text-muted-foreground -mt-2">
-              This creates your profile and contact entry in the household.
+              {inv.profile_name
+                ? `Your details will replace the placeholder on ${inv.profile_name}'s profile and add your contact entry.`
+                : "This creates your profile and contact entry in the household."}
             </p>
             <div>
               <Label htmlFor="name">Full name</Label>
@@ -259,7 +283,7 @@ function InvitePage() {
               <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} />
             </div>
             <Button onClick={accept} disabled={accepting} className="w-full">
-              {accepting ? "Joining…" : "Join household"}
+              {accepting ? "Joining…" : inv.profile_name ? `Claim ${inv.profile_name}` : "Join household"}
             </Button>
           </div>
         )}
