@@ -17,6 +17,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ManageProfilesDialog } from "./manage-profiles-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function randomToken() {
   const bytes = new Uint8Array(24);
