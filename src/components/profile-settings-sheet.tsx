@@ -322,20 +322,36 @@ async function fileToDownscaledDataUrl(file: File): Promise<string> {
 }
 
 function ViewMenu() {
-  const { theme, setTheme, customThemes, saveCustomTheme, deleteCustomTheme } = useTheme();
+  const {
+    theme,
+    setTheme,
+    customThemes,
+    saveCustomTheme,
+    updateCustomTheme,
+    deleteCustomTheme,
+    sidebarOverride,
+    setSidebarOverride,
+  } = useTheme();
   const [creating, setCreating] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState("");
-  const [colors, setColors] = useState<CustomThemeColors>({
+  const DEFAULT_COLORS: CustomThemeColors = {
     background: "#f6f1e4",
     foreground: "#2a2a22",
     card: "#fbf7ec",
     primary: "#7a9a72",
     accent: "#c2a878",
     border: "#e2dac6",
-  });
+  };
+  const [colors, setColors] = useState<CustomThemeColors>(DEFAULT_COLORS);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [cardOpacity, setCardOpacity] = useState<number>(1);
+
+  // Sidebar override (applies to ALL views)
+  const sidebarEnabled = sidebarOverride !== null;
+  const sidebarColor = sidebarOverride?.color ?? "#f6f1e4";
+  const sidebarOpacity = sidebarOverride?.opacity ?? 1;
 
   const COLOR_FIELDS: { key: keyof CustomThemeColors; label: string }[] = [
     { key: "background", label: "Background" },
@@ -348,9 +364,20 @@ function ViewMenu() {
 
   const resetForm = () => {
     setCreating(false);
+    setEditingId(null);
     setName("");
+    setColors(DEFAULT_COLORS);
     setBackgroundImage(null);
     setCardOpacity(1);
+  };
+
+  const startEdit = (c: (typeof customThemes)[number]) => {
+    setEditingId(c.id);
+    setCreating(true);
+    setName(c.name);
+    setColors(c.colors);
+    setBackgroundImage(c.backgroundImage ?? null);
+    setCardOpacity(c.cardOpacity ?? 1);
   };
 
   const handleSave = async () => {
@@ -361,17 +388,15 @@ function ViewMenu() {
     }
     setSaving(true);
     try {
-      const result = await saveCustomTheme({
-        name: trimmed,
-        colors,
-        backgroundImage,
-        cardOpacity,
-      });
+      const payload = { name: trimmed, colors, backgroundImage, cardOpacity };
+      const result = editingId
+        ? await updateCustomTheme(editingId, payload)
+        : await saveCustomTheme(payload);
       if (!result) {
-        toast.error("Couldn't save theme");
+        toast.error(editingId ? "Couldn't update theme" : "Couldn't save theme");
         return;
       }
-      toast.success(`Saved theme: ${trimmed} (shared with your household)`);
+      toast.success(editingId ? `Updated ${trimmed}` : `Saved theme: ${trimmed}`);
       resetForm();
     } finally {
       setSaving(false);
@@ -395,7 +420,6 @@ function ViewMenu() {
     }
   };
 
-  // Convert hex to rgba for the live preview card
   const cardPreview = (() => {
     const h = colors.card.replace("#", "");
     const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
@@ -410,14 +434,16 @@ function ViewMenu() {
       name: t.name,
       description: t.description,
       swatches: [...t.swatches] as string[],
-      custom: false,
+      custom: false as const,
+      themeRef: null as null,
     })),
     ...customThemes.map((c) => ({
       id: c.id,
       name: c.name,
       description: c.backgroundImage ? "Custom · with background image" : "Custom · shared with household",
       swatches: [c.colors.background, c.colors.primary, c.colors.accent, c.colors.foreground],
-      custom: true,
+      custom: true as const,
+      themeRef: c,
     })),
   ];
 
@@ -450,7 +476,7 @@ function ViewMenu() {
                 className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <div className="text-sm font-medium truncate">{t.name}</div>
+                  <div className="text-sm font-medium truncate pr-12">{t.name}</div>
                   {active && <Check className="h-4 w-4 text-primary shrink-0" />}
                 </div>
                 <div className="mt-1 text-[11px] text-muted-foreground line-clamp-2">{t.description}</div>
@@ -464,19 +490,34 @@ function ViewMenu() {
                   ))}
                 </div>
               </button>
-              {t.custom && (
-                <button
-                  type="button"
-                  aria-label={`Delete ${t.name}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteCustomTheme(t.id);
-                    toast.success(`Deleted ${t.name}`);
-                  }}
-                  className="absolute top-1.5 right-1.5 h-6 w-6 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
+              {t.custom && t.themeRef && (
+                <div className="absolute top-1.5 right-1.5 flex gap-0.5">
+                  <button
+                    type="button"
+                    aria-label={`Edit ${t.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startEdit(t.themeRef!);
+                    }}
+                    className="h-6 w-6 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Delete ${t.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`Delete "${t.name}"? This will remove it for everyone in your household.`)) {
+                        deleteCustomTheme(t.id);
+                        toast.success(`Deleted ${t.name}`);
+                      }
+                    }}
+                    className="h-6 w-6 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               )}
             </div>
           );
@@ -489,7 +530,10 @@ function ViewMenu() {
           variant="outline"
           size="sm"
           className="w-full gap-1.5"
-          onClick={() => setCreating(true)}
+          onClick={() => {
+            resetForm();
+            setCreating(true);
+          }}
         >
           <Sparkles className="h-4 w-4" /> Create custom scheme
         </Button>
@@ -619,7 +663,7 @@ function ViewMenu() {
           </div>
           <div className="flex gap-2">
             <Button type="button" size="sm" onClick={handleSave} disabled={saving} className="flex-1">
-              {saving ? "Saving…" : "Save & apply"}
+              {saving ? "Saving…" : editingId ? "Update" : "Save & apply"}
             </Button>
             <Button
               type="button"
@@ -633,9 +677,73 @@ function ViewMenu() {
           </div>
         </div>
       )}
+
+      {/* Sidebar override — applies to all views */}
+      <div className="rounded-lg border border-border bg-background p-3 space-y-2.5">
+        <div className="flex items-center gap-2">
+          <PanelLeft className="h-4 w-4 text-primary" />
+          <div className="flex-1">
+            <div className="text-sm font-medium">Side menu</div>
+            <div className="text-[11px] text-muted-foreground">
+              Color &amp; transparency for the left menu — applies to every view.
+            </div>
+          </div>
+          <Checkbox
+            checked={sidebarEnabled}
+            onCheckedChange={(checked) => {
+              if (checked) {
+                setSidebarOverride({ color: sidebarColor, opacity: sidebarOpacity });
+              } else {
+                setSidebarOverride(null);
+              }
+            }}
+            aria-label="Use custom side menu color"
+          />
+        </div>
+
+        <div className={cn("space-y-2.5", !sidebarEnabled && "opacity-50 pointer-events-none")}>
+          <div className="flex items-center gap-2 rounded-md border border-input px-2 py-1">
+            <input
+              type="color"
+              value={sidebarColor}
+              onChange={(e) =>
+                setSidebarOverride({ color: e.target.value, opacity: sidebarOpacity })
+              }
+              className="h-6 w-8 cursor-pointer border-0 bg-transparent p-0"
+            />
+            <span className="text-xs font-mono uppercase text-muted-foreground flex-1">
+              {sidebarColor}
+            </span>
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs">Transparency</Label>
+              <span className="text-[11px] font-mono text-muted-foreground">
+                {Math.round(sidebarOpacity * 100)}%
+              </span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={sidebarOpacity}
+              onChange={(e) =>
+                setSidebarOverride({
+                  color: sidebarColor,
+                  opacity: parseFloat(e.target.value),
+                })
+              }
+              className="w-full accent-primary"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+
 
 function DefaultProfileMenu() {
   const { profiles, defaultProfileId, setDefaultProfileId, familyProfile } = useHousehold();
