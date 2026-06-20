@@ -37,7 +37,6 @@ export const NAV_ITEMS = [
   { id: "documents", title: "Documents", icon: FileText },
   { id: "passwords", title: "Passwords", icon: KeyRound },
   { id: "memories", title: "Memories", icon: ImageIcon },
-  { id: "household", title: "Household", icon: Users },
 ];
 // Pages that can never be hidden from the sidebar.
 export const ALWAYS_VISIBLE_PAGES = new Set(["today"]);
