@@ -68,36 +68,6 @@ function NicknameRow({ profile }: { profile: Profile }) {
   );
 }
 
-function UsersMenu() {
-  const { profiles, familyProfile } = useHousehold();
-  const { user } = useAuth();
-  const [busyId, setBusyId] = useState<string | null>(null);
-
-  const shareAccount = async (profile: Profile) => {
-    if (!user) {
-      toast.error("Sign in required");
-      return;
-    }
-    setBusyId(profile.id);
-    try {
-      const token = randomToken();
-      const { error } = await supabase.from("household_invitations").insert({
-        household_id: user.id,
-        token,
-        invited_name: profile.name,
-        invited_email: null,
-      });
-      if (error) throw error;
-      const link = `${window.location.origin}/invite/${token}`;
-      await navigator.clipboard.writeText(link);
-      toast.success(`Invite link for ${profile.name} copied — send it to them`);
-    } catch (e) {
-      console.error(e);
-      toast.error("Could not create share link");
-    } finally {
-      setBusyId(null);
-    }
-  };
 
 function UsersMenu() {
   const { profiles, familyProfile, removeProfile } = useHousehold();
