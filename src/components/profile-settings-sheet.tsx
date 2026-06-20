@@ -9,7 +9,7 @@ import { Lock, LockOpen, Settings2, Check, Palette, ChevronDown, User, Eye, Shie
 import { GoogleCalendarMenu } from "./google-calendar-settings";
 import { toast } from "sonner";
 import { THEMES, useTheme, type ThemeId, type CustomThemeColors } from "@/lib/theme-store";
-import { Trash2, Sparkles } from "lucide-react";
+import { Trash2, Sparkles, Pencil, PanelLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, ALWAYS_VISIBLE_PAGES } from "./app-sidebar";
 import { useHiddenPages } from "@/lib/hidden-pages-store";
