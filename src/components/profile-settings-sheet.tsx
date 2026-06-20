@@ -17,6 +17,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ManageProfilesDialog } from "./manage-profiles-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function randomToken() {
   const bytes = new Uint8Array(24);
@@ -58,10 +68,13 @@ function NicknameRow({ profile }: { profile: Profile }) {
   );
 }
 
+
 function UsersMenu() {
-  const { profiles, familyProfile } = useHousehold();
+  const { profiles, familyProfile, removeProfile } = useHousehold();
   const { user } = useAuth();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<Profile | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const shareAccount = async (profile: Profile) => {
     if (!user) {
@@ -89,13 +102,27 @@ function UsersMenu() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    setDeleting(true);
+    try {
+      await removeProfile(confirmDelete.id);
+      toast.success(`${confirmDelete.name} removed`);
+      setConfirmDelete(null);
+    } catch {
+      toast.error("Could not remove user");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="rounded-xl border border-border bg-background/60 p-3 space-y-3">
       <div>
         <div className="text-sm font-medium">Users</div>
         <div className="text-xs text-muted-foreground">
-          Set a nickname to change what's displayed, or share an account to let someone take control
-          of their own profile.
+          Set a nickname to change what's displayed, share an account to let someone take control
+          of their own profile, or remove a user from this household.
         </div>
       </div>
       <div className="grid grid-cols-1 gap-2">
@@ -115,21 +142,32 @@ function UsersMenu() {
                   )}
                 </div>
                 {!isShared && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-1.5"
-                    disabled={busyId === p.id}
-                    onClick={() => shareAccount(p)}
-                  >
-                    {busyId === p.id ? (
-                      <>Sharing…</>
-                    ) : (
-                      <>
-                        <Share2 className="h-3.5 w-3.5" /> Share
-                      </>
-                    )}
-                  </Button>
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5"
+                      disabled={busyId === p.id}
+                      onClick={() => shareAccount(p)}
+                    >
+                      {busyId === p.id ? (
+                        <>Sharing…</>
+                      ) : (
+                        <>
+                          <Share2 className="h-3.5 w-3.5" /> Share
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      onClick={() => setConfirmDelete(p)}
+                      aria-label={`Delete ${p.name}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 )}
               </div>
               <NicknameRow profile={p} />
@@ -144,6 +182,31 @@ function UsersMenu() {
           </Button>
         }
       />
+
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {confirmDelete?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove {confirmDelete?.name} from your household, along with
+              their events, tasks, and other data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting…" : "Yes, delete user"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

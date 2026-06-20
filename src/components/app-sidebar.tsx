@@ -1,4 +1,4 @@
-import { Calendar, CheckSquare, Image as ImageIcon, Home, Users, Settings, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose } from "lucide-react";
+import { Calendar, CheckSquare, Image as ImageIcon, Home, Settings, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { PinDialog } from "./pin-dialog";
 import type { Profile } from "@/lib/household-store";
-import { ManageProfilesDialog } from "./manage-profiles-dialog";
+
 import { ProfileSettingsSheet } from "./profile-settings-sheet";
 import { useHiddenPages } from "@/lib/hidden-pages-store";
 
@@ -37,7 +37,6 @@ export const NAV_ITEMS = [
   { id: "documents", title: "Documents", icon: FileText },
   { id: "passwords", title: "Passwords", icon: KeyRound },
   { id: "memories", title: "Memories", icon: ImageIcon },
-  { id: "household", title: "Household", icon: Users },
 ];
 // Pages that can never be hidden from the sidebar.
 export const ALWAYS_VISIBLE_PAGES = new Set(["today"]);
@@ -123,7 +122,7 @@ export function AppSidebar({
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center justify-between pr-2">
             <span>Profiles</span>
-            {!collapsed && <ManageProfilesDialog />}
+            
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
