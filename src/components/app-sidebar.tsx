@@ -1,4 +1,4 @@
-import { Calendar, CheckSquare, Image as ImageIcon, Home, Settings, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose } from "lucide-react";
+import { Calendar, CheckSquare, Image as ImageIcon, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -9,17 +9,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
-  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useHousehold } from "@/lib/household-store";
-import { ProfileAvatar } from "./profile-avatar";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { PinDialog } from "./pin-dialog";
-import type { Profile } from "@/lib/household-store";
-
-import { ProfileSettingsSheet } from "./profile-settings-sheet";
 import { useHiddenPages } from "@/lib/hidden-pages-store";
 
 export const NAV_ITEMS = [
