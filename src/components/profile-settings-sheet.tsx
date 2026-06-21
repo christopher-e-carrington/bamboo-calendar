@@ -690,69 +690,6 @@ function ViewMenu() {
           </div>
         </div>
       )}
-
-      {/* Sidebar override — applies to all views */}
-      <div className="rounded-lg border border-border bg-background p-3 space-y-2.5">
-        <div className="flex items-center gap-2">
-          <PanelLeft className="h-4 w-4 text-primary" />
-          <div className="flex-1">
-            <div className="text-sm font-medium">Side menu</div>
-            <div className="text-[11px] text-muted-foreground">
-              Color &amp; transparency for the left menu — applies to every view.
-            </div>
-          </div>
-          <Checkbox
-            checked={sidebarEnabled}
-            onCheckedChange={(checked) => {
-              if (checked) {
-                setSidebarOverride({ color: sidebarColor, opacity: sidebarOpacity });
-              } else {
-                setSidebarOverride(null);
-              }
-            }}
-            aria-label="Use custom side menu color"
-          />
-        </div>
-
-        <div className={cn("space-y-2.5", !sidebarEnabled && "opacity-50 pointer-events-none")}>
-          <div className="flex items-center gap-2 rounded-md border border-input px-2 py-1">
-            <input
-              type="color"
-              value={sidebarColor}
-              onChange={(e) =>
-                setSidebarOverride({ color: e.target.value, opacity: sidebarOpacity })
-              }
-              className="h-6 w-8 cursor-pointer border-0 bg-transparent p-0"
-            />
-            <span className="text-xs font-mono uppercase text-muted-foreground flex-1">
-              {sidebarColor}
-            </span>
-          </div>
-
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs">Transparency</Label>
-              <span className="text-[11px] font-mono text-muted-foreground">
-                {Math.round(sidebarOpacity * 100)}%
-              </span>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.05}
-              value={sidebarOpacity}
-              onChange={(e) =>
-                setSidebarOverride({
-                  color: sidebarColor,
-                  opacity: parseFloat(e.target.value),
-                })
-              }
-              className="w-full accent-primary"
-            />
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
