@@ -40,23 +40,9 @@ export function AppSidebar({
   active: string;
   onSelect: (id: string) => void;
 }) {
-  const { state, setOpen, setOpenMobile } = useSidebar();
+  const { state, setOpen, setOpenMobile, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
-  const { profiles, activeProfileId, setActiveProfileId } = useHousehold();
-  const [pinFor, setPinFor] = useState<Profile | null>(null);
-  const [pinOpen, setPinOpen] = useState(false);
   const { hidden } = useHiddenPages();
-
-  const chooseProfile = (p: Profile) => {
-    if (p.pin && p.id !== activeProfileId) {
-      setPinFor(p);
-      setPinOpen(true);
-    } else {
-      setActiveProfileId(p.id);
-    }
-  };
-
-  const { toggleSidebar } = useSidebar();
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
