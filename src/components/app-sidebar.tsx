@@ -1,4 +1,4 @@
-import { Calendar, CheckSquare, Image as ImageIcon, Home, Settings, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose } from "lucide-react";
+import { Calendar, CheckSquare, Image as ImageIcon, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -9,17 +9,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
-  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useHousehold } from "@/lib/household-store";
-import { ProfileAvatar } from "./profile-avatar";
-import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { PinDialog } from "./pin-dialog";
-import type { Profile } from "@/lib/household-store";
-
-import { ProfileSettingsSheet } from "./profile-settings-sheet";
 import { useHiddenPages } from "@/lib/hidden-pages-store";
 
 export const NAV_ITEMS = [
@@ -49,23 +40,9 @@ export function AppSidebar({
   active: string;
   onSelect: (id: string) => void;
 }) {
-  const { state, setOpen, setOpenMobile } = useSidebar();
+  const { state, setOpen, setOpenMobile, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
-  const { profiles, activeProfileId, setActiveProfileId } = useHousehold();
-  const [pinFor, setPinFor] = useState<Profile | null>(null);
-  const [pinOpen, setPinOpen] = useState(false);
   const { hidden } = useHiddenPages();
-
-  const chooseProfile = (p: Profile) => {
-    if (p.pin && p.id !== activeProfileId) {
-      setPinFor(p);
-      setPinOpen(true);
-    } else {
-      setActiveProfileId(p.id);
-    }
-  };
-
-  const { toggleSidebar } = useSidebar();
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -119,62 +96,7 @@ export function AppSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="flex items-center justify-between pr-2">
-            <span>Profiles</span>
-            
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {profiles.map((p) => {
-                const isActive = p.id === activeProfileId;
-                return (
-                  <SidebarMenuItem key={p.id}>
-                    <SidebarMenuButton
-                      onClick={() => chooseProfile(p)}
-                      className={cn(
-                        "gap-3",
-                        isActive && "bg-sidebar-accent text-sidebar-accent-foreground",
-                      )}
-                    >
-                      <ProfileAvatar profile={p} size={22} />
-                      <span className="truncate">{p.name}</span>
-                      {p.pin && (
-                        <span className="ml-auto text-[10px] text-muted-foreground">PIN</span>
-                      )}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <ProfileSettingsSheet
-              trigger={
-                <SidebarMenuButton>
-                  <Settings className="h-4 w-4" />
-                  <span>Settings</span>
-                </SidebarMenuButton>
-              }
-            />
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-
-      <PinDialog
-        profile={pinFor}
-        open={pinOpen}
-        onOpenChange={setPinOpen}
-        onSuccess={() => {
-          if (pinFor) setActiveProfileId(pinFor.id);
-          setPinOpen(false);
-        }}
-      />
     </Sidebar>
   );
 }
