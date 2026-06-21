@@ -96,62 +96,7 @@ export function AppSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel className="flex items-center justify-between pr-2">
-            <span>Profiles</span>
-            
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {profiles.map((p) => {
-                const isActive = p.id === activeProfileId;
-                return (
-                  <SidebarMenuItem key={p.id}>
-                    <SidebarMenuButton
-                      onClick={() => chooseProfile(p)}
-                      className={cn(
-                        "gap-3",
-                        isActive && "bg-sidebar-accent text-sidebar-accent-foreground",
-                      )}
-                    >
-                      <ProfileAvatar profile={p} size={22} />
-                      <span className="truncate">{p.name}</span>
-                      {p.pin && (
-                        <span className="ml-auto text-[10px] text-muted-foreground">PIN</span>
-                      )}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <ProfileSettingsSheet
-              trigger={
-                <SidebarMenuButton>
-                  <Settings className="h-4 w-4" />
-                  <span>Settings</span>
-                </SidebarMenuButton>
-              }
-            />
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-
-      <PinDialog
-        profile={pinFor}
-        open={pinOpen}
-        onOpenChange={setPinOpen}
-        onSuccess={() => {
-          if (pinFor) setActiveProfileId(pinFor.id);
-          setPinOpen(false);
-        }}
-      />
     </Sidebar>
   );
 }
