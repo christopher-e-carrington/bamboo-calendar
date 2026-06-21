@@ -28,6 +28,8 @@ export type CustomTheme = {
   colors: CustomThemeColors;
   backgroundImage?: string | null;
   cardOpacity?: number;
+  sidebarColor?: string | null;
+  sidebarOpacity?: number | null;
 };
 
 export type SidebarOverride = {
