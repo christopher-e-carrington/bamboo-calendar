@@ -107,7 +107,12 @@ function applyBackgroundImage(url: string) {
   document.body.style.backgroundRepeat = "no-repeat";
 }
 
-function applyCustomColors(root: HTMLElement, c: CustomThemeColors, cardOpacity = 1) {
+function applyCustomColors(
+  root: HTMLElement,
+  c: CustomThemeColors,
+  cardOpacity = 1,
+  sidebarOverride?: { color?: string | null; opacity?: number | null } | null,
+) {
   const isDark = luminance(c.background) < 0.4;
   const fgOnBg = c.foreground;
   const fgOnPrimary = contrastFg(c.primary);
@@ -115,10 +120,18 @@ function applyCustomColors(root: HTMLElement, c: CustomThemeColors, cardOpacity 
   const muted = mix(c.background, isDark ? "#ffffff" : "#000000", 0.06);
   const mutedFg = mix(fgOnBg, c.background, 0.45);
   const secondary = mix(c.background, isDark ? "#ffffff" : "#000000", 0.1);
-  const sidebar = mix(c.background, isDark ? "#ffffff" : "#000000", 0.03);
+  const defaultSidebar = mix(c.background, isDark ? "#ffffff" : "#000000", 0.03);
 
   const cardColor = cardOpacity >= 1 ? c.card : rgba(c.card, cardOpacity);
-  const sidebarColor = cardOpacity >= 1 ? sidebar : rgba(sidebar, Math.max(cardOpacity, 0.4));
+
+  // Per-theme sidebar override takes priority; otherwise derive from background.
+  let sidebarColor: string;
+  if (sidebarOverride?.color) {
+    const op = typeof sidebarOverride.opacity === "number" ? sidebarOverride.opacity : 1;
+    sidebarColor = op >= 1 ? sidebarOverride.color : rgba(sidebarOverride.color, op);
+  } else {
+    sidebarColor = cardOpacity >= 1 ? defaultSidebar : rgba(defaultSidebar, Math.max(cardOpacity, 0.4));
+  }
 
   const map: Record<string, string> = {
     "--background": c.background,
@@ -158,32 +171,6 @@ function applyCustomColors(root: HTMLElement, c: CustomThemeColors, cardOpacity 
   root.classList.toggle("dark", isDark);
 }
 
-function applySidebarOverride(override: SidebarOverride | null) {
-  if (typeof document === "undefined") return;
-  const root = document.documentElement;
-  if (!override) {
-    root.style.removeProperty("--sidebar");
-    return;
-  }
-  const value = override.opacity >= 1 ? override.color : rgba(override.color, override.opacity);
-  root.style.setProperty("--sidebar", value);
-}
-
-function loadSidebarOverride(): SidebarOverride | null {
-  if (typeof localStorage === "undefined") return null;
-  try {
-    const raw = localStorage.getItem(SIDEBAR_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (typeof parsed?.color === "string" && typeof parsed?.opacity === "number") {
-      return { color: parsed.color, opacity: parsed.opacity };
-    }
-  } catch {
-    // ignore
-  }
-  return null;
-}
-
 const ThemeContext = createContext<{
   theme: ThemeId;
   setTheme: (t: ThemeId) => void;
@@ -193,6 +180,8 @@ const ThemeContext = createContext<{
     colors: CustomThemeColors;
     backgroundImage?: string | null;
     cardOpacity?: number;
+    sidebarColor?: string | null;
+    sidebarOpacity?: number | null;
   }) => Promise<CustomTheme | null>;
   updateCustomTheme: (
     id: string,
@@ -201,11 +190,11 @@ const ThemeContext = createContext<{
       colors: CustomThemeColors;
       backgroundImage?: string | null;
       cardOpacity?: number;
+      sidebarColor?: string | null;
+      sidebarOpacity?: number | null;
     },
   ) => Promise<CustomTheme | null>;
   deleteCustomTheme: (id: string) => Promise<void>;
-  sidebarOverride: SidebarOverride | null;
-  setSidebarOverride: (next: SidebarOverride | null) => void;
 }>({
   theme: DEFAULT_THEME,
   setTheme: () => {},
@@ -213,11 +202,9 @@ const ThemeContext = createContext<{
   saveCustomTheme: async () => null,
   updateCustomTheme: async () => null,
   deleteCustomTheme: async () => {},
-  sidebarOverride: null,
-  setSidebarOverride: () => {},
 });
 
-function applyTheme(theme: ThemeId, customs: CustomTheme[], sidebar: SidebarOverride | null) {
+function applyTheme(theme: ThemeId, customs: CustomTheme[]) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
   THEMES.forEach((t) => root.classList.remove(`theme-${t.id}`));
@@ -227,14 +214,16 @@ function applyTheme(theme: ThemeId, customs: CustomTheme[], sidebar: SidebarOver
   const custom = customs.find((c) => c.id === theme);
   if (custom) {
     root.classList.add("theme-custom");
-    applyCustomColors(root, custom.colors, custom.cardOpacity ?? 1);
+    applyCustomColors(root, custom.colors, custom.cardOpacity ?? 1, {
+      color: custom.sidebarColor ?? null,
+      opacity: custom.sidebarOpacity ?? null,
+    });
     if (custom.backgroundImage) applyBackgroundImage(custom.backgroundImage);
   } else {
     const builtIn = (THEMES.find((t) => t.id === theme)?.id ?? DEFAULT_THEME) as BuiltInThemeId;
     root.classList.add(`theme-${builtIn}`);
     root.classList.toggle("dark", builtIn === "dark");
   }
-  applySidebarOverride(sidebar);
 }
 
 type DbRow = {
