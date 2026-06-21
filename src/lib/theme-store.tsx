@@ -232,15 +232,23 @@ type DbRow = {
   colors: CustomThemeColors;
   background_image_url: string | null;
   card_opacity: number | string;
+  sidebar_color: string | null;
+  sidebar_opacity: number | string | null;
 };
 
+const ROW_SELECT =
+  "id, name, colors, background_image_url, card_opacity, sidebar_color, sidebar_opacity";
+
 function rowToTheme(r: DbRow): CustomTheme {
+  const so = r.sidebar_opacity;
   return {
     id: r.id,
     name: r.name,
     colors: r.colors,
     backgroundImage: r.background_image_url,
     cardOpacity: typeof r.card_opacity === "string" ? parseFloat(r.card_opacity) : r.card_opacity,
+    sidebarColor: r.sidebar_color,
+    sidebarOpacity: so == null ? null : typeof so === "string" ? parseFloat(so) : so,
   };
 }
 
@@ -256,12 +264,11 @@ async function resolveHouseholdId(userId: string): Promise<string> {
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemeId>(DEFAULT_THEME);
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
-  const [sidebarOverride, setSidebarOverrideState] = useState<SidebarOverride | null>(null);
 
   const refresh = useCallback(async () => {
     const { data, error } = await supabase
       .from("custom_themes")
-      .select("id, name, colors, background_image_url, card_opacity")
+      .select(ROW_SELECT)
       .order("created_at", { ascending: true });
     if (error || !data) {
       setCustomThemes([]);
@@ -276,10 +283,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const stored = (typeof localStorage !== "undefined" && localStorage.getItem(STORAGE_KEY)) || "";
     const builtInValid = THEMES.some((t) => t.id === stored);
     const initial = builtInValid ? stored : stored || DEFAULT_THEME;
-    const sidebar = loadSidebarOverride();
-    setSidebarOverrideState(sidebar);
+    // Clean up old global sidebar override (replaced by per-theme sidebar)
+    try {
+      localStorage.removeItem(SIDEBAR_KEY);
+    } catch {
+      // ignore
+    }
     setThemeState(initial);
-    applyTheme(initial, [], sidebar);
+    applyTheme(initial, []);
 
     let active = true;
     refresh().then((themes) => {
@@ -287,13 +298,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       const valid = THEMES.some((t) => t.id === initial) || themes.some((c) => c.id === initial);
       const next = valid ? initial : DEFAULT_THEME;
       setThemeState(next);
-      applyTheme(next, themes, sidebar);
+      applyTheme(next, themes);
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         refresh().then((themes) => {
-          applyTheme(theme, themes, sidebar);
+          applyTheme(theme, themes);
         });
       }
     });
@@ -308,28 +319,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setTheme = useCallback(
     (t: ThemeId) => {
       setThemeState(t);
-      applyTheme(t, customThemes, sidebarOverride);
+      applyTheme(t, customThemes);
       try {
         localStorage.setItem(STORAGE_KEY, t);
       } catch {
         // ignore
       }
     },
-    [customThemes, sidebarOverride],
-  );
-
-  const setSidebarOverride = useCallback(
-    (next: SidebarOverride | null) => {
-      setSidebarOverrideState(next);
-      applyTheme(theme, customThemes, next);
-      try {
-        if (next) localStorage.setItem(SIDEBAR_KEY, JSON.stringify(next));
-        else localStorage.removeItem(SIDEBAR_KEY);
-      } catch {
-        // ignore
-      }
-    },
-    [theme, customThemes],
+    [customThemes],
   );
 
   const saveCustomTheme = useCallback(
@@ -338,6 +335,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       colors: CustomThemeColors;
       backgroundImage?: string | null;
       cardOpacity?: number;
+      sidebarColor?: string | null;
+      sidebarOpacity?: number | null;
     }) => {
       const { data: userData } = await supabase.auth.getUser();
       const user = userData?.user;
@@ -353,8 +352,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           colors: input.colors,
           background_image_url: input.backgroundImage ?? null,
           card_opacity: input.cardOpacity ?? 1,
+          sidebar_color: input.sidebarColor ?? null,
+          sidebar_opacity: input.sidebarOpacity ?? null,
         })
-        .select("id, name, colors, background_image_url, card_opacity")
+        .select(ROW_SELECT)
         .single();
       if (error || !data) return null;
 
@@ -362,7 +363,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       const list = [...customThemes, next];
       setCustomThemes(list);
       setThemeState(next.id);
-      applyTheme(next.id, list, sidebarOverride);
+      applyTheme(next.id, list);
       try {
         localStorage.setItem(STORAGE_KEY, next.id);
       } catch {
@@ -370,7 +371,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       }
       return next;
     },
-    [customThemes, sidebarOverride],
+    [customThemes],
   );
 
   const updateCustomTheme = useCallback(
@@ -381,6 +382,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         colors: CustomThemeColors;
         backgroundImage?: string | null;
         cardOpacity?: number;
+        sidebarColor?: string | null;
+        sidebarOpacity?: number | null;
       },
     ) => {
       const { data, error } = await supabase
@@ -390,19 +393,21 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           colors: input.colors,
           background_image_url: input.backgroundImage ?? null,
           card_opacity: input.cardOpacity ?? 1,
+          sidebar_color: input.sidebarColor ?? null,
+          sidebar_opacity: input.sidebarOpacity ?? null,
         })
         .eq("id", id)
-        .select("id, name, colors, background_image_url, card_opacity")
+        .select(ROW_SELECT)
         .single();
       if (error || !data) return null;
 
       const updated = rowToTheme(data as unknown as DbRow);
       const list = customThemes.map((c) => (c.id === id ? updated : c));
       setCustomThemes(list);
-      if (theme === id) applyTheme(id, list, sidebarOverride);
+      if (theme === id) applyTheme(id, list);
       return updated;
     },
-    [customThemes, theme, sidebarOverride],
+    [customThemes, theme],
   );
 
   const deleteCustomTheme = useCallback(
@@ -412,7 +417,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       setCustomThemes(list);
       if (theme === id) {
         setThemeState(DEFAULT_THEME);
-        applyTheme(DEFAULT_THEME, list, sidebarOverride);
+        applyTheme(DEFAULT_THEME, list);
         try {
           localStorage.setItem(STORAGE_KEY, DEFAULT_THEME);
         } catch {
@@ -420,7 +425,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         }
       }
     },
-    [customThemes, theme, sidebarOverride],
+    [customThemes, theme],
   );
 
   return (
@@ -432,8 +437,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         saveCustomTheme,
         updateCustomTheme,
         deleteCustomTheme,
-        sidebarOverride,
-        setSidebarOverride,
       }}
     >
       {children}
