@@ -329,8 +329,6 @@ function ViewMenu() {
     saveCustomTheme,
     updateCustomTheme,
     deleteCustomTheme,
-    sidebarOverride,
-    setSidebarOverride,
   } = useTheme();
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -348,10 +346,10 @@ function ViewMenu() {
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
   const [cardOpacity, setCardOpacity] = useState<number>(1);
 
-  // Sidebar override (applies to ALL views)
-  const sidebarEnabled = sidebarOverride !== null;
-  const sidebarColor = sidebarOverride?.color ?? "#f6f1e4";
-  const sidebarOpacity = sidebarOverride?.opacity ?? 1;
+  // Per-view sidebar customization
+  const [sidebarEnabled, setSidebarEnabled] = useState(false);
+  const [sidebarColor, setSidebarColor] = useState<string>("#f6f1e4");
+  const [sidebarOpacity, setSidebarOpacity] = useState<number>(1);
 
   const COLOR_FIELDS: { key: keyof CustomThemeColors; label: string }[] = [
     { key: "background", label: "Background" },
@@ -369,6 +367,9 @@ function ViewMenu() {
     setColors(DEFAULT_COLORS);
     setBackgroundImage(null);
     setCardOpacity(1);
+    setSidebarEnabled(false);
+    setSidebarColor("#f6f1e4");
+    setSidebarOpacity(1);
   };
 
   const startEdit = (c: (typeof customThemes)[number]) => {
@@ -378,6 +379,10 @@ function ViewMenu() {
     setColors(c.colors);
     setBackgroundImage(c.backgroundImage ?? null);
     setCardOpacity(c.cardOpacity ?? 1);
+    const hasSidebar = !!c.sidebarColor;
+    setSidebarEnabled(hasSidebar);
+    setSidebarColor(c.sidebarColor ?? c.colors.background);
+    setSidebarOpacity(typeof c.sidebarOpacity === "number" ? c.sidebarOpacity : 1);
   };
 
   const handleSave = async () => {
@@ -388,7 +393,14 @@ function ViewMenu() {
     }
     setSaving(true);
     try {
-      const payload = { name: trimmed, colors, backgroundImage, cardOpacity };
+      const payload = {
+        name: trimmed,
+        colors,
+        backgroundImage,
+        cardOpacity,
+        sidebarColor: sidebarEnabled ? sidebarColor : null,
+        sidebarOpacity: sidebarEnabled ? sidebarOpacity : null,
+      };
       const result = editingId
         ? await updateCustomTheme(editingId, payload)
         : await saveCustomTheme(payload);
@@ -402,6 +414,7 @@ function ViewMenu() {
       setSaving(false);
     }
   };
+
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
