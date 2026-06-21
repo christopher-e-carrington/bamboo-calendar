@@ -674,6 +674,52 @@ function ViewMenu() {
               </div>
             </div>
           </div>
+          <div className="rounded-md border border-border p-2.5 space-y-2.5">
+            <div className="flex items-center gap-2">
+              <PanelLeft className="h-4 w-4 text-primary" />
+              <div className="flex-1">
+                <div className="text-xs font-medium">Side menu</div>
+                <div className="text-[11px] text-muted-foreground">
+                  Custom color &amp; transparency for the left menu in this view.
+                </div>
+              </div>
+              <Checkbox
+                checked={sidebarEnabled}
+                onCheckedChange={(checked) => setSidebarEnabled(!!checked)}
+                aria-label="Use custom side menu color for this view"
+              />
+            </div>
+            <div className={cn("space-y-2", !sidebarEnabled && "opacity-50 pointer-events-none")}>
+              <div className="flex items-center gap-2 rounded-md border border-input px-2 py-1">
+                <input
+                  type="color"
+                  value={sidebarColor}
+                  onChange={(e) => setSidebarColor(e.target.value)}
+                  className="h-6 w-8 cursor-pointer border-0 bg-transparent p-0"
+                />
+                <span className="text-xs font-mono uppercase text-muted-foreground flex-1">
+                  {sidebarColor}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label className="text-[11px]">Transparency</Label>
+                  <span className="text-[11px] font-mono text-muted-foreground">
+                    {Math.round(sidebarOpacity * 100)}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={sidebarOpacity}
+                  onChange={(e) => setSidebarOpacity(parseFloat(e.target.value))}
+                  className="w-full accent-primary"
+                />
+              </div>
+            </div>
+          </div>
           <div className="flex gap-2">
             <Button type="button" size="sm" onClick={handleSave} disabled={saving} className="flex-1">
               {saving ? "Saving…" : editingId ? "Update" : "Save & apply"}
