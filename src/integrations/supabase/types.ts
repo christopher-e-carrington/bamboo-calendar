@@ -60,6 +60,8 @@ export type Database = {
           household_id: string
           id: string
           name: string
+          sidebar_color: string | null
+          sidebar_opacity: number | null
         }
         Insert: {
           background_image_url?: string | null
@@ -70,6 +72,8 @@ export type Database = {
           household_id: string
           id?: string
           name: string
+          sidebar_color?: string | null
+          sidebar_opacity?: number | null
         }
         Update: {
           background_image_url?: string | null
@@ -80,6 +84,8 @@ export type Database = {
           household_id?: string
           id?: string
           name?: string
+          sidebar_color?: string | null
+          sidebar_opacity?: number | null
         }
         Relationships: []
       }
