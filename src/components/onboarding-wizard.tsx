@@ -63,8 +63,26 @@ export function OnboardingWizard({ user }: { user: User }) {
     }
     const flagged = window.localStorage.getItem(STORAGE_KEY(user.id));
     if (flagged) return;
-    setOpen(true);
-  }, [loading, isHouseholdOwner, user.id]);
+    if (!householdId) return;
+    // Existing account signing in on a new device: detect prior setup by
+    // checking for any contacts in this household (the wizard always inserts
+    // one for the account owner). If found, mark done and skip the wizard.
+    let cancelled = false;
+    (async () => {
+      const { count } = await supabase
+        .from("contacts")
+        .select("id", { count: "exact", head: true })
+        .eq("owner_id", householdId);
+      if (cancelled) return;
+      if ((count ?? 0) > 0) {
+        window.localStorage.setItem(STORAGE_KEY(user.id), "1");
+        setOpen(false);
+      } else {
+        setOpen(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [loading, isHouseholdOwner, user.id, householdId]);
 
   useEffect(() => {
     setMemberNames((prev) => {
