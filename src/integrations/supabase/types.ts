@@ -586,6 +586,110 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_event_google_sync: {
+        Row: {
+          created_at: string
+          direction: string
+          event_id: string
+          google_calendar_id: string
+          google_event_id: string
+          household_id: string
+          id: string
+          last_synced_at: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          direction?: string
+          event_id: string
+          google_calendar_id: string
+          google_event_id: string
+          household_id: string
+          id?: string
+          last_synced_at?: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          event_id?: string
+          google_calendar_id?: string
+          google_event_id?: string
+          household_id?: string
+          id?: string
+          last_synced_at?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_event_google_sync_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_event_google_sync_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "household_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_google_tokens: {
+        Row: {
+          access_token: string
+          calendar_id: string
+          created_at: string
+          google_email: string | null
+          household_id: string
+          id: string
+          profile_id: string
+          refresh_token: string
+          scope: string | null
+          sync_enabled: boolean
+          token_expires_at: string
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          calendar_id?: string
+          created_at?: string
+          google_email?: string | null
+          household_id: string
+          id?: string
+          profile_id: string
+          refresh_token: string
+          scope?: string | null
+          sync_enabled?: boolean
+          token_expires_at: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          calendar_id?: string
+          created_at?: string
+          google_email?: string | null
+          household_id?: string
+          id?: string
+          profile_id?: string
+          refresh_token?: string
+          scope?: string | null
+          sync_enabled?: boolean
+          token_expires_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_google_tokens_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "household_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipes: {
         Row: {
           created_at: string
