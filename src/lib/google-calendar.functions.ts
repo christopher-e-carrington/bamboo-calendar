@@ -1,27 +1,43 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { createHmac, timingSafeEqual } from "crypto";
 
-const GW = "https://connector-gateway.lovable.dev/google_calendar/calendar/v3";
+const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+const GOOGLE_API = "https://www.googleapis.com/calendar/v3";
+const SCOPES = [
+  "openid",
+  "email",
+  "https://www.googleapis.com/auth/calendar.events",
+  "https://www.googleapis.com/auth/calendar.readonly",
+].join(" ");
 
-async function gw(path: string, init: RequestInit = {}) {
-  const lk = process.env.LOVABLE_API_KEY;
-  const ck = process.env.GOOGLE_CALENDAR_API_KEY;
-  if (!lk || !ck) throw new Error("Google Calendar connector not configured");
-  const res = await fetch(`${GW}${path}`, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${lk}`,
-      "X-Connection-Api-Key": ck,
-      "Content-Type": "application/json",
-      ...(init.headers ?? {}),
-    },
-  });
-  if (!res.ok && res.status !== 410 && res.status !== 404) {
-    const t = await res.text();
-    throw new Error(`Google Calendar ${res.status}: ${t.slice(0, 400)}`);
-  }
-  if (res.status === 204 || res.status === 404 || res.status === 410) return null;
-  return res.json();
+// ---------- Shared helpers (also used by the callback route) ----------
+
+export function signOauthState(payload: { profileId: string; householdId: string; nonce: string }) {
+  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY for OAuth state signing");
+  const body = `${payload.profileId}.${payload.householdId}.${payload.nonce}`;
+  const sig = createHmac("sha256", secret).update(body).digest("hex");
+  return Buffer.from(`${body}.${sig}`).toString("base64url");
+}
+
+export function verifyOauthState(state: string): { profileId: string; householdId: string } {
+  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!secret) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
+  const raw = Buffer.from(state, "base64url").toString("utf8");
+  const parts = raw.split(".");
+  if (parts.length !== 4) throw new Error("Bad state");
+  const [profileId, householdId, nonce, sig] = parts;
+  const expected = createHmac("sha256", secret).update(`${profileId}.${householdId}.${nonce}`).digest("hex");
+  const a = Buffer.from(sig);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length || !timingSafeEqual(a, b)) throw new Error("Invalid state signature");
+  return { profileId, householdId };
+}
+
+export function getOauthRedirectUri(origin: string) {
+  return `${origin.replace(/\/$/, "")}/api/public/google-oauth-callback`;
 }
 
 async function householdIdFor(supabase: any, userId: string): Promise<string> {
@@ -34,16 +50,65 @@ async function householdIdFor(supabase: any, userId: string): Promise<string> {
   return (data?.[0]?.household_id as string | undefined) ?? userId;
 }
 
-async function settingsFor(supabase: any, householdId: string) {
-  const { data } = await supabase
-    .from("google_calendar_settings")
-    .select("*")
-    .eq("household_id", householdId)
-    .maybeSingle();
-  return data as { household_id: string; calendar_id: string; sync_enabled: boolean } | null;
+// ---------- Token management ----------
+
+async function refreshAccessToken(refreshToken: string) {
+  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
+  if (!clientId || !clientSecret) throw new Error("Google OAuth credentials not configured");
+  const res = await fetch(GOOGLE_TOKEN_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: "refresh_token",
+    }),
+  });
+  if (!res.ok) throw new Error(`Token refresh failed (${res.status}): ${(await res.text()).slice(0, 300)}`);
+  const json = await res.json() as { access_token: string; expires_in: number };
+  return {
+    access_token: json.access_token,
+    expires_at: new Date(Date.now() + (json.expires_in - 60) * 1000).toISOString(),
+  };
 }
 
-function toGoogleBody(e: any) {
+async function getValidToken(supabase: any, profileId: string) {
+  const { data, error } = await supabase
+    .from("profile_google_tokens")
+    .select("*")
+    .eq("profile_id", profileId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  const expiresMs = new Date(data.token_expires_at).getTime();
+  if (expiresMs > Date.now() + 30_000) return data;
+  const fresh = await refreshAccessToken(data.refresh_token);
+  await supabase
+    .from("profile_google_tokens")
+    .update({ access_token: fresh.access_token, token_expires_at: fresh.expires_at })
+    .eq("id", data.id);
+  return { ...data, access_token: fresh.access_token, token_expires_at: fresh.expires_at };
+}
+
+async function gApi(token: string, path: string, init: RequestInit = {}) {
+  const res = await fetch(`${GOOGLE_API}${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      ...(init.headers ?? {}),
+    },
+  });
+  if (!res.ok && res.status !== 404 && res.status !== 410) {
+    throw new Error(`Google API ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  }
+  if (res.status === 204 || res.status === 404 || res.status === 410) return null;
+  return res.json();
+}
+
+function toGoogleEventBody(e: any) {
   const start = new Date(e.start_at);
   const end = e.end_at ? new Date(e.end_at) : new Date(start.getTime() + 60 * 60 * 1000);
   const body: any = {
@@ -57,134 +122,205 @@ function toGoogleBody(e: any) {
   return body;
 }
 
-export const listGoogleCalendars = createServerFn({ method: "GET" })
+// ---------- Server functions called from the UI ----------
+
+export const startProfileGoogleOAuth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async () => {
-    const data = await gw(`/users/me/calendarList?maxResults=100`);
-    const items = (data?.items ?? []) as any[];
+  .inputValidator((d: { profileId: string; origin: string }) => d)
+  .handler(async ({ data, context }) => {
+    const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
+    if (!clientId) throw new Error("Google OAuth not configured — missing GOOGLE_OAUTH_CLIENT_ID");
+    const hid = await householdIdFor(context.supabase, context.userId);
+    // Verify the profile belongs to this household
+    const { data: prof, error } = await context.supabase
+      .from("household_profiles")
+      .select("id, owner_id")
+      .eq("id", data.profileId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!prof || prof.owner_id !== hid) throw new Error("Profile not in your household");
+
+    const nonce = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    const state = signOauthState({ profileId: data.profileId, householdId: hid, nonce });
+    const redirectUri = getOauthRedirectUri(data.origin);
+    const url = new URL(GOOGLE_AUTH_URL);
+    url.searchParams.set("client_id", clientId);
+    url.searchParams.set("redirect_uri", redirectUri);
+    url.searchParams.set("response_type", "code");
+    url.searchParams.set("scope", SCOPES);
+    url.searchParams.set("access_type", "offline");
+    url.searchParams.set("prompt", "consent");
+    url.searchParams.set("include_granted_scopes", "true");
+    url.searchParams.set("state", state);
+    return { url: url.toString() };
+  });
+
+export const listProfileGoogleConnections = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const hid = await householdIdFor(context.supabase, context.userId);
+    const { data, error } = await context.supabase
+      .from("profile_google_tokens")
+      .select("id, profile_id, google_email, calendar_id, sync_enabled, updated_at")
+      .eq("household_id", hid);
+    if (error) throw error;
+    return { connections: (data ?? []) as any[] };
+  });
+
+export const disconnectProfileGoogle = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { profileId: string }) => d)
+  .handler(async ({ data, context }) => {
+    const hid = await householdIdFor(context.supabase, context.userId);
+    const { error } = await context.supabase
+      .from("profile_google_tokens")
+      .delete()
+      .eq("profile_id", data.profileId)
+      .eq("household_id", hid);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const updateProfileGoogleSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { profileId: string; calendarId?: string; syncEnabled?: boolean }) => d)
+  .handler(async ({ data, context }) => {
+    const hid = await householdIdFor(context.supabase, context.userId);
+    const patch: any = { updated_at: new Date().toISOString() };
+    if (data.calendarId !== undefined) patch.calendar_id = data.calendarId;
+    if (data.syncEnabled !== undefined) patch.sync_enabled = data.syncEnabled;
+    const { error } = await context.supabase
+      .from("profile_google_tokens")
+      .update(patch)
+      .eq("profile_id", data.profileId)
+      .eq("household_id", hid);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const listProfileGoogleCalendars = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { profileId: string }) => d)
+  .handler(async ({ data, context }) => {
+    const tok = await getValidToken(context.supabase, data.profileId);
+    if (!tok) throw new Error("Profile not connected to Google");
+    const list = await gApi(tok.access_token, `/users/me/calendarList?maxResults=100`);
+    const items = (list?.items ?? []) as any[];
     return {
       calendars: items.map((c) => ({
         id: c.id as string,
         summary: (c.summaryOverride ?? c.summary ?? c.id) as string,
         primary: !!c.primary,
-        accessRole: c.accessRole as string,
       })),
     };
   });
 
-export const getGoogleSettings = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const hid = await householdIdFor(context.supabase, context.userId);
-    const s = await settingsFor(context.supabase, hid);
-    return { settings: s };
-  });
-
-export const saveGoogleSettings = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: { calendarId: string; syncEnabled: boolean }) => d)
-  .handler(async ({ data, context }) => {
-    const hid = await householdIdFor(context.supabase, context.userId);
-    const { error } = await (context.supabase as any)
-      .from("google_calendar_settings")
-      .upsert({
-        household_id: hid,
-        calendar_id: data.calendarId,
-        sync_enabled: data.syncEnabled,
-        updated_at: new Date().toISOString(),
-      });
-    if (error) throw error;
-    return { ok: true };
-  });
-
+// Push an event to all assigned profiles that have an active Google connection
 export const pushEventToGoogle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { eventId: string }) => d)
   .handler(async ({ data, context }) => {
     const hid = await householdIdFor(context.supabase, context.userId);
-    const s = await settingsFor(context.supabase, hid);
-    if (!s || !s.sync_enabled) return { skipped: true as const };
     const { data: ev } = await context.supabase
       .from("events")
       .select("*")
       .eq("id", data.eventId)
       .maybeSingle();
     if (!ev) return { skipped: true as const };
-    const { data: existing } = await (context.supabase as any)
-      .from("event_google_sync")
-      .select("*")
-      .eq("event_id", ev.id)
-      .maybeSingle();
-    const body = toGoogleBody(ev);
-    if (existing) {
-      await gw(
-        `/calendars/${encodeURIComponent(existing.google_calendar_id)}/events/${encodeURIComponent(existing.google_event_id)}`,
-        { method: "PATCH", body: JSON.stringify(body) },
-      );
-      await (context.supabase as any)
-        .from("event_google_sync")
-        .update({ last_synced_at: new Date().toISOString() })
-        .eq("event_id", ev.id);
-    } else {
-      const created = await gw(
-        `/calendars/${encodeURIComponent(s.calendar_id)}/events`,
-        { method: "POST", body: JSON.stringify(body) },
-      );
-      if (created?.id) {
-        await (context.supabase as any).from("event_google_sync").insert({
-          event_id: ev.id,
-          household_id: hid,
-          google_event_id: created.id,
-          google_calendar_id: s.calendar_id,
-          direction: "push",
-        });
+    const profileIds: string[] = (ev.profile_ids?.length ? ev.profile_ids : [ev.profile_id]).filter(Boolean);
+    let pushed = 0;
+    for (const pid of profileIds) {
+      const tok = await getValidToken(context.supabase, pid);
+      if (!tok || !tok.sync_enabled) continue;
+      const { data: existing } = await context.supabase
+        .from("profile_event_google_sync")
+        .select("*")
+        .eq("event_id", ev.id)
+        .eq("profile_id", pid)
+        .maybeSingle();
+      const body = toGoogleEventBody(ev);
+      try {
+        if (existing) {
+          await gApi(
+            tok.access_token,
+            `/calendars/${encodeURIComponent(existing.google_calendar_id)}/events/${encodeURIComponent(existing.google_event_id)}`,
+            { method: "PATCH", body: JSON.stringify(body) },
+          );
+          await context.supabase
+            .from("profile_event_google_sync")
+            .update({ last_synced_at: new Date().toISOString() })
+            .eq("id", existing.id);
+        } else {
+          const created = await gApi(
+            tok.access_token,
+            `/calendars/${encodeURIComponent(tok.calendar_id)}/events`,
+            { method: "POST", body: JSON.stringify(body) },
+          );
+          if (created?.id) {
+            await context.supabase.from("profile_event_google_sync").insert({
+              event_id: ev.id,
+              profile_id: pid,
+              household_id: hid,
+              google_event_id: created.id,
+              google_calendar_id: tok.calendar_id,
+              direction: "push",
+            });
+          }
+        }
+        pushed += 1;
+      } catch (e) {
+        console.warn("[google-sync push]", pid, e);
       }
     }
-    return { ok: true as const };
+    return { ok: true as const, pushed };
   });
 
 export const deleteEventFromGoogle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { eventId: string }) => d)
   .handler(async ({ data, context }) => {
-    const { data: m } = await (context.supabase as any)
-      .from("event_google_sync")
+    const { data: rows } = await context.supabase
+      .from("profile_event_google_sync")
       .select("*")
-      .eq("event_id", data.eventId)
-      .maybeSingle();
-    if (!m) return { skipped: true as const };
-    try {
-      await gw(
-        `/calendars/${encodeURIComponent(m.google_calendar_id)}/events/${encodeURIComponent(m.google_event_id)}`,
-        { method: "DELETE" },
-      );
-    } catch {
-      // ignore — event may already be gone on Google's side
+      .eq("event_id", data.eventId);
+    for (const m of rows ?? []) {
+      const tok = await getValidToken(context.supabase, m.profile_id);
+      if (!tok) continue;
+      try {
+        await gApi(
+          tok.access_token,
+          `/calendars/${encodeURIComponent(m.google_calendar_id)}/events/${encodeURIComponent(m.google_event_id)}`,
+          { method: "DELETE" },
+        );
+      } catch (e) {
+        console.warn("[google-sync delete]", e);
+      }
     }
     return { ok: true as const };
   });
 
-export const listUpcomingGoogleEvents = createServerFn({ method: "GET" })
+export const listUpcomingProfileGoogleEvents = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const hid = await householdIdFor(context.supabase, context.userId);
-    const s = await settingsFor(context.supabase, hid);
-    if (!s) return { events: [] as any[], settingsMissing: true as const };
+  .inputValidator((d: { profileId: string }) => d)
+  .handler(async ({ data, context }) => {
+    const tok = await getValidToken(context.supabase, data.profileId);
+    if (!tok) throw new Error("Profile not connected to Google");
     const params = new URLSearchParams({
       timeMin: new Date().toISOString(),
-      maxResults: "30",
+      maxResults: "50",
       singleEvents: "true",
       orderBy: "startTime",
     });
-    const data = await gw(
-      `/calendars/${encodeURIComponent(s.calendar_id)}/events?${params.toString()}`,
+    const list = await gApi(
+      tok.access_token,
+      `/calendars/${encodeURIComponent(tok.calendar_id)}/events?${params.toString()}`,
     );
-    const { data: existing } = await (context.supabase as any)
-      .from("event_google_sync")
+    const { data: existing } = await context.supabase
+      .from("profile_event_google_sync")
       .select("google_event_id")
-      .eq("household_id", hid);
+      .eq("profile_id", data.profileId);
     const linked = new Set(((existing ?? []) as any[]).map((r) => r.google_event_id));
-    const events = ((data?.items ?? []) as any[]).map((e) => ({
+    const events = ((list?.items ?? []) as any[]).map((e) => ({
       id: e.id as string,
       title: (e.summary ?? "(no title)") as string,
       start: (e.start?.dateTime ?? e.start?.date) as string | null,
@@ -193,34 +329,30 @@ export const listUpcomingGoogleEvents = createServerFn({ method: "GET" })
       description: (e.description ?? null) as string | null,
       alreadyLinked: linked.has(e.id),
     }));
-    return { events, settingsMissing: false as const };
+    return { events };
   });
 
-export const importGoogleEvent = createServerFn({ method: "POST" })
+export const importProfileGoogleEvent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { googleEventId: string; profileIds: string[] }) => d)
+  .inputValidator((d: { profileId: string; googleEventId: string }) => d)
   .handler(async ({ data, context }) => {
-    if (!data.profileIds.length) throw new Error("Assign at least one profile");
     const hid = await householdIdFor(context.supabase, context.userId);
-    const s = await settingsFor(context.supabase, hid);
-    if (!s) throw new Error("Google Calendar not configured");
-    const ge = await gw(
-      `/calendars/${encodeURIComponent(s.calendar_id)}/events/${encodeURIComponent(data.googleEventId)}`,
+    const tok = await getValidToken(context.supabase, data.profileId);
+    if (!tok) throw new Error("Profile not connected to Google");
+    const ge = await gApi(
+      tok.access_token,
+      `/calendars/${encodeURIComponent(tok.calendar_id)}/events/${encodeURIComponent(data.googleEventId)}`,
     );
     if (!ge) throw new Error("Event not found on Google");
-    const start =
-      ge.start?.dateTime ??
-      (ge.start?.date ? `${ge.start.date}T09:00:00.000Z` : null);
-    const end =
-      ge.end?.dateTime ??
-      (ge.end?.date ? `${ge.end.date}T10:00:00.000Z` : null);
+    const start = ge.start?.dateTime ?? (ge.start?.date ? `${ge.start.date}T09:00:00.000Z` : null);
+    const end = ge.end?.dateTime ?? (ge.end?.date ? `${ge.end.date}T10:00:00.000Z` : null);
     if (!start) throw new Error("Event has no start time");
     const { data: inserted, error } = await context.supabase
       .from("events")
       .insert({
         owner_id: hid,
-        profile_id: data.profileIds[0],
-        profile_ids: data.profileIds,
+        profile_id: data.profileId,
+        profile_ids: [data.profileId],
         title: (ge.summary ?? "(no title)") as string,
         start_at: start,
         end_at: end,
@@ -230,11 +362,12 @@ export const importGoogleEvent = createServerFn({ method: "POST" })
       .select()
       .single();
     if (error) throw error;
-    await (context.supabase as any).from("event_google_sync").insert({
+    await context.supabase.from("profile_event_google_sync").insert({
       event_id: inserted!.id,
+      profile_id: data.profileId,
       household_id: hid,
       google_event_id: ge.id,
-      google_calendar_id: s.calendar_id,
+      google_calendar_id: tok.calendar_id,
       direction: "import",
     });
     return { ok: true as const };

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
+import { Route as ApiPublicGoogleOauthCallbackRouteImport } from './routes/api/public/google-oauth-callback'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -22,31 +23,41 @@ const InviteTokenRoute = InviteTokenRouteImport.update({
   path: '/invite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicGoogleOauthCallbackRoute =
+  ApiPublicGoogleOauthCallbackRouteImport.update({
+    id: '/api/public/google-oauth-callback',
+    path: '/api/public/google-oauth-callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/invite/$token': typeof InviteTokenRoute
+  '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/invite/$token': typeof InviteTokenRoute
+  '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/invite/$token': typeof InviteTokenRoute
+  '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/invite/$token'
+  fullPaths: '/' | '/invite/$token' | '/api/public/google-oauth-callback'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/invite/$token'
-  id: '__root__' | '/' | '/invite/$token'
+  to: '/' | '/invite/$token' | '/api/public/google-oauth-callback'
+  id: '__root__' | '/' | '/invite/$token' | '/api/public/google-oauth-callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   InviteTokenRoute: typeof InviteTokenRoute
+  ApiPublicGoogleOauthCallbackRoute: typeof ApiPublicGoogleOauthCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,23 +76,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/google-oauth-callback': {
+      id: '/api/public/google-oauth-callback'
+      path: '/api/public/google-oauth-callback'
+      fullPath: '/api/public/google-oauth-callback'
+      preLoaderRoute: typeof ApiPublicGoogleOauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   InviteTokenRoute: InviteTokenRoute,
+  ApiPublicGoogleOauthCallbackRoute: ApiPublicGoogleOauthCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
