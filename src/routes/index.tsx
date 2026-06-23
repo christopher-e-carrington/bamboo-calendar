@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { HouseholdProvider } from "@/lib/household-store";
+import { NotificationsProvider } from "@/lib/notifications-store";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TopNav } from "@/components/top-nav";
 import { ProfileHomeScreen } from "@/components/profile-home-screen";
