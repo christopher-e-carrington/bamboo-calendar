@@ -60,6 +60,7 @@ function Index() {
 
   return (
     <HouseholdProvider user={user}>
+      <NotificationsProvider>
       <OnboardingWizard user={user} />
       <SidebarProvider>
         <div className="min-h-screen flex w-full">
