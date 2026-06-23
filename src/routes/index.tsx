@@ -103,6 +103,7 @@ function Index() {
           </SidebarInset>
         </div>
       </SidebarProvider>
+      </NotificationsProvider>
     </HouseholdProvider>
   );
 }
