@@ -10,14 +10,30 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Bell, CalendarPlus, Plus, Search } from "lucide-react";
 import { useHousehold } from "@/lib/household-store";
+import { useNotifications } from "@/lib/notifications-store";
 import { EventDialog } from "./event-dialog";
 import { ProfileSettingsSheet } from "./profile-settings-sheet";
 
+function timeAgo(ts: number): string {
+  const diff = Math.max(0, Date.now() - ts);
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return "just now";
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
+}
+
 export function TopNav() {
   const { activeProfile, familyProfile } = useHousehold();
+  const { items, unreadCount, markAllRead, clear } = useNotifications();
   const [eventOpen, setEventOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const today = new Date().toLocaleDateString(undefined, {
     weekday: "long",
     month: "long",
@@ -44,10 +60,52 @@ export function TopNav() {
           <Button variant="ghost" size="icon" className="hidden sm:inline-flex">
             <Search className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-4 w-4" />
-            <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-wood" />
-          </Button>
+          <Popover
+            open={notifOpen}
+            onOpenChange={(o) => {
+              setNotifOpen(o);
+              if (o && unreadCount > 0) markAllRead();
+            }}
+          >
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+                <Bell className="h-4 w-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 min-w-[1rem] h-4 px-1 rounded-full bg-wood text-[10px] font-medium text-white flex items-center justify-center">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-80 p-0">
+              <div className="flex items-center justify-between px-3 py-2 border-b border-border">
+                <div className="font-medium text-sm">Notifications</div>
+                {items.length > 0 && (
+                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={clear}>
+                    Clear
+                  </Button>
+                )}
+              </div>
+              <div className="max-h-96 overflow-y-auto">
+                {items.length === 0 ? (
+                  <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                    You're all caught up
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-border">
+                    {items.map((n) => (
+                      <li key={n.id} className="px-3 py-2.5">
+                        <div className="text-sm leading-snug">{n.message}</div>
+                        <div className="text-[11px] text-muted-foreground mt-0.5">
+                          {timeAgo(n.at)}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
           <ProfileSettingsSheet />
 
           <DropdownMenu>
