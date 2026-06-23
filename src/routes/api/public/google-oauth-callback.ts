@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { verifyOauthState, getOauthRedirectUri } from "@/lib/google-calendar.functions";
+import { verifyOauthState, getOauthRedirectUri } from "@/lib/google-calendar.server";
 
 function htmlPage(message: string, ok: boolean) {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Google Calendar</title>
