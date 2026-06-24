@@ -117,48 +117,69 @@ export function ProgressDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <ListChecks className="h-3.5 w-3.5 text-muted-foreground" />
-            <h3 className="text-sm font-medium">Tasks by tier</h3>
-            <span className="ml-auto text-xs text-muted-foreground">{overallTasksPct}% overall</span>
-          </div>
-          <ul className="space-y-2.5">
-            {tierStats.map((s) => (
-              <li key={`t-${s.tier}`} className="text-sm">
-                <div className="flex justify-between mb-1">
-                  <span className="capitalize">{s.tier}</span>
-                  <span className="text-muted-foreground text-xs">{s.tasksDone}/{s.tasks}</span>
-                </div>
-                <Bar value={pct(s.tasksDone, s.tasks)} />
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Target className="h-3.5 w-3.5 text-muted-foreground" />
-            <h3 className="text-sm font-medium">Goals by tier</h3>
-            <span className="ml-auto text-xs text-muted-foreground">{overallGoalsPct}% on track</span>
-          </div>
-          <ul className="space-y-2.5">
-            {tierStats.map((s) => {
-              const g = visibleGoals.filter((x) => x.tier === (s.tier as Tier));
-              const progress = g.length === 0 ? 0 : Math.round((g.reduce((a, x) => a + Math.min(x.progress, x.target) / x.target, 0) / g.length) * 100);
-              return (
-                <li key={`g-${s.tier}`} className="text-sm">
+        <Collapsible open={tasksTierOpen} onOpenChange={setTasksTierOpen}>
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="w-full flex items-center gap-2 py-2 rounded-md hover:bg-secondary/40 transition-colors text-left"
+            >
+              <ListChecks className="h-3.5 w-3.5 text-muted-foreground" />
+              <h3 className="text-sm font-medium">Tasks by tier</h3>
+              <span className="ml-auto text-xs text-muted-foreground">{overallTasksPct}% overall</span>
+              <ChevronDown
+                className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${tasksTierOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <ul className="space-y-2.5 pt-2">
+              {tierStats.map((s) => (
+                <li key={`t-${s.tier}`} className="text-sm">
                   <div className="flex justify-between mb-1">
                     <span className="capitalize">{s.tier}</span>
-                    <span className="text-muted-foreground text-xs">{s.goalsDone}/{s.goals}</span>
+                    <span className="text-muted-foreground text-xs">{s.tasksDone}/{s.tasks}</span>
                   </div>
-                  <Bar value={progress} color="hsl(var(--ring))" />
+                  <Bar value={pct(s.tasksDone, s.tasks)} />
                 </li>
-              );
-            })}
-          </ul>
-        </div>
+              ))}
+            </ul>
+          </CollapsibleContent>
+        </Collapsible>
+
+        <Collapsible open={goalsTierOpen} onOpenChange={setGoalsTierOpen}>
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="w-full flex items-center gap-2 py-2 rounded-md hover:bg-secondary/40 transition-colors text-left"
+            >
+              <Target className="h-3.5 w-3.5 text-muted-foreground" />
+              <h3 className="text-sm font-medium">Goals by tier</h3>
+              <span className="ml-auto text-xs text-muted-foreground">{overallGoalsPct}% on track</span>
+              <ChevronDown
+                className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${goalsTierOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <ul className="space-y-2.5 pt-2">
+              {tierStats.map((s) => {
+                const g = visibleGoals.filter((x) => x.tier === (s.tier as Tier));
+                const progress = g.length === 0 ? 0 : Math.round((g.reduce((a, x) => a + Math.min(x.progress, x.target) / x.target, 0) / g.length) * 100);
+                return (
+                  <li key={`g-${s.tier}`} className="text-sm">
+                    <div className="flex justify-between mb-1">
+                      <span className="capitalize">{s.tier}</span>
+                      <span className="text-muted-foreground text-xs">{s.goalsDone}/{s.goals}</span>
+                    </div>
+                    <Bar value={progress} color="hsl(var(--ring))" />
+                  </li>
+                );
+              })}
+            </ul>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
+
 
       <div className="mt-6">
         <h3 className="text-sm font-medium mb-3">Remaining per profile</h3>
