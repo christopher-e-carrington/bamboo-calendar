@@ -181,23 +181,7 @@ export function TasksPage() {
         )}
       </section>
 
-      {/* Progress (collapsible) */}
-      <Collapsible open={progressOpen} onOpenChange={setProgressOpen}>
-        <CollapsibleTrigger asChild>
-          <button
-            type="button"
-            className="w-full bamboo-card p-4 flex items-center justify-between hover:bg-secondary/40 transition-colors"
-          >
-            <span className="font-display text-lg">Progress</span>
-            <ChevronDown
-              className={`h-4 w-4 text-muted-foreground transition-transform ${progressOpen ? "rotate-180" : ""}`}
-            />
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="mt-3">
-          <ProgressDashboard />
-        </CollapsibleContent>
-      </Collapsible>
+      <ProgressDashboard />
 
       {/* All to-dos by tier (collapsible) */}
       <Collapsible open={tiersOpen} onOpenChange={setTiersOpen}>
