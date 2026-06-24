@@ -122,6 +122,33 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       )
       .on(
         "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "goals", filter: `owner_id=eq.${householdId}` },
+        (payload) => {
+          const oldRow = payload.old as { id: string; done?: boolean };
+          const newRow = payload.new as { id: string; done?: boolean; title?: string; profile_id?: string };
+          if (!oldRow.done && newRow.done) {
+            push(
+              `goal:complete:${newRow.id}`,
+              `${profileName(newRow.profile_id)} completed the goal "${newRow.title ?? "Untitled"}"`,
+            );
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "goals", filter: `owner_id=eq.${householdId}` },
+        (payload) => {
+          const row = payload.new as { id: string; done?: boolean; title?: string; profile_id?: string };
+          if (row.done) {
+            push(
+              `goal:complete:${row.id}`,
+              `${profileName(row.profile_id)} completed the goal "${row.title ?? "Untitled"}"`,
+            );
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
         { event: "UPDATE", schema: "public", table: "household_profiles", filter: `owner_id=eq.${householdId}` },
         (payload) => {
           const oldRow = payload.old as { id: string; claimed_user_id?: string | null; name?: string };
