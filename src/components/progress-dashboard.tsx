@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useHousehold, TIERS, type Tier } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
-import { Sprout, Target, ListChecks } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Sprout, Target, ListChecks, ChevronDown } from "lucide-react";
 
 function pct(done: number, total: number) {
   if (total === 0) return 0;
