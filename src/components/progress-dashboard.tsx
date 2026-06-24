@@ -50,6 +50,8 @@ function Bar({ value, color }: { value: number; color?: string }) {
 
 export function ProgressDashboard() {
   const { visibleTasks, visibleGoals, profiles, tasks, goals, activeProfile, familyProfile } = useHousehold();
+  const [tasksTierOpen, setTasksTierOpen] = useState(false);
+  const [goalsTierOpen, setGoalsTierOpen] = useState(false);
 
   const tierStats = useMemo(() => {
     return TIERS.map((tier) => {
