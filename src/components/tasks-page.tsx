@@ -64,7 +64,6 @@ export function TasksPage() {
   const [monthDay, setMonthDay] = useState<number>(new Date().getDate());
   const [busy, setBusy] = useState(false);
   const [tiersOpen, setTiersOpen] = useState(false);
-  const [progressOpen, setProgressOpen] = useState(false);
 
   if (loading || !activeProfile) {
     return <div className="px-5 py-10 text-center text-muted-foreground text-sm">Loading…</div>;
