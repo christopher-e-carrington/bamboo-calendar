@@ -106,6 +106,7 @@ interface HouseholdState {
     notes?: string | null;
   }) => Promise<void>;
   addTask: (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence; tier?: Tier }) => Promise<void>;
+  updateTask: (id: string, patch: { title?: string; due_at?: string | null; recurrence?: Recurrence; tier?: Tier }) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   addGoal: (input: { profile_id: string; title: string; tier: Tier; target?: number; notes?: string | null }) => Promise<void>;
@@ -440,6 +441,13 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", householdId] }),
   });
 
+  const updateTaskMut = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: { title?: string; due_at?: string | null; recurrence?: Recurrence; tier?: Tier } }) => {
+      const { error } = await supabase.from("tasks").update(patch as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", householdId] }),
+  });
 
   const deleteEventMut = useMutation({
     mutationFn: async (id: string) => {
@@ -607,6 +615,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     setProfilePin: (id, pin) => setPinMut.mutateAsync({ id, pin }).then(() => undefined),
     addEvent: (input) => addEventMut.mutateAsync(input).then(() => undefined),
     addTask: (input) => addTaskMut.mutateAsync(input).then(() => undefined),
+    updateTask: (id, patch) => updateTaskMut.mutateAsync({ id, patch }).then(() => undefined),
     deleteEvent: (id) => deleteEventMut.mutateAsync(id).then(() => undefined),
     deleteTask: (id) => deleteTaskMut.mutateAsync(id).then(() => undefined),
     addGoal: (input) => addGoalMut.mutateAsync(input).then(() => undefined),
