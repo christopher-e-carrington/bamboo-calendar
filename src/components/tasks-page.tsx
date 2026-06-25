@@ -5,8 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Trash2, Repeat, ListChecks, ChevronDown, Sun } from "lucide-react";
+import { Plus, Trash2, Repeat, ListChecks, Sun } from "lucide-react";
 import { ProfileAvatar } from "./profile-avatar";
 import { ProgressDashboard } from "./progress-dashboard";
 import { toast } from "sonner";
@@ -63,7 +62,7 @@ export function TasksPage() {
   const [weekday, setWeekday] = useState<number>(new Date().getDay());
   const [monthDay, setMonthDay] = useState<number>(new Date().getDate());
   const [busy, setBusy] = useState(false);
-  const [tiersOpen, setTiersOpen] = useState(false);
+  
 
   if (loading || !activeProfile) {
     return <div className="px-5 py-10 text-center text-muted-foreground text-sm">Loading…</div>;
