@@ -441,6 +441,13 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", householdId] }),
   });
 
+  const updateTaskMut = useMutation({
+    mutationFn: async ({ id, patch }: { id: string; patch: { title?: string; due_at?: string | null; recurrence?: Recurrence; tier?: Tier } }) => {
+      const { error } = await supabase.from("tasks").update(patch as any).eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["tasks", householdId] }),
+  });
 
   const deleteEventMut = useMutation({
     mutationFn: async (id: string) => {
