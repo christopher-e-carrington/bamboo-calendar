@@ -106,6 +106,7 @@ interface HouseholdState {
     notes?: string | null;
   }) => Promise<void>;
   addTask: (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence; tier?: Tier }) => Promise<void>;
+  updateTask: (id: string, patch: { title?: string; due_at?: string | null; recurrence?: Recurrence; tier?: Tier }) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   addGoal: (input: { profile_id: string; title: string; tier: Tier; target?: number; notes?: string | null }) => Promise<void>;
