@@ -312,6 +312,18 @@ export function TasksPage() {
                               }
                             />
                             {p && <ProfileAvatar profile={p} size={22} />}
+                            <TaskEditDialog
+                              task={task}
+                              trigger={
+                                <button
+                                  type="button"
+                                  className="text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-primary transition-all"
+                                  aria-label="Edit task"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                              }
+                            />
                             <button
                               onClick={() => deleteTask(task.id)}
                               className="text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all"
