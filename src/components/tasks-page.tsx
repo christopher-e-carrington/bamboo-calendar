@@ -185,160 +185,150 @@ export function TasksPage() {
 
       <ProgressDashboard />
 
-      {/* All to-dos by tier (collapsible) */}
-      <Collapsible open={tiersOpen} onOpenChange={setTiersOpen}>
-        <CollapsibleTrigger asChild>
-          <button
-            type="button"
-            className="w-full bamboo-card p-4 flex items-center justify-between hover:bg-secondary/40 transition-colors"
-          >
-            <div className="flex items-center gap-2 text-left">
-              <span className="font-display text-lg">All to-dos by tier</span>
-              <span className="text-xs text-muted-foreground hidden sm:inline">
-                Create, review, edit & delete
-              </span>
+      {/* Task editor */}
+      <section className="bamboo-card">
+        <header className="px-4 sm:px-5 pt-4 pb-3 border-b border-border/60">
+          <div className="flex items-center gap-2">
+            <span className="font-display text-lg">Task editor</span>
+            <span className="text-xs text-muted-foreground hidden sm:inline">
+              Create, review, edit & delete
+            </span>
+          </div>
+        </header>
+        <div className="p-4 sm:p-5">
+          <Tabs value={tier} onValueChange={(v) => setTier(v as Tier)}>
+            <div className="overflow-x-auto -mx-1 px-1">
+              <TabsList className="bg-secondary/60">
+                {TIERS.map((t) => (
+                  <TabsTrigger key={t} value={t} className="capitalize">
+                    {TIER_LABEL[t]}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
             </div>
-            <ChevronDown
-              className={`h-4 w-4 text-muted-foreground transition-transform ${tiersOpen ? "rotate-180" : ""}`}
-            />
-          </button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="mt-3">
-          <section className="bamboo-card p-4 sm:p-5">
-            <Tabs value={tier} onValueChange={(v) => setTier(v as Tier)}>
-              <div className="overflow-x-auto -mx-1 px-1">
-                <TabsList className="bg-secondary/60">
-                  {TIERS.map((t) => (
-                    <TabsTrigger key={t} value={t} className="capitalize">
-                      {TIER_LABEL[t]}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </div>
 
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  add();
-                }}
-                className="mt-4 flex flex-col sm:flex-row gap-2"
-              >
-                <Input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder={`Add a ${TIER_LABEL[tier].toLowerCase()} to-do…`}
-                  className="flex-1"
-                />
-                <div className="flex flex-wrap gap-2">
-                  <Select value={recurrence} onValueChange={(v) => setRecurrence(v as Recurrence)}>
-                    <SelectTrigger className="w-[140px]">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                add();
+              }}
+              className="mt-4 flex flex-col sm:flex-row gap-2"
+            >
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={`Add a ${TIER_LABEL[tier].toLowerCase()} to-do…`}
+                className="flex-1"
+              />
+              <div className="flex flex-wrap gap-2">
+                <Select value={recurrence} onValueChange={(v) => setRecurrence(v as Recurrence)}>
+                  <SelectTrigger className="w-[140px]">
+                    <div className="flex items-center gap-1.5">
+                      <Repeat className="h-3.5 w-3.5 text-muted-foreground" />
+                      <SelectValue />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">One-time</SelectItem>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="quarterly">Quarterly</SelectItem>
+                    <SelectItem value="yearly">Yearly</SelectItem>
+                  </SelectContent>
+                </Select>
+                {recurrence === "weekly" && (
+                  <Select value={String(weekday)} onValueChange={(v) => setWeekday(Number(v))}>
+                    <SelectTrigger className="w-[150px]">
                       <div className="flex items-center gap-1.5">
-                        <Repeat className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">Every</span>
                         <SelectValue />
                       </div>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">One-time</SelectItem>
-                      <SelectItem value="daily">Daily</SelectItem>
-                      <SelectItem value="weekly">Weekly</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="quarterly">Quarterly</SelectItem>
-                      <SelectItem value="yearly">Yearly</SelectItem>
+                      {WEEKDAYS.map((d, i) => (
+                        <SelectItem key={i} value={String(i)}>{d}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  {recurrence === "weekly" && (
-                    <Select value={String(weekday)} onValueChange={(v) => setWeekday(Number(v))}>
-                      <SelectTrigger className="w-[150px]">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs text-muted-foreground">Every</span>
-                          <SelectValue />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {WEEKDAYS.map((d, i) => (
-                          <SelectItem key={i} value={String(i)}>{d}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                  {(recurrence === "monthly" || recurrence === "quarterly" || recurrence === "yearly") && (
-                    <Select value={String(monthDay)} onValueChange={(v) => setMonthDay(Number(v))}>
-                      <SelectTrigger className="w-[110px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-                          <SelectItem key={d} value={String(d)}>Day {d}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                  <Button type="submit" disabled={!title.trim() || busy} className="gap-1.5">
-                    <Plus className="h-4 w-4" /> Add
-                  </Button>
-                </div>
-              </form>
+                )}
+                {(recurrence === "monthly" || recurrence === "quarterly" || recurrence === "yearly") && (
+                  <Select value={String(monthDay)} onValueChange={(v) => setMonthDay(Number(v))}>
+                    <SelectTrigger className="w-[110px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                        <SelectItem key={d} value={String(d)}>Day {d}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                <Button type="submit" disabled={!title.trim() || busy} className="gap-1.5">
+                  <Plus className="h-4 w-4" /> Add
+                </Button>
+              </div>
+            </form>
 
-              {TIERS.map((t) => {
-                const items = visibleTasks.filter((x) => x.tier === t);
-                const open = items.filter((x) => !x.done).length;
-                return (
-                  <TabsContent key={t} value={t} className="mt-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="font-display text-lg">{TIER_LABEL[t]} to-dos</h2>
-                      <span className="text-xs text-muted-foreground">{open} of {items.length} open</span>
-                    </div>
-                    {items.length === 0 ? (
-                      <p className="text-sm text-muted-foreground py-8 text-center">
-                        Nothing here yet — plant your first {TIER_LABEL[t].toLowerCase()} to-do above.
-                      </p>
-                    ) : (
-                      <ul className="space-y-2">
-                        {items.map((task) => {
-                          const p = findProfile(task.profile_id);
-                          return (
-                            <li
-                              key={task.id}
-                              className="group flex items-center gap-3 rounded-lg p-2.5 hover:bg-secondary/60 transition-colors border border-transparent hover:border-border"
+            {TIERS.map((t) => {
+              const items = visibleTasks.filter((x) => x.tier === t);
+              const open = items.filter((x) => !x.done).length;
+              return (
+                <TabsContent key={t} value={t} className="mt-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="font-display text-lg">{TIER_LABEL[t]} to-dos</h2>
+                    <span className="text-xs text-muted-foreground">{open} of {items.length} open</span>
+                  </div>
+                  {items.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-8 text-center">
+                      Nothing here yet — plant your first {TIER_LABEL[t].toLowerCase()} to-do above.
+                    </p>
+                  ) : (
+                    <ul className="space-y-2">
+                      {items.map((task) => {
+                        const p = findProfile(task.profile_id);
+                        return (
+                          <li
+                            key={task.id}
+                            className="group flex items-center gap-3 rounded-lg p-2.5 hover:bg-secondary/60 transition-colors border border-transparent hover:border-border"
+                          >
+                            <Checkbox checked={task.done} onCheckedChange={(v) => toggleTask(task.id, Boolean(v))} />
+                            <TaskDetailsDialog
+                              task={task}
+                              trigger={
+                                <button
+                                  type="button"
+                                  className={`flex-1 text-left text-sm flex items-center gap-1.5 hover:text-primary transition-colors ${task.done ? "line-through text-muted-foreground" : ""}`}
+                                >
+                                  {task.title}
+                                  {task.recurrence && task.recurrence !== "none" && (
+                                    <span className="inline-flex items-center gap-0.5 text-[10px] uppercase tracking-wide text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded-full">
+                                      <Repeat className="h-2.5 w-2.5" />
+                                      {recurrenceLabel(task.recurrence, task.due_at ?? null)}
+                                    </span>
+                                  )}
+                                </button>
+                              }
+                            />
+                            {p && <ProfileAvatar profile={p} size={22} />}
+                            <button
+                              onClick={() => deleteTask(task.id)}
+                              className="text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all"
+                              aria-label="Delete task"
                             >
-                              <Checkbox checked={task.done} onCheckedChange={(v) => toggleTask(task.id, Boolean(v))} />
-                              <TaskDetailsDialog
-                                task={task}
-                                trigger={
-                                  <button
-                                    type="button"
-                                    className={`flex-1 text-left text-sm flex items-center gap-1.5 hover:text-primary transition-colors ${task.done ? "line-through text-muted-foreground" : ""}`}
-                                  >
-                                    {task.title}
-                                    {task.recurrence && task.recurrence !== "none" && (
-                                      <span className="inline-flex items-center gap-0.5 text-[10px] uppercase tracking-wide text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded-full">
-                                        <Repeat className="h-2.5 w-2.5" />
-                                        {recurrenceLabel(task.recurrence, task.due_at ?? null)}
-                                      </span>
-                                    )}
-                                  </button>
-                                }
-                              />
-                              {p && <ProfileAvatar profile={p} size={22} />}
-                              <button
-                                onClick={() => deleteTask(task.id)}
-                                className="text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all"
-                                aria-label="Delete task"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                  </TabsContent>
-                );
-              })}
-            </Tabs>
-          </section>
-        </CollapsibleContent>
-      </Collapsible>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </TabsContent>
+              );
+            })}
+          </Tabs>
+        </div>
+      </section>
     </div>
   );
 }
