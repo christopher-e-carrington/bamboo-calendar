@@ -89,18 +89,22 @@ export function TasksPage() {
 
   const findProfile = (id: string) => profiles.find((p) => p.id === id);
 
-  // "Today" = anything due today or earlier, anything with no due date,
-  // plus daily-tier and daily-recurrence tasks. The store's cleanup keeps
-  // recurring tasks aligned to the day, so weekly/monthly/etc that fall on
-  // today will have due_at set to today.
+  // "Today" rules:
+  // - Daily recurrence or daily-tier tasks always show.
+  // - Tasks with a due date show only when due_at falls on today.
+  // - One-time tasks (recurrence "none") with no due date show until done.
+  // - Overdue, undone one-time tasks roll over and show today.
+  // Weekly/monthly/quarterly/yearly recurring tasks are auto-rolled forward
+  // by the store so they only land on today when their next occurrence hits.
   const now = new Date();
-  const endOfToday = new Date();
-  endOfToday.setHours(23, 59, 59, 999);
   const todayTasks = visibleTasks.filter((t) => {
     if (t.tier === "daily" || t.recurrence === "daily") return true;
-    if (!t.due_at) return true;
+    if (!t.due_at) return t.recurrence === "none";
     const due = new Date(t.due_at);
-    return isSameDay(due, now) || due <= endOfToday;
+    if (isSameDay(due, now)) return true;
+    // overdue one-time tasks still need attention
+    if (t.recurrence === "none" && !t.done && due < now) return true;
+    return false;
   });
   const todayOpen = todayTasks.filter((t) => !t.done).length;
 
