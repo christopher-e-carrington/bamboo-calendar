@@ -215,11 +215,14 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
   const events = eventsQ.data ?? [];
   const tasks = tasksQ.data ?? [];
 
-  // Daily housekeeping for recurring tasks:
+  // Daily housekeeping for tasks:
   // - Reset done=false on recurring tasks completed before today so they
   //   reappear once per new day (instead of spawning duplicates on toggle).
-  // - Delete uncompleted recurring tasks whose due date already passed so
-  //   stale items don't pile up.
+  // - Roll non-daily recurring tasks (weekly/monthly/quarterly/yearly)
+  //   forward to their next occurrence when the previous one has passed,
+  //   so weekly stays on its weekday, monthly on its date, etc.
+  // - Delete daily-recurring tasks left undone after their day to avoid
+  //   piling up; one-time tasks are left alone (they remain until done).
   const cleanupRanRef = useRef<string | null>(null);
   useEffect(() => {
     if (!tasksQ.data || !householdId) return;
@@ -228,6 +231,20 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
 
+    const rollForward = (iso: string, rec: Recurrence): string => {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return iso;
+      while (d < startOfToday) {
+        if (rec === "daily") d.setDate(d.getDate() + 1);
+        else if (rec === "weekly") d.setDate(d.getDate() + 7);
+        else if (rec === "monthly") d.setMonth(d.getMonth() + 1);
+        else if (rec === "quarterly") d.setMonth(d.getMonth() + 3);
+        else if (rec === "yearly") d.setFullYear(d.getFullYear() + 1);
+        else break;
+      }
+      return d.toISOString();
+    };
+
     const toReset = (tasksQ.data ?? []).filter(
       (t: any) =>
         t.done &&
@@ -235,16 +252,23 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
         t.recurrence !== "none" &&
         (!t.completed_at || new Date(t.completed_at) < startOfToday),
     );
-    const stale = (tasksQ.data ?? []).filter(
+    const toRoll = (tasksQ.data ?? []).filter(
       (t) =>
-        !t.done &&
         t.recurrence &&
         t.recurrence !== "none" &&
+        t.recurrence !== "daily" &&
+        t.due_at &&
+        new Date(t.due_at) < startOfToday,
+    );
+    const dailyStale = (tasksQ.data ?? []).filter(
+      (t) =>
+        !t.done &&
+        t.recurrence === "daily" &&
         t.due_at &&
         new Date(t.due_at) < startOfToday,
     );
 
-    if (toReset.length === 0 && stale.length === 0) {
+    if (toReset.length === 0 && toRoll.length === 0 && dailyStale.length === 0) {
       cleanupRanRef.current = `${householdId}:${todayKey}`;
       return;
     }
@@ -256,8 +280,15 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
           .update({ done: false, completed_at: null } as any)
           .in("id", toReset.map((t) => t.id));
       }
-      if (stale.length > 0) {
-        await supabase.from("tasks").delete().in("id", stale.map((t) => t.id));
+      for (const t of toRoll) {
+        const next = rollForward(t.due_at as string, t.recurrence);
+        await supabase
+          .from("tasks")
+          .update({ due_at: next } as any)
+          .eq("id", t.id);
+      }
+      if (dailyStale.length > 0) {
+        await supabase.from("tasks").delete().in("id", dailyStale.map((t) => t.id));
       }
       qc.invalidateQueries({ queryKey: ["tasks", householdId] });
     })();
