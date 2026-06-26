@@ -55,7 +55,7 @@ function isSameDay(a: Date, b: Date) {
 }
 
 export function TasksPage() {
-  const { visibleTasks, profiles, activeProfile, toggleTask, addTask, deleteTask, loading } = useHousehold();
+  const { visibleTasks, profiles, activeProfile, toggleTask, addTask, loading } = useHousehold();
   const [tier, setTier] = useState<Tier>("daily");
   const [title, setTitle] = useState("");
   const [recurrence, setRecurrence] = useState<Recurrence>("none");
