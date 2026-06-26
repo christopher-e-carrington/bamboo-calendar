@@ -5,12 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Repeat, ListChecks, Sun } from "lucide-react";
+import { Plus, Repeat, ListChecks, Sun } from "lucide-react";
 import { ProfileAvatar } from "./profile-avatar";
 import { ProgressDashboard } from "./progress-dashboard";
 import { toast } from "sonner";
 import { TaskDetailsDialog } from "./task-details-dialog";
-import { TaskEditDialog } from "./task-edit-dialog";
 
 const TIER_LABEL: Record<Tier, string> = {
   daily: "Daily",
