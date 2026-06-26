@@ -71,6 +71,8 @@ function Index() {
             <main className="flex-1">
               {active === "calendar" ? (
                 <CalendarView />
+              ) : active === "this-week" ? (
+                <ThisWeekPage />
               ) : active === "events" ? (
                 <EventsPage />
               ) : active === "notes" ? (
