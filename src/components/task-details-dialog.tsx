@@ -33,7 +33,7 @@ function addInterval(date: Date, rec: string, i: number): Date {
 }
 
 export function TaskDetailsDialog({ task, trigger }: Props) {
-  const { addEvent, profiles } = useHousehold();
+  const { addEvent, profiles, deleteTask } = useHousehold();
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState("09:00");
   const [duration, setDuration] = useState(30);
