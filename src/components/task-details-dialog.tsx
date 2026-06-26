@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useHousehold, type TaskItem } from "@/lib/household-store";
 import { toast } from "sonner";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, Pencil, Trash2 } from "lucide-react";
+import { TaskEditDialog } from "./task-edit-dialog";
 
 interface Props {
   task: TaskItem;
@@ -32,7 +33,7 @@ function addInterval(date: Date, rec: string, i: number): Date {
 }
 
 export function TaskDetailsDialog({ task, trigger }: Props) {
-  const { addEvent, profiles } = useHousehold();
+  const { addEvent, profiles, deleteTask } = useHousehold();
   const [open, setOpen] = useState(false);
   const [time, setTime] = useState("09:00");
   const [duration, setDuration] = useState(30);
@@ -141,7 +142,30 @@ export function TaskDetailsDialog({ task, trigger }: Props) {
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-2">
+          <div className="flex gap-2 sm:mr-auto">
+            <TaskEditDialog
+              task={task}
+              trigger={
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  <Pencil className="h-3.5 w-3.5" /> Edit
+                </Button>
+              }
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-destructive hover:text-destructive"
+              onClick={() => {
+                if (window.confirm(`Delete "${task.title}"?`)) {
+                  deleteTask(task.id);
+                  setOpen(false);
+                }
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" /> Delete
+            </Button>
+          </div>
           <Button variant="ghost" onClick={() => setOpen(false)} disabled={saving}>
             Cancel
           </Button>

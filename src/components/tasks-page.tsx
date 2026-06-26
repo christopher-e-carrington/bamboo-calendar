@@ -5,12 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Pencil, Repeat, ListChecks, Sun } from "lucide-react";
+import { Plus, Repeat, ListChecks, Sun } from "lucide-react";
 import { ProfileAvatar } from "./profile-avatar";
 import { ProgressDashboard } from "./progress-dashboard";
 import { toast } from "sonner";
 import { TaskDetailsDialog } from "./task-details-dialog";
-import { TaskEditDialog } from "./task-edit-dialog";
 
 const TIER_LABEL: Record<Tier, string> = {
   daily: "Daily",
@@ -56,7 +55,7 @@ function isSameDay(a: Date, b: Date) {
 }
 
 export function TasksPage() {
-  const { visibleTasks, profiles, activeProfile, toggleTask, addTask, deleteTask, loading } = useHousehold();
+  const { visibleTasks, profiles, activeProfile, toggleTask, addTask, loading } = useHousehold();
   const [tier, setTier] = useState<Tier>("daily");
   const [title, setTitle] = useState("");
   const [recurrence, setRecurrence] = useState<Recurrence>("none");
@@ -170,13 +169,7 @@ export function TasksPage() {
                     }
                   />
                   {p && <ProfileAvatar profile={p} size={22} />}
-                  <button
-                    onClick={() => deleteTask(task.id)}
-                    className="text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all"
-                    aria-label="Delete task"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+
                 </li>
               );
             })}
@@ -312,25 +305,6 @@ export function TasksPage() {
                               }
                             />
                             {p && <ProfileAvatar profile={p} size={22} />}
-                            <TaskEditDialog
-                              task={task}
-                              trigger={
-                                <button
-                                  type="button"
-                                  className="text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-primary transition-all"
-                                  aria-label="Edit task"
-                                >
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </button>
-                              }
-                            />
-                            <button
-                              onClick={() => deleteTask(task.id)}
-                              className="text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all"
-                              aria-label="Delete task"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
                           </li>
                         );
                       })}
