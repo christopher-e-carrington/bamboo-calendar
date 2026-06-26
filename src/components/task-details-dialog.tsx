@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useHousehold, type TaskItem } from "@/lib/household-store";
 import { toast } from "sonner";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, Pencil, Trash2 } from "lucide-react";
+import { TaskEditDialog } from "./task-edit-dialog";
 
 interface Props {
   task: TaskItem;
