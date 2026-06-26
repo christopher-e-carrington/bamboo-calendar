@@ -170,13 +170,7 @@ export function TasksPage() {
                     }
                   />
                   {p && <ProfileAvatar profile={p} size={22} />}
-                  <button
-                    onClick={() => deleteTask(task.id)}
-                    className="text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-destructive transition-all"
-                    aria-label="Delete task"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+
                 </li>
               );
             })}
