@@ -6,6 +6,7 @@ import { NotificationsProvider } from "@/lib/notifications-store";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TopNav } from "@/components/top-nav";
 import { ProfileHomeScreen } from "@/components/profile-home-screen";
+import { TomorrowHomeScreen } from "@/components/tomorrow-home-screen";
 import { CalendarView } from "@/components/calendar-view";
 import { EventsPage } from "@/components/events-page";
 import { ThisWeekPage } from "@/components/this-week-page";
