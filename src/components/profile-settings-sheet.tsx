@@ -880,7 +880,7 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
           </SheetDescription>
         </SheetHeader>
         <div className="mt-4 space-y-3">
-          <SettingsSection title="Default profile" icon={User} defaultOpen>
+          <SettingsSection title="Default profile" icon={User}>
             <DefaultProfileMenu />
           </SettingsSection>
           <SettingsSection title="Users" icon={UsersIcon}>
@@ -901,6 +901,9 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
                 <PinRow key={p.id} profile={p} />
               ))}
             </div>
+          </SettingsSection>
+          <SettingsSection title="Delete account" icon={Trash2}>
+            <DeleteAccountMenu />
           </SettingsSection>
         </div>
       </SheetContent>
