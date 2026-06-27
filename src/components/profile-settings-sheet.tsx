@@ -861,6 +861,98 @@ function PagesMenu() {
   );
 }
 
+function DeleteAccountMenu() {
+  const [step, setStep] = useState<0 | 1 | 2>(0);
+  const [busy, setBusy] = useState(false);
+
+  const handleDelete = async () => {
+    setBusy(true);
+    try {
+      const { deleteMyAccount } = await import("@/lib/account.functions");
+      await deleteMyAccount();
+      toast.success("Your account has been deleted");
+      await supabase.auth.signOut();
+      window.location.href = "/";
+    } catch (e) {
+      console.error(e);
+      toast.error("Could not delete account");
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-3 space-y-3">
+      <div>
+        <div className="text-sm font-medium text-destructive">Delete account</div>
+        <div className="text-xs text-muted-foreground">
+          Permanently removes your account and every piece of data associated with it. You can sign
+          up again later with the same email if you'd like a fresh start.
+        </div>
+      </div>
+      <Button
+        variant="destructive"
+        size="sm"
+        className="w-full gap-1.5"
+        onClick={() => setStep(1)}
+        disabled={busy}
+      >
+        <Trash2 className="h-4 w-4" /> Delete my account
+      </Button>
+
+      <AlertDialog open={step === 1} onOpenChange={(o) => !o && !busy && setStep(0)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently erase your household, profiles, events, tasks, notes, contacts,
+              documents, passwords, memories, and every other piece of information tied to your
+              account. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                setStep(2);
+              }}
+              disabled={busy}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              I understand, continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={step === 2} onOpenChange={(o) => !o && !busy && setStep(0)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Final confirmation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you absolutely sure? Once you click delete, your account and all data are gone
+              for good.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={busy}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {busy ? "Deleting…" : "Yes, delete forever"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
 export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode }) {
   const { profiles } = useHousehold();
   return (
@@ -880,7 +972,7 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
           </SheetDescription>
         </SheetHeader>
         <div className="mt-4 space-y-3">
-          <SettingsSection title="Default profile" icon={User} defaultOpen>
+          <SettingsSection title="Default profile" icon={User}>
             <DefaultProfileMenu />
           </SettingsSection>
           <SettingsSection title="Users" icon={UsersIcon}>
@@ -901,6 +993,9 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
                 <PinRow key={p.id} profile={p} />
               ))}
             </div>
+          </SettingsSection>
+          <SettingsSection title="Delete account" icon={Trash2}>
+            <DeleteAccountMenu />
           </SettingsSection>
         </div>
       </SheetContent>
