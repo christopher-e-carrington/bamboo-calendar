@@ -12,7 +12,6 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     // are set ON DELETE CASCADE.
     const ownerTables = [
       "household_invitations",
-      "household_members",
       "event_google_sync",
       "profile_event_google_sync",
       "profile_google_tokens",
@@ -35,9 +34,9 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
     ] as const;
 
     for (const table of ownerTables) {
-      await supabaseAdmin.from(table).delete().eq("owner_id", userId);
+      await supabaseAdmin.from(table as any).delete().eq("owner_id", userId);
     }
-    // Tables keyed by user_id rather than owner_id
+    // household_members is keyed by user_id
     await supabaseAdmin.from("household_members").delete().eq("user_id", userId);
 
     const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
