@@ -15,6 +15,7 @@ import { useHiddenPages } from "@/lib/hidden-pages-store";
 
 export const NAV_ITEMS = [
   { id: "today", title: "Today", icon: Home },
+  { id: "tomorrow", title: "Tomorrow", icon: Home },
   { id: "this-week", title: "This Week", icon: CalendarRange },
   { id: "calendar", title: "Calendar", icon: Calendar },
   { id: "events", title: "Events", icon: CalendarPlus },
