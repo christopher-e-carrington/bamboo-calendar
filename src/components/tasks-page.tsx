@@ -58,7 +58,8 @@ export function TasksPage() {
   const { visibleTasks, profiles, activeProfile, toggleTask, addTask, loading } = useHousehold();
   const [tier, setTier] = useState<Tier>("daily");
   const [title, setTitle] = useState("");
-  const [recurrence, setRecurrence] = useState<Recurrence>("none");
+  const [dailyMode, setDailyMode] = useState<"none" | "daily">("daily");
+  const [oneTimeDate, setOneTimeDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [weekday, setWeekday] = useState<number>(new Date().getDay());
   const [monthDay, setMonthDay] = useState<number>(new Date().getDate());
   const [busy, setBusy] = useState(false);
@@ -73,12 +74,30 @@ export function TasksPage() {
     setBusy(true);
     try {
       let due_at: string | null = null;
-      if (recurrence === "weekly") due_at = nextWeeklyDue(weekday);
-      else if (recurrence === "monthly" || recurrence === "quarterly" || recurrence === "yearly")
+      let recurrence: Recurrence = "none";
+      if (tier === "daily") {
+        if (dailyMode === "daily") {
+          recurrence = "daily";
+        } else {
+          recurrence = "none";
+          const [y, m, d] = oneTimeDate.split("-").map(Number);
+          due_at = new Date(y, (m ?? 1) - 1, d ?? 1, 9, 0, 0, 0).toISOString();
+        }
+      } else if (tier === "weekly") {
+        recurrence = "weekly";
+        due_at = nextWeeklyDue(weekday);
+      } else if (tier === "monthly") {
+        recurrence = "monthly";
         due_at = nextMonthlyDue(monthDay);
+      } else if (tier === "quarterly") {
+        recurrence = "quarterly";
+        due_at = nextMonthlyDue(monthDay);
+      } else if (tier === "yearly") {
+        recurrence = "yearly";
+        due_at = nextMonthlyDue(monthDay);
+      }
       await addTask({ profile_id: activeProfile.id, title: title.trim(), tier, recurrence, due_at });
       setTitle("");
-      setRecurrence("none");
     } catch {
       toast.error("Couldn't add task");
     } finally {
