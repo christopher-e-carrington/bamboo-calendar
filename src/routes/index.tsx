@@ -17,6 +17,7 @@ import { PasswordsPage } from "@/components/passwords-page";
 import { TasksPage } from "@/components/tasks-page";
 import { RoutinesPage } from "@/components/routines-page";
 import { GoalsPage } from "@/components/goals-page";
+import { ProjectsPage } from "@/components/projects-page";
 import { MealsPage } from "@/components/meals-page";
 import { ShoppingListPage } from "@/components/shopping-list-page";
 import { InventoryPage } from "@/components/inventory-page";
@@ -92,6 +93,8 @@ function Index() {
                 <RoutinesPage />
               ) : active === "goals" ? (
                 <GoalsPage />
+              ) : active === "projects" ? (
+                <ProjectsPage />
               ) : active === "meals" ? (
                 <MealsPage />
               ) : active === "shopping" ? (
