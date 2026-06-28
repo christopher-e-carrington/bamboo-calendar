@@ -93,6 +93,8 @@ function Index() {
                 <RoutinesPage />
               ) : active === "goals" ? (
                 <GoalsPage />
+              ) : active === "projects" ? (
+                <ProjectsPage />
               ) : active === "meals" ? (
                 <MealsPage />
               ) : active === "shopping" ? (
