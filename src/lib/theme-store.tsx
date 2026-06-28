@@ -89,61 +89,54 @@ function clearCustomVars(root: HTMLElement) {
   CUSTOM_VARS.forEach((v) => root.style.removeProperty(v));
 }
 
-const BG_LAYER_ID = "app-bg-layer";
-
-function ensureBgLayer(): HTMLDivElement | null {
-  if (typeof document === "undefined") return null;
-  let el = document.getElementById(BG_LAYER_ID) as HTMLDivElement | null;
-  if (!el) {
-    el = document.createElement("div");
-    el.id = BG_LAYER_ID;
-    el.setAttribute("aria-hidden", "true");
-    Object.assign(el.style, {
-      position: "fixed",
-      inset: "0",
-      zIndex: "-1",
-      pointerEvents: "none",
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundRepeat: "no-repeat",
-      backgroundColor: "transparent",
-      transition: "opacity 200ms ease",
-      opacity: "0",
-    } as CSSStyleDeclaration);
-    document.body.prepend(el);
-  }
-  return el;
-}
+let bgRequestId = 0;
 
 function clearBackgroundImage() {
-  const el = ensureBgLayer();
-  if (!el) return;
-  el.style.opacity = "0";
-  el.style.backgroundImage = "";
-  // Also clear any legacy inline styles previously set on body
-  if (typeof document !== "undefined") {
-    document.body.style.backgroundImage = "";
-    document.body.style.backgroundSize = "";
-    document.body.style.backgroundPosition = "";
-    document.body.style.backgroundAttachment = "";
-    document.body.style.backgroundRepeat = "";
-  }
+  if (typeof document === "undefined") return;
+  bgRequestId++;
+  document.body.style.backgroundImage = "";
+  document.body.style.backgroundSize = "";
+  document.body.style.backgroundPosition = "";
+  document.body.style.backgroundAttachment = "";
+  document.body.style.backgroundRepeat = "";
+}
+
+function setBodyBg(url: string) {
+  if (typeof document === "undefined") return;
+  const body = document.body;
+  body.style.backgroundImage = `url("${url.replace(/"/g, '\\"')}")`;
+  body.style.backgroundSize = "cover";
+  body.style.backgroundPosition = "center";
+  body.style.backgroundAttachment = "fixed";
+  body.style.backgroundRepeat = "no-repeat";
+  // Force a reflow so the browser commits the new background paint immediately.
+  // Some mobile browsers otherwise defer the paint until the next layout shift,
+  // which is why the image only appears after switching views and back.
+  void body.offsetHeight;
 }
 
 function applyBackgroundImage(url: string) {
-  const el = ensureBgLayer();
-  if (!el) return;
-  // Preload to avoid a flash / failed first paint, then apply.
+  if (typeof document === "undefined" || !url) return;
+  const requestId = ++bgRequestId;
+  // Paint immediately so data: URLs are visible right away.
+  setBodyBg(url);
+  // Preload, then re-commit once decoded to guarantee the paint sticks even
+  // when the previous attempt happened before the image was ready.
   const img = new Image();
-  const apply = () => {
-    el.style.backgroundImage = `url("${url.replace(/"/g, '\\"')}")`;
-    el.style.opacity = "1";
+  const recommit = () => {
+    if (requestId !== bgRequestId) return; // a newer theme switch superseded us
+    setBodyBg(url);
   };
-  img.onload = apply;
-  img.onerror = apply; // still try — data URLs/SVGs may not fire load reliably
-  img.src = url;
-  // Apply immediately too, so data URLs paint without waiting on a tick.
-  apply();
+  img.onload = recommit;
+  img.onerror = recommit;
+  try {
+    img.src = url;
+    if (typeof img.decode === "function") {
+      img.decode().then(recommit).catch(recommit);
+    }
+  } catch {
+    // ignore — paint already attempted above
+  }
 }
 
 function applyCustomColors(
