@@ -89,8 +89,11 @@ function clearCustomVars(root: HTMLElement) {
   CUSTOM_VARS.forEach((v) => root.style.removeProperty(v));
 }
 
+let bgRequestId = 0;
+
 function clearBackgroundImage() {
   if (typeof document === "undefined") return;
+  bgRequestId++;
   document.body.style.backgroundImage = "";
   document.body.style.backgroundSize = "";
   document.body.style.backgroundPosition = "";
@@ -98,13 +101,42 @@ function clearBackgroundImage() {
   document.body.style.backgroundRepeat = "";
 }
 
-function applyBackgroundImage(url: string) {
+function setBodyBg(url: string) {
   if (typeof document === "undefined") return;
-  document.body.style.backgroundImage = `url("${url.replace(/"/g, '\\"')}")`;
-  document.body.style.backgroundSize = "cover";
-  document.body.style.backgroundPosition = "center";
-  document.body.style.backgroundAttachment = "fixed";
-  document.body.style.backgroundRepeat = "no-repeat";
+  const body = document.body;
+  body.style.backgroundImage = `url("${url.replace(/"/g, '\\"')}")`;
+  body.style.backgroundSize = "cover";
+  body.style.backgroundPosition = "center";
+  body.style.backgroundAttachment = "fixed";
+  body.style.backgroundRepeat = "no-repeat";
+  // Force a reflow so the browser commits the new background paint immediately.
+  // Some mobile browsers otherwise defer the paint until the next layout shift,
+  // which is why the image only appears after switching views and back.
+  void body.offsetHeight;
+}
+
+function applyBackgroundImage(url: string) {
+  if (typeof document === "undefined" || !url) return;
+  const requestId = ++bgRequestId;
+  // Paint immediately so data: URLs are visible right away.
+  setBodyBg(url);
+  // Preload, then re-commit once decoded to guarantee the paint sticks even
+  // when the previous attempt happened before the image was ready.
+  const img = new Image();
+  const recommit = () => {
+    if (requestId !== bgRequestId) return; // a newer theme switch superseded us
+    setBodyBg(url);
+  };
+  img.onload = recommit;
+  img.onerror = recommit;
+  try {
+    img.src = url;
+    if (typeof img.decode === "function") {
+      img.decode().then(recommit).catch(recommit);
+    }
+  } catch {
+    // ignore — paint already attempted above
+  }
 }
 
 function applyCustomColors(
