@@ -23,6 +23,7 @@ export const NAV_ITEMS = [
   { id: "tasks", title: "To-Dos", icon: CheckSquare },
   { id: "routines", title: "Routines", icon: Repeat },
   { id: "goals", title: "Goals", icon: Target },
+  { id: "projects", title: "Projects", icon: FolderKanban },
   { id: "meals", title: "Meals", icon: ChefHat },
   { id: "shopping", title: "Shopping", icon: ShoppingCart },
   { id: "inventory", title: "Inventory", icon: Boxes },
