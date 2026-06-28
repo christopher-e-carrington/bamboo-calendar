@@ -89,22 +89,61 @@ function clearCustomVars(root: HTMLElement) {
   CUSTOM_VARS.forEach((v) => root.style.removeProperty(v));
 }
 
+const BG_LAYER_ID = "app-bg-layer";
+
+function ensureBgLayer(): HTMLDivElement | null {
+  if (typeof document === "undefined") return null;
+  let el = document.getElementById(BG_LAYER_ID) as HTMLDivElement | null;
+  if (!el) {
+    el = document.createElement("div");
+    el.id = BG_LAYER_ID;
+    el.setAttribute("aria-hidden", "true");
+    Object.assign(el.style, {
+      position: "fixed",
+      inset: "0",
+      zIndex: "-1",
+      pointerEvents: "none",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      backgroundColor: "transparent",
+      transition: "opacity 200ms ease",
+      opacity: "0",
+    } as CSSStyleDeclaration);
+    document.body.prepend(el);
+  }
+  return el;
+}
+
 function clearBackgroundImage() {
-  if (typeof document === "undefined") return;
-  document.body.style.backgroundImage = "";
-  document.body.style.backgroundSize = "";
-  document.body.style.backgroundPosition = "";
-  document.body.style.backgroundAttachment = "";
-  document.body.style.backgroundRepeat = "";
+  const el = ensureBgLayer();
+  if (!el) return;
+  el.style.opacity = "0";
+  el.style.backgroundImage = "";
+  // Also clear any legacy inline styles previously set on body
+  if (typeof document !== "undefined") {
+    document.body.style.backgroundImage = "";
+    document.body.style.backgroundSize = "";
+    document.body.style.backgroundPosition = "";
+    document.body.style.backgroundAttachment = "";
+    document.body.style.backgroundRepeat = "";
+  }
 }
 
 function applyBackgroundImage(url: string) {
-  if (typeof document === "undefined") return;
-  document.body.style.backgroundImage = `url("${url.replace(/"/g, '\\"')}")`;
-  document.body.style.backgroundSize = "cover";
-  document.body.style.backgroundPosition = "center";
-  document.body.style.backgroundAttachment = "fixed";
-  document.body.style.backgroundRepeat = "no-repeat";
+  const el = ensureBgLayer();
+  if (!el) return;
+  // Preload to avoid a flash / failed first paint, then apply.
+  const img = new Image();
+  const apply = () => {
+    el.style.backgroundImage = `url("${url.replace(/"/g, '\\"')}")`;
+    el.style.opacity = "1";
+  };
+  img.onload = apply;
+  img.onerror = apply; // still try — data URLs/SVGs may not fire load reliably
+  img.src = url;
+  // Apply immediately too, so data URLs paint without waiting on a tick.
+  apply();
 }
 
 function applyCustomColors(
