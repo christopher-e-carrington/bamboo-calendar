@@ -193,6 +193,43 @@
   --sidebar-ring: oklch(0.65 0.08 140);
 }
 
+/* Sketch — graphite pencil on textured paper */
+.theme-sketch {
+  --cream: oklch(0.95 0.008 85);
+  --sage: oklch(0.45 0.01 250);
+  --sage-deep: oklch(0.28 0.008 250);
+  --bamboo: oklch(0.55 0.012 80);
+  --bamboo-light: oklch(0.82 0.01 85);
+  --wood: oklch(0.5 0.015 70);
+
+  --background: oklch(0.94 0.01 85);
+  --foreground: oklch(0.22 0.008 260);
+  --card: oklch(0.97 0.008 85 / 78%);
+  --card-foreground: oklch(0.22 0.008 260);
+  --popover: oklch(0.97 0.008 85 / 95%);
+  --popover-foreground: oklch(0.22 0.008 260);
+  --primary: oklch(0.32 0.012 250);
+  --primary-foreground: oklch(0.96 0.008 85);
+  --secondary: oklch(0.88 0.01 85 / 75%);
+  --secondary-foreground: oklch(0.26 0.01 250);
+  --muted: oklch(0.88 0.008 85 / 70%);
+  --muted-foreground: oklch(0.45 0.01 250);
+  --accent: oklch(0.55 0.015 80);
+  --accent-foreground: oklch(0.96 0.008 85);
+  --border: oklch(0.78 0.012 80 / 70%);
+  --input: oklch(0.82 0.01 80 / 70%);
+  --ring: oklch(0.32 0.012 250);
+
+  --sidebar: oklch(0.93 0.01 85 / 78%);
+  --sidebar-foreground: oklch(0.22 0.008 260);
+  --sidebar-primary: oklch(0.32 0.012 250);
+  --sidebar-primary-foreground: oklch(0.96 0.008 85);
+  --sidebar-accent: oklch(0.86 0.012 85 / 75%);
+  --sidebar-accent-foreground: oklch(0.26 0.01 250);
+  --sidebar-border: oklch(0.78 0.012 80 / 70%);
+  --sidebar-ring: oklch(0.32 0.012 250);
+}
+
 /* Fauna — darker walnut + copper/amber + forest moss */
 .theme-fauna {
   --cream: oklch(0.96 0.025 75);
