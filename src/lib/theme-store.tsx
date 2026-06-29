@@ -1,14 +1,20 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import auraBg from "@/assets/aura.png.asset.json";
 
 export const THEMES = [
   { id: "parchment", name: "Parchment", description: "Warm cream, bamboo greens. The original.", swatches: ["#f6f1e4", "#7a9a72", "#c2a878", "#4a5a3c"] },
   { id: "fauna", name: "Fauna", description: "Deep walnut, copper, amber and forest moss.", swatches: ["#2a1f17", "#5a7045", "#c98c4a", "#e8c884"] },
   { id: "flora", name: "Flora", description: "Sage, mossy greens, terracotta and seafoam.", swatches: ["#cfd8c2", "#5e7a4f", "#b86e52", "#4a9080"] },
   { id: "sky", name: "Sky", description: "Soft blues, warm sand and seafoam.", swatches: ["#eaf2fa", "#6fa4d6", "#f2a882", "#4a9e8e"] },
+  { id: "aura", name: "Aura", description: "Northern lights over moonlit bamboo.", swatches: ["#0f1b3d", "#4ade9e", "#a78bfa", "#5eead4"] },
   { id: "light", name: "Light", description: "Material light. Clean and neutral.", swatches: ["#ffffff", "#f5f5f5", "#1976d2", "#212121"] },
   { id: "dark", name: "Dark", description: "Material dark. Easy on the eyes.", swatches: ["#121212", "#1e1e1e", "#90caf9", "#e0e0e0"] },
 ] as const;
+
+const BUILTIN_BACKGROUNDS: Record<string, string> = {
+  aura: auraBg.url,
+};
 
 export type BuiltInThemeId = (typeof THEMES)[number]["id"];
 export type ThemeId = string;
@@ -254,7 +260,9 @@ function applyTheme(theme: ThemeId, customs: CustomTheme[]) {
   } else {
     const builtIn = (THEMES.find((t) => t.id === theme)?.id ?? DEFAULT_THEME) as BuiltInThemeId;
     root.classList.add(`theme-${builtIn}`);
-    root.classList.toggle("dark", builtIn === "dark");
+    root.classList.toggle("dark", builtIn === "dark" || builtIn === "aura");
+    const bg = BUILTIN_BACKGROUNDS[builtIn];
+    if (bg) applyBackgroundImage(bg);
   }
 }
 
