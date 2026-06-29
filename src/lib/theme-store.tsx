@@ -2,10 +2,12 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { supabase } from "@/integrations/supabase/client";
 import auraBg from "@/assets/aura.png.asset.json";
 import bambooBg from "@/assets/bamboo.jpg.asset.json";
+import sketchBg from "@/assets/sketch.png.asset.json";
 
 export const THEMES = [
   { id: "parchment", name: "Parchment", description: "Warm cream, bamboo greens. The original.", swatches: ["#f6f1e4", "#7a9a72", "#c2a878", "#4a5a3c"] },
   { id: "bamboo", name: "Bamboo", description: "Soft cream over a sunlit bamboo grove.", swatches: ["#f6f1e4", "#7a9a72", "#c2a878", "#2a2a22"] },
+  { id: "sketch", name: "Sketch", description: "Graphite pencil on textured paper.", swatches: ["#efece4", "#cfcabd", "#5a5a55", "#1f1f1f"] },
   { id: "fauna", name: "Fauna", description: "Deep walnut, copper, amber and forest moss.", swatches: ["#2a1f17", "#5a7045", "#c98c4a", "#e8c884"] },
   { id: "flora", name: "Flora", description: "Sage, mossy greens, terracotta and seafoam.", swatches: ["#cfd8c2", "#5e7a4f", "#b86e52", "#4a9080"] },
   { id: "sky", name: "Sky", description: "Soft blues, warm sand and seafoam.", swatches: ["#eaf2fa", "#6fa4d6", "#f2a882", "#4a9e8e"] },
@@ -17,6 +19,7 @@ export const THEMES = [
 const BUILTIN_BACKGROUNDS: Record<string, string> = {
   aura: auraBg.url,
   bamboo: bambooBg.url,
+  sketch: sketchBg.url,
 };
 
 export type BuiltInThemeId = (typeof THEMES)[number]["id"];
