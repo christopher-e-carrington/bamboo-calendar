@@ -4,6 +4,7 @@ import auraBg from "@/assets/aura.png.asset.json";
 import bambooBg from "@/assets/bamboo.jpg.asset.json";
 import sketchBg from "@/assets/sketch.png.asset.json";
 import leatherBg from "@/assets/leather.png.asset.json";
+import articBg from "@/assets/artic.png.asset.json";
 
 export const THEMES = [
   { id: "parchment", name: "Parchment", description: "Warm cream, bamboo greens. The original.", swatches: ["#f6f1e4", "#7a9a72", "#c2a878", "#4a5a3c"] },
