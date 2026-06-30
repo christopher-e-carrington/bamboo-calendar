@@ -14,6 +14,7 @@ export const THEMES = [
   { id: "fauna", name: "Fauna", description: "Deep walnut, copper, amber and forest moss.", swatches: ["#2a1f17", "#5a7045", "#c98c4a", "#e8c884"] },
   { id: "flora", name: "Flora", description: "Sage, mossy greens, terracotta and seafoam.", swatches: ["#cfd8c2", "#5e7a4f", "#b86e52", "#4a9080"] },
   { id: "sky", name: "Sky", description: "Soft blues, warm sand and seafoam.", swatches: ["#eaf2fa", "#6fa4d6", "#f2a882", "#4a9e8e"] },
+  { id: "artic", name: "Artic", description: "Frosted bamboo in an arctic mist.", swatches: ["#e8f4f4", "#4a8a8a", "#a0d0d0", "#1a3a3a"] },
   { id: "aura", name: "Aura", description: "Northern lights over moonlit bamboo.", swatches: ["#0f1b3d", "#4ade9e", "#a78bfa", "#5eead4"] },
   { id: "light", name: "Light", description: "Material light. Clean and neutral.", swatches: ["#ffffff", "#f5f5f5", "#1976d2", "#212121"] },
   { id: "dark", name: "Dark", description: "Material dark. Easy on the eyes.", swatches: ["#121212", "#1e1e1e", "#90caf9", "#e0e0e0"] },
@@ -24,6 +25,7 @@ const BUILTIN_BACKGROUNDS: Record<string, string> = {
   bamboo: bambooBg.url,
   sketch: sketchBg.url,
   leather: leatherBg.url,
+  artic: articBg.url,
 };
 
 export type BuiltInThemeId = (typeof THEMES)[number]["id"];
@@ -270,7 +272,7 @@ function applyTheme(theme: ThemeId, customs: CustomTheme[]) {
   } else {
     const builtIn = (THEMES.find((t) => t.id === theme)?.id ?? DEFAULT_THEME) as BuiltInThemeId;
     root.classList.add(`theme-${builtIn}`);
-    root.classList.toggle("dark", builtIn === "dark" || builtIn === "aura" || builtIn === "leather");
+    root.classList.toggle("dark", builtIn === "dark" || builtIn === "aura" || builtIn === "leather" || builtIn === "artic");
     const bg = BUILTIN_BACKGROUNDS[builtIn];
     if (bg) applyBackgroundImage(bg);
   }
