@@ -58,9 +58,19 @@ export function Dashboard() {
   });
 
   const findProfile = (id: string) => profiles.find((p) => p.id === id);
+  const now = new Date();
   const endOfToday = new Date();
   endOfToday.setHours(23, 59, 59, 999);
-  const todaysTasks = visibleTasks.filter((t) => !t.due_at || new Date(t.due_at) <= endOfToday);
+  const isSameDayDate = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  const todaysTasks = visibleTasks.filter((t) => {
+    if (t.tier === "daily" || t.recurrence === "daily") return true;
+    if (!t.due_at) return t.recurrence === "none";
+    const due = new Date(t.due_at);
+    if (isSameDayDate(due, now)) return true;
+    if (t.recurrence === "none" && !t.done && due < now) return true;
+    return false;
+  });
   const openTodayCount = todaysTasks.filter((t) => !t.done).length;
   const isFamilyView = activeProfile.id === familyProfile?.id;
 

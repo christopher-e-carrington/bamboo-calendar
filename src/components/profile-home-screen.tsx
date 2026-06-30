@@ -331,7 +331,15 @@ export function ProfileHomeScreen() {
   }, [visibleEvents]);
 
   const todayTasks = useMemo(
-    () => visibleTasks.filter((t) => t.tier === "daily" || t.tier === "weekly"),
+    () =>
+      visibleTasks.filter((t) => {
+        if (t.tier === "daily" || t.recurrence === "daily") return true;
+        if (!t.due_at) return t.recurrence === "none";
+        const due = new Date(t.due_at);
+        if (isSameDay(due, today)) return true;
+        if (t.recurrence === "none" && !t.done && due < today) return true;
+        return false;
+      }),
     [visibleTasks],
   );
   const todayGoals = useMemo(
