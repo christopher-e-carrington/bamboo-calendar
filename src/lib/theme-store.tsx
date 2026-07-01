@@ -275,7 +275,7 @@ function applyTheme(theme: ThemeId, customs: CustomTheme[]) {
   } else {
     const builtIn = (THEMES.find((t) => t.id === theme)?.id ?? DEFAULT_THEME) as BuiltInThemeId;
     root.classList.add(`theme-${builtIn}`);
-    root.classList.toggle("dark", builtIn === "dark" || builtIn === "aura" || builtIn === "leather");
+    root.classList.toggle("dark", builtIn === "dark" || builtIn === "aura" || builtIn === "leather" || builtIn === "storm");
     const bg = BUILTIN_BACKGROUNDS[builtIn];
     if (bg) applyBackgroundImage(bg);
   }
