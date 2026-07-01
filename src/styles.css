@@ -563,3 +563,40 @@
   --sidebar-border: oklch(0.78 0.1 200 / 20%);
   --sidebar-ring: oklch(0.55 0.07 185);
 }
+
+/* Dawn — misty bamboo bathed in soft golden dawn light */
+.theme-dawn {
+  --cream: oklch(0.92 0.03 65);
+  --sage: oklch(0.72 0.06 115);
+  --sage-deep: oklch(0.42 0.06 120);
+  --bamboo: oklch(0.68 0.07 75);
+  --bamboo-light: oklch(0.82 0.05 80);
+  --wood: oklch(0.55 0.06 70);
+
+  --background: oklch(0.94 0.025 65);
+  --foreground: oklch(0.28 0.03 60);
+  --card: oklch(0.9 0.02 60 / 72%);
+  --card-foreground: oklch(0.28 0.03 60);
+  --popover: oklch(0.96 0.02 65 / 92%);
+  --popover-foreground: oklch(0.28 0.03 60);
+  --primary: oklch(0.68 0.07 75);
+  --primary-foreground: oklch(0.98 0.015 70);
+  --secondary: oklch(0.88 0.035 80 / 70%);
+  --secondary-foreground: oklch(0.32 0.04 70);
+  --muted: oklch(0.88 0.03 70 / 60%);
+  --muted-foreground: oklch(0.5 0.04 65);
+  --accent: oklch(0.72 0.06 115);
+  --accent-foreground: oklch(0.98 0.015 115);
+  --border: oklch(0.82 0.04 70 / 25%);
+  --input: oklch(0.82 0.04 70 / 22%);
+  --ring: oklch(0.68 0.07 75);
+
+  --sidebar: oklch(0.92 0.03 65 / 78%);
+  --sidebar-foreground: oklch(0.28 0.03 60);
+  --sidebar-primary: oklch(0.68 0.07 75);
+  --sidebar-primary-foreground: oklch(0.98 0.015 70);
+  --sidebar-accent: oklch(0.78 0.05 100 / 70%);
+  --sidebar-accent-foreground: oklch(0.28 0.04 100);
+  --sidebar-border: oklch(0.82 0.04 70 / 25%);
+  --sidebar-ring: oklch(0.68 0.07 75);
+}
