@@ -64,9 +64,13 @@ export function ThisWeekPage() {
   const tasksForDay = (day: Date): TaskItem[] => {
     return visibleTasks.filter((t) => {
       if (t.done) return false;
-      if (t.recurrence === "daily") return true;
-      if (!t.due_at) return sameDay(day, today); // floating todos show today
-      return sameDay(new Date(t.due_at), day);
+      if (t.tier === "daily" || t.recurrence === "daily") return true;
+      if (!t.due_at) return sameDay(day, today) && t.recurrence === "none";
+      const due = new Date(t.due_at);
+      if (sameDay(due, day)) return true;
+      // overdue one-time tasks roll to today
+      if (t.recurrence === "none" && sameDay(day, today) && due < today) return true;
+      return false;
     });
   };
 
