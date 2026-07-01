@@ -327,8 +327,14 @@ export function TomorrowHomeScreen() {
   }, [visibleEvents, tomorrow]);
 
   const tomorrowTasks = useMemo(
-    () => visibleTasks.filter((t) => t.tier === "daily" || t.tier === "weekly"),
-    [visibleTasks],
+    () =>
+      visibleTasks.filter((t) => {
+        if (t.tier === "daily" || t.recurrence === "daily") return true;
+        if (!t.due_at) return false;
+        const due = new Date(t.due_at);
+        return isSameDay(due, tomorrow);
+      }),
+    [visibleTasks, tomorrow],
   );
   const tomorrowGoals = useMemo(
     () => visibleGoals.filter((g) => g.tier === "daily" || g.tier === "weekly"),
