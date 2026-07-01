@@ -526,3 +526,40 @@
   --sidebar-ring: oklch(0.78 0.16 170);
 }
 
+
+/* Storm — rain-soaked bamboo under a steel-grey sky */
+.theme-storm {
+  --cream: oklch(0.26 0.02 195);
+  --sage: oklch(0.58 0.07 185);
+  --sage-deep: oklch(0.38 0.06 185);
+  --bamboo: oklch(0.62 0.06 210);
+  --bamboo-light: oklch(0.42 0.045 200);
+  --wood: oklch(0.48 0.05 195);
+
+  --background: oklch(0.2 0.02 200);
+  --foreground: oklch(0.9 0.015 190);
+  --card: oklch(0.26 0.025 200 / 72%);
+  --card-foreground: oklch(0.94 0.015 190);
+  --popover: oklch(0.24 0.025 200 / 92%);
+  --popover-foreground: oklch(0.94 0.015 190);
+  --primary: oklch(0.55 0.07 185);
+  --primary-foreground: oklch(0.16 0.03 190);
+  --secondary: oklch(0.32 0.04 200 / 70%);
+  --secondary-foreground: oklch(0.92 0.015 190);
+  --muted: oklch(0.3 0.03 200 / 60%);
+  --muted-foreground: oklch(0.72 0.025 190);
+  --accent: oklch(0.62 0.06 210);
+  --accent-foreground: oklch(0.15 0.03 210);
+  --border: oklch(0.78 0.1 200 / 20%);
+  --input: oklch(0.78 0.1 200 / 18%);
+  --ring: oklch(0.55 0.07 185);
+
+  --sidebar: oklch(0.22 0.025 200 / 78%);
+  --sidebar-foreground: oklch(0.92 0.015 190);
+  --sidebar-primary: oklch(0.55 0.07 185);
+  --sidebar-primary-foreground: oklch(0.16 0.03 190);
+  --sidebar-accent: oklch(0.35 0.05 210 / 70%);
+  --sidebar-accent-foreground: oklch(0.94 0.015 190);
+  --sidebar-border: oklch(0.78 0.1 200 / 20%);
+  --sidebar-ring: oklch(0.55 0.07 185);
+}
