@@ -127,7 +127,13 @@
     background-image:
       radial-gradient(at 12% 8%, color-mix(in oklab, var(--bamboo-light) 45%, transparent) 0, transparent 45%),
       radial-gradient(at 88% 92%, color-mix(in oklab, var(--accent) 35%, transparent) 0, transparent 50%);
-    background-attachment: fixed;
+  }
+  /* Themed backdrop layer injected by ThemeProvider. Sits behind app content. */
+  #bamboo-bg-layer { background-color: var(--color-background); }
+  /* When a themed image is active, let it show through body. */
+  body:has(> #bamboo-bg-layer[style*="background-image: url"]) {
+    background-color: transparent;
+    background-image: none;
   }
   h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.01em; }
 }
