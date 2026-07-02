@@ -111,42 +111,54 @@ function clearCustomVars(root: HTMLElement) {
 }
 
 let bgRequestId = 0;
+const BG_LAYER_ID = "bamboo-bg-layer";
+
+function ensureBgLayer(): HTMLDivElement | null {
+  if (typeof document === "undefined") return null;
+  let el = document.getElementById(BG_LAYER_ID) as HTMLDivElement | null;
+  if (!el) {
+    el = document.createElement("div");
+    el.id = BG_LAYER_ID;
+    // Fixed layer behind everything. Using a real element instead of
+    // body's background avoids mobile Safari/Chrome bugs where
+    // `background-attachment: fixed` on <body> intermittently stops
+    // painting when the URL bar hides/shows or on route transitions.
+    el.style.cssText = [
+      "position:fixed",
+      "inset:0",
+      "z-index:-1",
+      "pointer-events:none",
+      "background-size:cover",
+      "background-position:center",
+      "background-repeat:no-repeat",
+      "will-change:background-image",
+    ].join(";");
+    document.body.prepend(el);
+  }
+  return el;
+}
 
 function clearBackgroundImage() {
   if (typeof document === "undefined") return;
   bgRequestId++;
-  document.body.style.backgroundImage = "";
-  document.body.style.backgroundSize = "";
-  document.body.style.backgroundPosition = "";
-  document.body.style.backgroundAttachment = "";
-  document.body.style.backgroundRepeat = "";
+  const el = ensureBgLayer();
+  if (el) el.style.backgroundImage = "";
 }
 
-function setBodyBg(url: string) {
-  if (typeof document === "undefined") return;
-  const body = document.body;
-  body.style.backgroundImage = `url("${url.replace(/"/g, '\\"')}")`;
-  body.style.backgroundSize = "cover";
-  body.style.backgroundPosition = "center";
-  body.style.backgroundAttachment = "fixed";
-  body.style.backgroundRepeat = "no-repeat";
-  // Force a reflow so the browser commits the new background paint immediately.
-  // Some mobile browsers otherwise defer the paint until the next layout shift,
-  // which is why the image only appears after switching views and back.
-  void body.offsetHeight;
+function setLayerBg(url: string) {
+  const el = ensureBgLayer();
+  if (!el) return;
+  el.style.backgroundImage = `url("${url.replace(/"/g, '\\"')}")`;
 }
 
 function applyBackgroundImage(url: string) {
   if (typeof document === "undefined" || !url) return;
   const requestId = ++bgRequestId;
-  // Paint immediately so data: URLs are visible right away.
-  setBodyBg(url);
-  // Preload, then re-commit once decoded to guarantee the paint sticks even
-  // when the previous attempt happened before the image was ready.
+  setLayerBg(url);
   const img = new Image();
   const recommit = () => {
-    if (requestId !== bgRequestId) return; // a newer theme switch superseded us
-    setBodyBg(url);
+    if (requestId !== bgRequestId) return;
+    setLayerBg(url);
   };
   img.onload = recommit;
   img.onerror = recommit;
