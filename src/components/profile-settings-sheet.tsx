@@ -1077,6 +1077,9 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
           <SettingsSection title="View" icon={Eye}>
             <ViewMenu />
           </SettingsSection>
+          <SettingsSection title="Displays" icon={MonitorSmartphone}>
+            <DisplaysMenu />
+          </SettingsSection>
           <SettingsSection title="Pages" icon={LayoutGrid}>
             <PagesMenu />
           </SettingsSection>
