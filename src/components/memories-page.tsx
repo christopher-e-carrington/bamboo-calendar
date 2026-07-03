@@ -405,10 +405,9 @@ export function MemoriesPage() {
                     >
                       {mem.photo_url ? (
                         <div className="aspect-[4/3] bg-muted overflow-hidden">
-                          <img
-                            src={mem.photo_url}
+                          <SignedPhoto
+                            photo={mem.photo_url}
                             alt={mem.title}
-                            loading="lazy"
                             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         </div>
