@@ -504,11 +504,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     [customThemes, theme],
   );
 
+  const setDefaultTheme = useCallback((t: ThemeId | null) => {
+    setDefaultThemeState(t);
+    try {
+      if (t) localStorage.setItem(DEFAULT_KEY, t);
+      else localStorage.removeItem(DEFAULT_KEY);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   return (
     <ThemeContext.Provider
       value={{
         theme,
         setTheme,
+        defaultTheme,
+        setDefaultTheme,
         customThemes,
         saveCustomTheme,
         updateCustomTheme,
