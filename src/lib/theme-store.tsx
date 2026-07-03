@@ -240,6 +240,8 @@ function applyCustomColors(
 const ThemeContext = createContext<{
   theme: ThemeId;
   setTheme: (t: ThemeId) => void;
+  defaultTheme: ThemeId | null;
+  setDefaultTheme: (t: ThemeId | null) => void;
   customThemes: CustomTheme[];
   saveCustomTheme: (input: {
     name: string;
@@ -264,6 +266,8 @@ const ThemeContext = createContext<{
 }>({
   theme: DEFAULT_THEME,
   setTheme: () => {},
+  defaultTheme: null,
+  setDefaultTheme: () => {},
   customThemes: [],
   saveCustomTheme: async () => null,
   updateCustomTheme: async () => null,
