@@ -335,6 +335,7 @@ async function resolveHouseholdId(userId: string): Promise<string> {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemeId>(DEFAULT_THEME);
+  const [defaultTheme, setDefaultThemeState] = useState<ThemeId | null>(null);
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
 
   const refresh = useCallback(async () => {
