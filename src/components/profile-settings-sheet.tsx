@@ -988,6 +988,67 @@ function DeleteAccountMenu() {
   );
 }
 
+function DisplaysMenu() {
+  const { display, detected, assigned, assignDisplay, clearAssignment } = useDisplay();
+  return (
+    <div className="rounded-xl border border-border bg-background/60 p-3 space-y-3">
+      <div>
+        <div className="text-sm font-medium">Displays</div>
+        <div className="text-xs text-muted-foreground">
+          Pick the layout that best fits this device. Bamboo tries to detect it automatically —
+          your choice sticks on this device until you change it.
+        </div>
+      </div>
+      <div className="text-[11px] text-muted-foreground">
+        Detected: <span className="font-medium text-foreground">{DISPLAYS.find((d) => d.id === detected)?.name ?? detected}</span>
+        {assigned && <> · Assigned: <span className="font-medium text-foreground">{DISPLAYS.find((d) => d.id === assigned)?.name ?? assigned}</span></>}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {DISPLAYS.map((d) => {
+          const active = display === d.id;
+          const isAssigned = assigned === d.id;
+          const Icon = d.icon;
+          return (
+            <button
+              key={d.id}
+              type="button"
+              onClick={() => {
+                assignDisplay(d.id as DisplayId);
+                toast.success(`Display: ${d.name}`);
+              }}
+              className={cn(
+                "flex items-start gap-3 rounded-lg border p-2.5 text-left transition-colors hover:border-primary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                active ? "border-primary bg-primary/5" : "border-border bg-background",
+              )}
+            >
+              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <Icon className="h-4 w-4 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <div className="text-sm font-medium truncate">{d.name}</div>
+                  {isAssigned && (
+                    <span className="text-[10px] uppercase tracking-wide font-semibold text-primary/80 border border-primary/30 rounded px-1 py-px">
+                      Assigned
+                    </span>
+                  )}
+                  {active && <Check className="h-4 w-4 text-primary ml-auto shrink-0" />}
+                </div>
+                <div className="mt-0.5 text-[11px] text-muted-foreground line-clamp-2">{d.description}</div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      {assigned && (
+        <Button type="button" variant="ghost" size="sm" className="w-full" onClick={() => { clearAssignment(); toast.success("Back to auto-detect"); }}>
+          Reset to auto-detect
+        </Button>
+      )}
+    </div>
+  );
+}
+
 export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode }) {
   const { profiles } = useHousehold();
   return (
