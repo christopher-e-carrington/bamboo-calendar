@@ -325,6 +325,8 @@ function ViewMenu() {
   const {
     theme,
     setTheme,
+    defaultTheme,
+    setDefaultTheme,
     customThemes,
     saveCustomTheme,
     updateCustomTheme,
