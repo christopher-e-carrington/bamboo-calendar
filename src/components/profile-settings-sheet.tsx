@@ -468,7 +468,7 @@ function ViewMenu() {
         <Palette className="h-4 w-4 text-primary" />
         <div>
           <div className="text-sm font-medium">View</div>
-          <div className="text-xs text-muted-foreground">Pick a color scheme — or build your own.</div>
+          <div className="text-xs text-muted-foreground">Pick a color scheme — tap the star to make one the default on this device.</div>
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
