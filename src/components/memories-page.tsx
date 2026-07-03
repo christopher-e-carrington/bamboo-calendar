@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -72,6 +72,47 @@ function formatTime(t: string | null) {
   const d = new Date();
   d.setHours(h, m, 0, 0);
   return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+// photo_url may be either a legacy public URL or a storage path inside memory-photos.
+// Extract the storage path in either case.
+function toStoragePath(value: string | null): string | null {
+  if (!value) return null;
+  const marker = "/memory-photos/";
+  const i = value.indexOf(marker);
+  if (i >= 0) return value.slice(i + marker.length);
+  return value; // already a path
+}
+
+function SignedPhoto({
+  photo,
+  alt,
+  className,
+}: {
+  photo: string | null;
+  alt: string;
+  className?: string;
+}) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const path = toStoragePath(photo);
+    if (!path) {
+      setUrl(null);
+      return;
+    }
+    supabase.storage
+      .from("memory-photos")
+      .createSignedUrl(path, 60 * 60)
+      .then(({ data }) => {
+        if (!cancelled) setUrl(data?.signedUrl ?? null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [photo]);
+  if (!url) return null;
+  return <img src={url} alt={alt} loading="lazy" className={className} />;
 }
 
 function MemoryFormDialog({
