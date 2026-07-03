@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -74,6 +74,47 @@ function formatTime(t: string | null) {
   return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
+// photo_url may be either a legacy public URL or a storage path inside memory-photos.
+// Extract the storage path in either case.
+function toStoragePath(value: string | null): string | null {
+  if (!value) return null;
+  const marker = "/memory-photos/";
+  const i = value.indexOf(marker);
+  if (i >= 0) return value.slice(i + marker.length);
+  return value; // already a path
+}
+
+function SignedPhoto({
+  photo,
+  alt,
+  className,
+}: {
+  photo: string | null;
+  alt: string;
+  className?: string;
+}) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const path = toStoragePath(photo);
+    if (!path) {
+      setUrl(null);
+      return;
+    }
+    supabase.storage
+      .from("memory-photos")
+      .createSignedUrl(path, 60 * 60)
+      .then(({ data }) => {
+        if (!cancelled) setUrl(data?.signedUrl ?? null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [photo]);
+  if (!url) return null;
+  return <img src={url} alt={alt} loading="lazy" className={className} />;
+}
+
 function MemoryFormDialog({
   trigger,
   initial,
@@ -111,8 +152,7 @@ function MemoryFormDialog({
         .from("memory-photos")
         .upload(path, file, { cacheControl: "3600", upsert: false });
       if (error) throw error;
-      const { data } = supabase.storage.from("memory-photos").getPublicUrl(path);
-      setPhotoUrl(data.publicUrl);
+      setPhotoUrl(path);
     } catch (e) {
       toast.error("Upload failed");
       console.error(e);
@@ -177,7 +217,7 @@ function MemoryFormDialog({
               onClick={() => fileRef.current?.click()}
             >
               {photoUrl ? (
-                <img src={photoUrl} alt="memory" className="absolute inset-0 h-full w-full object-cover" />
+                <SignedPhoto photo={photoUrl} alt="memory" className="absolute inset-0 h-full w-full object-cover" />
               ) : (
                 <div className="text-muted-foreground text-sm flex flex-col items-center gap-1">
                   {uploading ? (
@@ -365,10 +405,9 @@ export function MemoriesPage() {
                     >
                       {mem.photo_url ? (
                         <div className="aspect-[4/3] bg-muted overflow-hidden">
-                          <img
-                            src={mem.photo_url}
+                          <SignedPhoto
+                            photo={mem.photo_url}
                             alt={mem.title}
-                            loading="lazy"
                             className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         </div>
