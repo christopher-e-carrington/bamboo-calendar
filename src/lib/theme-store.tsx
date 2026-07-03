@@ -59,6 +59,7 @@ export type SidebarOverride = {
 };
 
 const STORAGE_KEY = "bamboo.theme";
+const DEFAULT_KEY = "bamboo.theme.default";
 const SIDEBAR_KEY = "bamboo.sidebar";
 const DEFAULT_THEME: ThemeId = "parchment";
 
