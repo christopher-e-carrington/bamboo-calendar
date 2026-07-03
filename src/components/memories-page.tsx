@@ -217,7 +217,11 @@ function MemoryFormDialog({
               onClick={() => fileRef.current?.click()}
             >
               {photoUrl ? (
-                <img src={photoUrl} alt="memory" className="absolute inset-0 h-full w-full object-cover" />
+                <SignedPhoto photo={photoUrl} alt="memory" className="absolute inset-0 h-full w-full object-cover" />
+              ) : null}
+              {!photoUrl && false ? null : null}
+              {/* fallback placeholder when no photo */}
+              {!photoUrl && (
               ) : (
                 <div className="text-muted-foreground text-sm flex flex-col items-center gap-1">
                   {uploading ? (
