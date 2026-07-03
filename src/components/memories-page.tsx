@@ -152,8 +152,7 @@ function MemoryFormDialog({
         .from("memory-photos")
         .upload(path, file, { cacheControl: "3600", upsert: false });
       if (error) throw error;
-      const { data } = supabase.storage.from("memory-photos").getPublicUrl(path);
-      setPhotoUrl(data.publicUrl);
+      setPhotoUrl(path);
     } catch (e) {
       toast.error("Upload failed");
       console.error(e);
