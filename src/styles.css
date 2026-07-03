@@ -498,3 +498,72 @@
   --sidebar-border: oklch(0.82 0.04 70 / 25%);
   --sidebar-ring: oklch(0.68 0.07 75);
 }
+
+/* ============================================================
+   Display profiles — reformat the whole app per device profile.
+   Set on <html data-display="..."> by DisplayProvider. Kept
+   independent of themes so any display works with any theme.
+   ============================================================ */
+
+html[data-display="phone"] {
+  font-size: 15px;
+}
+html[data-display="phone"] .bamboo-card {
+  border-radius: calc(var(--radius) - 2px);
+}
+html[data-display="phone"] main {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+html[data-display="tablet-vertical"] {
+  font-size: 17px;
+}
+html[data-display="tablet-vertical"] main > * {
+  max-width: 780px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+html[data-display="tablet-horizontal"] {
+  font-size: 16px;
+}
+html[data-display="tablet-horizontal"] main > * {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+html[data-display="monitor-horizontal"] {
+  font-size: 16px;
+}
+
+html[data-display="monitor-vertical"] {
+  font-size: 17px;
+}
+html[data-display="monitor-vertical"] main > * {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+html[data-display="tv"] {
+  font-size: 22px;
+}
+html[data-display="tv"] .bamboo-card {
+  border-radius: calc(var(--radius) + 6px);
+  border-width: 2px;
+}
+html[data-display="tv"] button,
+html[data-display="tv"] [role="button"],
+html[data-display="tv"] input,
+html[data-display="tv"] select,
+html[data-display="tv"] textarea {
+  min-height: 48px;
+}
+html[data-display="tv"] main > * {
+  max-width: 1600px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
