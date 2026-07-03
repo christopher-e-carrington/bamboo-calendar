@@ -353,9 +353,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const storedDefault = (typeof localStorage !== "undefined" && localStorage.getItem(DEFAULT_KEY)) || "";
     const stored = (typeof localStorage !== "undefined" && localStorage.getItem(STORAGE_KEY)) || "";
-    const builtInValid = THEMES.some((t) => t.id === stored);
-    const initial = builtInValid ? stored : stored || DEFAULT_THEME;
+    const pick = storedDefault || stored;
+    const builtInValid = THEMES.some((t) => t.id === pick);
+    const initial = builtInValid ? pick : pick || DEFAULT_THEME;
+    if (storedDefault) setDefaultThemeState(storedDefault);
     // Clean up old global sidebar override (replaced by per-theme sidebar)
     try {
       localStorage.removeItem(SIDEBAR_KEY);
