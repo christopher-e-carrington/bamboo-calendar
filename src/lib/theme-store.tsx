@@ -59,6 +59,7 @@ export type SidebarOverride = {
 };
 
 const STORAGE_KEY = "bamboo.theme";
+const DEFAULT_KEY = "bamboo.theme.default";
 const SIDEBAR_KEY = "bamboo.sidebar";
 const DEFAULT_THEME: ThemeId = "parchment";
 
@@ -239,6 +240,8 @@ function applyCustomColors(
 const ThemeContext = createContext<{
   theme: ThemeId;
   setTheme: (t: ThemeId) => void;
+  defaultTheme: ThemeId | null;
+  setDefaultTheme: (t: ThemeId | null) => void;
   customThemes: CustomTheme[];
   saveCustomTheme: (input: {
     name: string;
@@ -263,6 +266,8 @@ const ThemeContext = createContext<{
 }>({
   theme: DEFAULT_THEME,
   setTheme: () => {},
+  defaultTheme: null,
+  setDefaultTheme: () => {},
   customThemes: [],
   saveCustomTheme: async () => null,
   updateCustomTheme: async () => null,
@@ -330,6 +335,7 @@ async function resolveHouseholdId(userId: string): Promise<string> {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemeId>(DEFAULT_THEME);
+  const [defaultTheme, setDefaultThemeState] = useState<ThemeId | null>(null);
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
 
   const refresh = useCallback(async () => {
@@ -347,9 +353,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const storedDefault = (typeof localStorage !== "undefined" && localStorage.getItem(DEFAULT_KEY)) || "";
     const stored = (typeof localStorage !== "undefined" && localStorage.getItem(STORAGE_KEY)) || "";
-    const builtInValid = THEMES.some((t) => t.id === stored);
-    const initial = builtInValid ? stored : stored || DEFAULT_THEME;
+    const pick = storedDefault || stored;
+    const builtInValid = THEMES.some((t) => t.id === pick);
+    const initial = builtInValid ? pick : pick || DEFAULT_THEME;
+    if (storedDefault) setDefaultThemeState(storedDefault);
     // Clean up old global sidebar override (replaced by per-theme sidebar)
     try {
       localStorage.removeItem(SIDEBAR_KEY);
@@ -495,11 +504,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     [customThemes, theme],
   );
 
+  const setDefaultTheme = useCallback((t: ThemeId | null) => {
+    setDefaultThemeState(t);
+    try {
+      if (t) localStorage.setItem(DEFAULT_KEY, t);
+      else localStorage.removeItem(DEFAULT_KEY);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   return (
     <ThemeContext.Provider
       value={{
         theme,
         setTheme,
+        defaultTheme,
+        setDefaultTheme,
         customThemes,
         saveCustomTheme,
         updateCustomTheme,

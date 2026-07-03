@@ -9,7 +9,7 @@ import { Lock, LockOpen, Settings2, Check, Palette, ChevronDown, User, Eye, Shie
 import { GoogleCalendarMenu } from "./google-calendar-settings";
 import { toast } from "sonner";
 import { THEMES, useTheme, type ThemeId, type CustomThemeColors } from "@/lib/theme-store";
-import { Trash2, Sparkles, Pencil, PanelLeft } from "lucide-react";
+import { Trash2, Sparkles, Pencil, PanelLeft, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, ALWAYS_VISIBLE_PAGES } from "./app-sidebar";
 import { useHiddenPages } from "@/lib/hidden-pages-store";
@@ -325,6 +325,8 @@ function ViewMenu() {
   const {
     theme,
     setTheme,
+    defaultTheme,
+    setDefaultTheme,
     customThemes,
     saveCustomTheme,
     updateCustomTheme,
@@ -466,12 +468,13 @@ function ViewMenu() {
         <Palette className="h-4 w-4 text-primary" />
         <div>
           <div className="text-sm font-medium">View</div>
-          <div className="text-xs text-muted-foreground">Pick a color scheme — or build your own.</div>
+          <div className="text-xs text-muted-foreground">Pick a color scheme — tap the star to make one the default on this device.</div>
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {allOptions.map((t) => {
           const active = theme === t.id;
+          const isDefault = defaultTheme === t.id;
           return (
             <div
               key={t.id}
@@ -489,7 +492,14 @@ function ViewMenu() {
                 className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <div className="text-sm font-medium truncate pr-12">{t.name}</div>
+                  <div className="text-sm font-medium truncate pr-16 flex items-center gap-1.5">
+                    {t.name}
+                    {isDefault && (
+                      <span className="text-[10px] uppercase tracking-wide font-semibold text-primary/80 border border-primary/30 rounded px-1 py-px">
+                        Default
+                      </span>
+                    )}
+                  </div>
                   {active && <Check className="h-4 w-4 text-primary shrink-0" />}
                 </div>
                 <div className="mt-1 text-[11px] text-muted-foreground line-clamp-2">{t.description}</div>
@@ -503,35 +513,59 @@ function ViewMenu() {
                   ))}
                 </div>
               </button>
-              {t.custom && t.themeRef && (
-                <div className="absolute top-1.5 right-1.5 flex gap-0.5">
-                  <button
-                    type="button"
-                    aria-label={`Edit ${t.name}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      startEdit(t.themeRef!);
-                    }}
-                    className="h-6 w-6 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center"
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`Delete ${t.name}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (confirm(`Delete "${t.name}"? This will remove it for everyone in your household.`)) {
-                        deleteCustomTheme(t.id);
-                        toast.success(`Deleted ${t.name}`);
-                      }
-                    }}
-                    className="h-6 w-6 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              )}
+              <div className="absolute top-1.5 right-1.5 flex gap-0.5">
+                <button
+                  type="button"
+                  aria-label={isDefault ? `Unset ${t.name} as default on this device` : `Set ${t.name} as default on this device`}
+                  title={isDefault ? "Default on this device" : "Set as default on this device"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (isDefault) {
+                      setDefaultTheme(null);
+                      toast.success("Default cleared on this device");
+                    } else {
+                      setDefaultTheme(t.id as ThemeId);
+                      toast.success(`Default on this device: ${t.name}`);
+                    }
+                  }}
+                  className={cn(
+                    "h-6 w-6 rounded-md flex items-center justify-center hover:bg-primary/10",
+                    isDefault ? "text-primary" : "text-muted-foreground hover:text-primary",
+                  )}
+                >
+                  <Star className={cn("h-3.5 w-3.5", isDefault && "fill-current")} />
+                </button>
+                {t.custom && t.themeRef && (
+                  <>
+                    <button
+                      type="button"
+                      aria-label={`Edit ${t.name}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEdit(t.themeRef!);
+                      }}
+                      className="h-6 w-6 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Delete ${t.name}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm(`Delete "${t.name}"? This will remove it for everyone in your household.`)) {
+                          if (defaultTheme === t.id) setDefaultTheme(null);
+                          deleteCustomTheme(t.id);
+                          toast.success(`Deleted ${t.name}`);
+                        }
+                      }}
+                      className="h-6 w-6 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           );
         })}
