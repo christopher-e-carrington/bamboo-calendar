@@ -10,6 +10,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { ThemeProvider } from "@/lib/theme-store";
+import { DisplayProvider } from "@/lib/display-store";
 
 function NotFoundComponent() {
   return (
@@ -121,10 +122,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-      </ThemeProvider>
+      <DisplayProvider>
+        <ThemeProvider>
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </ThemeProvider>
+      </DisplayProvider>
     </QueryClientProvider>
   );
 }
