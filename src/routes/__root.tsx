@@ -10,6 +10,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { ThemeProvider } from "@/lib/theme-store";
+import { DisplayProvider } from "@/lib/display-store";
 
 function NotFoundComponent() {
   return (
