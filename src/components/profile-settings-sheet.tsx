@@ -35,13 +35,16 @@ function randomToken() {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+const PALETTE = ["#7BA37A", "#A7C29A", "#C9A36B", "#E8B774", "#9CB89A", "#B58A6B", "#8FB4C8", "#D49AA6"];
+
 function NicknameRow({ profile }: { profile: Profile }) {
   const { updateProfile } = useHousehold();
   const [value, setValue] = useState(profile.nickname ?? "");
+  const [color, setColor] = useState(profile.color);
   const [saving, setSaving] = useState(false);
   const dirty = (profile.nickname ?? "") !== value;
 
-  const save = async () => {
+  const saveNickname = async () => {
     setSaving(true);
     try {
       await updateProfile(profile.id, { nickname: value.trim() || null });
@@ -53,18 +56,65 @@ function NicknameRow({ profile }: { profile: Profile }) {
     }
   };
 
+  const saveColor = async (newColor: string) => {
+    if (newColor === profile.color) return;
+    setSaving(true);
+    try {
+      await updateProfile(profile.id, { color: newColor });
+      toast.success("Icon color updated");
+    } catch {
+      toast.error("Couldn't save icon color");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
-    <div className="flex items-center gap-2">
-      <Input
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="Nickname (display name)"
-        className="h-8 text-sm"
-        maxLength={40}
-      />
-      <Button size="sm" variant="outline" disabled={!dirty || saving} onClick={save}>
-        {saving ? "Saving…" : "Save"}
-      </Button>
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <Input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="Nickname (display name)"
+          className="h-8 text-sm"
+          maxLength={40}
+        />
+        <Button size="sm" variant="outline" disabled={!dirty || saving} onClick={saveNickname}>
+          {saving ? "Saving…" : "Save"}
+        </Button>
+      </div>
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-xs text-muted-foreground">Icon color</span>
+        {PALETTE.map((c) => (
+          <button
+            key={c}
+            type="button"
+            onClick={() => {
+              setColor(c);
+              saveColor(c);
+            }}
+            className={cn(
+              "h-5 w-5 rounded-full border-2 transition-all",
+              color === c ? "border-foreground scale-110" : "border-transparent"
+            )}
+            style={{ backgroundColor: c }}
+            aria-label={`Pick color ${c}`}
+          />
+        ))}
+        <div className="flex items-center gap-1.5 ml-1">
+          <input
+            type="color"
+            value={color}
+            onChange={(e) => {
+              setColor(e.target.value);
+              saveColor(e.target.value);
+            }}
+            className="h-5 w-5 cursor-pointer border-0 bg-transparent p-0"
+            aria-label="Custom icon color"
+          />
+          <span className="text-[10px] font-mono uppercase text-muted-foreground">{color}</span>
+        </div>
+      </div>
     </div>
   );
 }
