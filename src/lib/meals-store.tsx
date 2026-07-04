@@ -32,6 +32,13 @@ export interface ShoppingItem {
   quantity: string | null;
   done: boolean;
   source: string;
+  store_id: string | null;
+  created_at: string;
+}
+
+export interface ShoppingStore {
+  id: string;
+  name: string;
   created_at: string;
 }
 
@@ -204,12 +211,13 @@ export function useShopping() {
   });
 
   const add = useMutation({
-    mutationFn: async (input: { name: string; quantity?: string | null; source?: string }) => {
+    mutationFn: async (input: { name: string; quantity?: string | null; source?: string; store_id?: string | null }) => {
       const { error } = await sb.from("shopping_items").insert({
         owner_id: user!.id,
         name: input.name,
         quantity: input.quantity ?? null,
         source: input.source ?? "manual",
+        store_id: input.store_id ?? null,
       });
       if (error) throw error;
     },
@@ -322,5 +330,50 @@ export function useInventory() {
     addItem: add.mutateAsync,
     updateItem: (id: string, patch: Partial<InventoryItem>) => update.mutateAsync({ id, patch }),
     deleteItem: remove.mutateAsync,
+  };
+}
+
+export function useShoppingStores() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const key = ["shopping_stores", user?.id];
+
+  const q = useQuery({
+    queryKey: key,
+    enabled: !!user,
+    queryFn: async (): Promise<ShoppingStore[]> => {
+      const { data, error } = await sb
+        .from("shopping_stores")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const add = useMutation({
+    mutationFn: async (name: string) => {
+      const { error } = await sb.from("shopping_stores").insert({ owner_id: user!.id, name });
+      if (error) throw error;
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: key }),
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await sb.from("shopping_stores").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: key });
+      qc.invalidateQueries({ queryKey: ["shopping", user?.id] });
+    },
+  });
+
+  return {
+    stores: q.data ?? [],
+    loading: q.isLoading,
+    addStore: add.mutateAsync,
+    deleteStore: remove.mutateAsync,
   };
 }
