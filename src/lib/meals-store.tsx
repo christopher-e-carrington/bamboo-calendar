@@ -32,6 +32,13 @@ export interface ShoppingItem {
   quantity: string | null;
   done: boolean;
   source: string;
+  store_id: string | null;
+  created_at: string;
+}
+
+export interface ShoppingStore {
+  id: string;
+  name: string;
   created_at: string;
 }
 
