@@ -211,12 +211,13 @@ export function useShopping() {
   });
 
   const add = useMutation({
-    mutationFn: async (input: { name: string; quantity?: string | null; source?: string }) => {
+    mutationFn: async (input: { name: string; quantity?: string | null; source?: string; store_id?: string | null }) => {
       const { error } = await sb.from("shopping_items").insert({
         owner_id: user!.id,
         name: input.name,
         quantity: input.quantity ?? null,
         source: input.source ?? "manual",
+        store_id: input.store_id ?? null,
       });
       if (error) throw error;
     },
