@@ -9,7 +9,7 @@ import { Plus, Trash2, UserPlus, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { HouseholdInvites } from "./household-invites";
 
-const PALETTE = ["#7BA37A", "#A7C29A", "#C9A36B", "#E8B774", "#9CB89A", "#B58A6B", "#8FB4C8", "#D49AA6"];
+const PALETTE = ["#7BA37A", "#C1785E", "#D4A843", "#C78B9E", "#7BA3B8", "#B5896B", "#9B8DB5", "#6BA89B"];
 
 export function ManageProfilesDialog({ trigger }: { trigger?: React.ReactNode }) {
   const { profiles, familyProfile, addProfile, updateProfile, removeProfile } = useHousehold();
