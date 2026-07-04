@@ -876,6 +876,7 @@ export type Database = {
           owner_id: string
           quantity: string | null
           source: string
+          store_id: string | null
         }
         Insert: {
           created_at?: string
@@ -885,6 +886,7 @@ export type Database = {
           owner_id: string
           quantity?: string | null
           source?: string
+          store_id?: string | null
         }
         Update: {
           created_at?: string
@@ -894,6 +896,36 @@ export type Database = {
           owner_id?: string
           quantity?: string | null
           source?: string
+          store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopping_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "shopping_stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopping_stores: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
         }
         Relationships: []
       }
