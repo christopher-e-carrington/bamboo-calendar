@@ -35,7 +35,7 @@ function randomToken() {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-const PALETTE = ["#7BA37A", "#A7C29A", "#C9A36B", "#E8B774", "#9CB89A", "#B58A6B", "#8FB4C8", "#D49AA6"];
+const PALETTE = ["#7BA37A", "#C1785E", "#D4A843", "#C78B9E", "#7BA3B8", "#B5896B", "#9B8DB5", "#6BA89B"];
 
 function NicknameRow({ profile }: { profile: Profile }) {
   const { updateProfile } = useHousehold();
