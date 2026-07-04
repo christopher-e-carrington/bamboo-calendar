@@ -37,7 +37,7 @@ export function EventsPage() {
     return [...source]
       .filter((e) => new Date(e.start_at).getTime() >= now - 60 * 60 * 1000)
       .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
-      .slice(0, 6);
+      .slice(0, 30);
   }, [events, visibleEvents]);
 
   const profileMap = useMemo(
