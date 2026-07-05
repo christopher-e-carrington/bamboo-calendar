@@ -1211,6 +1211,9 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
           <SettingsSection title="Pages" icon={LayoutGrid}>
             <PagesMenu />
           </SettingsSection>
+          <SettingsSection title="Notifications" icon={Bell}>
+            <NotificationsMenu />
+          </SettingsSection>
           <SettingsSection title="Google Calendar" icon={CalendarCheck}>
             <GoogleCalendarMenu />
           </SettingsSection>
