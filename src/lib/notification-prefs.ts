@@ -42,13 +42,15 @@ function load(): NotifPrefs {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return DEFAULT_PREFS;
-    const parsed = JSON.parse(raw) as Partial<NotifPrefs>;
-    // Merge with defaults so newly added keys get default values
-    const merged = {} as NotifPrefs;
-    for (const cat of Object.keys(DEFAULT_PREFS) as NotifCategory[]) {
-      merged[cat] = { ...DEFAULT_PREFS[cat], ...(parsed[cat] as object | undefined) } as NotifPrefs[typeof cat];
+    const parsed = JSON.parse(raw) as Record<string, Record<string, boolean>>;
+    const merged: Record<string, Record<string, boolean>> = {};
+    for (const cat of Object.keys(DEFAULT_PREFS)) {
+      merged[cat] = {
+        ...(DEFAULT_PREFS as unknown as Record<string, Record<string, boolean>>)[cat],
+        ...(parsed?.[cat] ?? {}),
+      };
     }
-    return merged;
+    return merged as unknown as NotifPrefs;
   } catch {
     return DEFAULT_PREFS;
   }
