@@ -1101,6 +1101,82 @@ function DisplaysMenu() {
   );
 }
 
+type PrefRow = { cat: NotifCategory; key: string; label: string };
+const NOTIF_GROUPS: { cat: NotifCategory; title: string; rows: PrefRow[] }[] = [
+  { cat: "events", title: "Events", rows: [
+    { cat: "events", key: "added", label: "When an event is added" },
+    { cat: "events", key: "deleted", label: "When an event is deleted" },
+    { cat: "events", key: "hourBefore", label: "1 hour before an event starts" },
+  ]},
+  { cat: "goals", title: "Goals", rows: [
+    { cat: "goals", key: "added", label: "When a goal is added" },
+    { cat: "goals", key: "progress", label: "When progress is made" },
+    { cat: "goals", key: "completed", label: "When a goal is completed" },
+  ]},
+  { cat: "projects", title: "Projects", rows: [
+    { cat: "projects", key: "added", label: "When a project is added" },
+    { cat: "projects", key: "progress", label: "When progress is made" },
+    { cat: "projects", key: "completed", label: "When a project is completed" },
+  ]},
+  { cat: "shopping", title: "Shopping list", rows: [
+    { cat: "shopping", key: "added", label: "When an item is added" },
+    { cat: "shopping", key: "checkedOff", label: "When an item is crossed off" },
+  ]},
+  { cat: "tasks", title: "To-dos", rows: [
+    { cat: "tasks", key: "added", label: "When a task is added" },
+    { cat: "tasks", key: "checkedOff", label: "When a task is checked off" },
+  ]},
+  { cat: "contacts", title: "Contacts", rows: [
+    { cat: "contacts", key: "added", label: "When a contact is added" },
+  ]},
+  { cat: "documents", title: "Documents", rows: [
+    { cat: "documents", key: "added", label: "When a document is added" },
+  ]},
+  { cat: "meals", title: "Meals", rows: [
+    { cat: "meals", key: "added", label: "When a meal is added" },
+  ]},
+  { cat: "memories", title: "Memories", rows: [
+    { cat: "memories", key: "added", label: "When a memory is added" },
+  ]},
+];
+
+function NotificationsMenu() {
+  const prefs = useNotifPrefs();
+  return (
+    <div className="rounded-xl border border-border bg-background/60 p-3 space-y-3">
+      <div>
+        <div className="text-sm font-medium">Notifications</div>
+        <div className="text-xs text-muted-foreground">
+          Choose which actions send you an alert. These settings are saved on this device only —
+          each device you sign in from has its own preferences.
+        </div>
+      </div>
+      <div className="space-y-3">
+        {NOTIF_GROUPS.map((g) => (
+          <div key={g.cat} className="rounded-lg border border-border bg-background p-2.5 space-y-1.5">
+            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{g.title}</div>
+            {g.rows.map((r) => {
+              const catPrefs = prefs[r.cat] as unknown as Record<string, boolean>;
+              const checked = !!catPrefs[r.key];
+              const id = `notif-${r.cat}-${r.key}`;
+              return (
+                <label key={id} htmlFor={id} className="flex items-center justify-between gap-3 py-1 cursor-pointer">
+                  <span className="text-sm">{r.label}</span>
+                  <Switch
+                    id={id}
+                    checked={checked}
+                    onCheckedChange={(v) => setPref(r.cat, r.key as keyof NotifPrefs[typeof r.cat], !!v)}
+                  />
+                </label>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode }) {
   const { profiles } = useHousehold();
   return (
