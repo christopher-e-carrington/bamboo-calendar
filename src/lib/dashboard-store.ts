@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Layout as LayoutItem } from "react-grid-layout";
+import type { LayoutItem } from "react-grid-layout";
 
 type Layout = LayoutItem[];
 
