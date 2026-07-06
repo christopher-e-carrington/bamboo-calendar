@@ -22,6 +22,7 @@ import { MealsPage } from "@/components/meals-page";
 import { ShoppingListPage } from "@/components/shopping-list-page";
 import { InventoryPage } from "@/components/inventory-page";
 import { MemoriesPage } from "@/components/memories-page";
+import { DashboardPage } from "@/components/dashboard-page";
 import { HouseholdPage } from "@/components/household-page";
 import { AuthScreen } from "@/components/auth-screen";
 import { OnboardingWizard } from "@/components/onboarding-wizard";
@@ -73,6 +74,8 @@ function Index() {
             <main className="flex-1">
               {active === "calendar" ? (
                 <CalendarView />
+              ) : active === "dashboard" ? (
+                <DashboardPage />
               ) : active === "tomorrow" ? (
                 <TomorrowHomeScreen />
               ) : active === "this-week" ? (
