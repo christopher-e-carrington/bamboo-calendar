@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Responsive, WidthProvider, type LayoutItem } from "react-grid-layout";
+import { Responsive, WidthProvider } from "react-grid-layout/legacy";
+import type { LayoutItem } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -98,8 +99,8 @@ export function DashboardPage() {
           isDraggable={editing}
           isResizable={editing}
           draggableHandle=".drag-handle"
-          onLayoutChange={(_current, all) => {
-            if (editing) updateLayouts(all as { [k: string]: LayoutItem[] });
+          onLayoutChange={(_current: LayoutItem[], all: { [k: string]: LayoutItem[] }) => {
+            if (editing) updateLayouts(all);
           }}
         >
           {config.widgets.map((w) => {
