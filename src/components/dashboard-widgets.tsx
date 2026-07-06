@@ -278,7 +278,7 @@ export function MealsWidget() {
           return (
             <li key={i} className="flex gap-2 text-sm">
               <span className="text-xs text-muted-foreground w-10 shrink-0">{d}</span>
-              <span className="truncate">{entry?.title || <span className="text-muted-foreground/60">—</span>}</span>
+              <span className="truncate">{entry?.recipe_name || <span className="text-muted-foreground/60">—</span>}</span>
             </li>
           );
         })}

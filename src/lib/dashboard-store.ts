@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import type { Layout } from "react-grid-layout";
+import type { Layout as LayoutItem } from "react-grid-layout";
+
+type Layout = LayoutItem[];
 
 export type WidgetType =
   | "agenda"
@@ -20,7 +22,7 @@ export interface WidgetInstance {
 
 export interface DashboardConfig {
   widgets: WidgetInstance[];
-  layouts: { [breakpoint: string]: Layout[] };
+  layouts: { [breakpoint: string]: Layout };
 }
 
 export const WIDGET_CATALOG: { type: WidgetType; label: string; defaultW: number; defaultH: number }[] = [
@@ -138,7 +140,7 @@ export function useDashboardConfig(userId: string | undefined) {
   );
 
   const updateLayouts = useCallback(
-    (layouts: { [bp: string]: Layout[] }) => {
+    (layouts: { [bp: string]: Layout }) => {
       persist({ ...config, layouts });
     },
     [config, persist],
