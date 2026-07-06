@@ -99,8 +99,14 @@ export function DashboardPage() {
           isDraggable={editing}
           isResizable={editing}
           draggableHandle=".drag-handle"
-          onLayoutChange={(_current: LayoutItem[], all: { [k: string]: LayoutItem[] }) => {
-            if (editing) updateLayouts(all);
+          onLayoutChange={(_current, all) => {
+            if (editing) {
+              const cloned: { [k: string]: LayoutItem[] } = {};
+              for (const [bp, arr] of Object.entries(all)) {
+                if (arr) cloned[bp] = [...arr];
+              }
+              updateLayouts(cloned);
+            }
           }}
         >
           {config.widgets.map((w) => {
