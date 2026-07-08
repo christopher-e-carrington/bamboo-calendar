@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { HouseholdProvider } from "@/lib/household-store";
 import { NotificationsProvider } from "@/lib/notifications-store";
@@ -26,8 +26,25 @@ import { DashboardPage } from "@/components/dashboard-page";
 import { HouseholdPage } from "@/components/household-page";
 import { AuthScreen } from "@/components/auth-screen";
 import { OnboardingWizard } from "@/components/onboarding-wizard";
+import { UpgradeModal } from "@/components/upgrade-modal";
+import { PremiumLockedPage } from "@/components/premium-locked-page";
+import { PaymentTestModeBanner } from "@/components/payment-test-mode-banner";
+import { usePremium, PREMIUM_PAGES } from "@/hooks/use-premium";
 import { useAuth } from "@/hooks/use-auth";
 import { Leaf } from "lucide-react";
+
+const PAGE_LABELS: Record<string, string> = {
+  calendar: "Calendar",
+  events: "Events",
+  goals: "Goals",
+  projects: "Projects",
+  shopping: "Shopping",
+  meals: "Meals",
+  routines: "Routines",
+  inventory: "Inventory",
+  documents: "Documents",
+  memories: "Memories",
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
