@@ -51,9 +51,9 @@ async function ensureMawmawPromoCode(
     name: "Mawmaw — Free Forever",
   });
   await stripe.promotionCodes.create({
-    coupon: coupon.id,
+    promotion: { type: "coupon", coupon: coupon.id },
     code: "mawmaw",
-  } as Stripe.PromotionCodeCreateParams);
+  });
 }
 
 const CheckoutSchema = z.object({
