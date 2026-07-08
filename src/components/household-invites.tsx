@@ -87,6 +87,10 @@ export function HouseholdInvites() {
 
   const createInvite = async () => {
     if (!user) return;
+    if (atMemberLimit) {
+      setUpgradeOpen(true);
+      return;
+    }
     setCreating(true);
     try {
       const token = randomToken();
