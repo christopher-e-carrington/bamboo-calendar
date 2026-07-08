@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/lib/household-store";
 import { useAuth } from "@/hooks/use-auth";
+import { usePremium, useHouseholdMemberCount, FREE_MEMBER_LIMIT } from "@/hooks/use-premium";
+import { UpgradeModal } from "@/components/upgrade-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Copy, Mail, Trash2, UserPlus, Check } from "lucide-react";
+import { Copy, Mail, Trash2, UserPlus, Check, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 type Invitation = {
@@ -36,12 +38,17 @@ function randomToken() {
 export function HouseholdInvites() {
   const { user } = useAuth();
   const { householdId, isHouseholdOwner, profiles } = useHousehold();
+  const { isPremium } = usePremium();
+  const memberCount = useHouseholdMemberCount();
   const qc = useQueryClient();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [profileId, setProfileId] = useState<string>("__new__");
   const [creating, setCreating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+
+  const atMemberLimit = !isPremium && memberCount >= FREE_MEMBER_LIMIT;
 
   const invitesQ = useQuery({
     queryKey: ["invites", householdId],
