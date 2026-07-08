@@ -45,14 +45,13 @@ async function handleCreatedOrUpdated(subscription: any, env: StripeEnv, isNew: 
     row.user_id = userId;
   }
 
-  await getSupabase()
-    .from("subscriptions")
-    .upsert(row, { onConflict: "stripe_subscription_id" });
+  await (getSupabase().from("subscriptions") as any).upsert(row, {
+    onConflict: "stripe_subscription_id",
+  });
 }
 
 async function handleDeleted(subscription: any, env: StripeEnv) {
-  await getSupabase()
-    .from("subscriptions")
+  await (getSupabase().from("subscriptions") as any)
     .update({ status: "canceled", updated_at: new Date().toISOString() })
     .eq("stripe_subscription_id", subscription.id)
     .eq("environment", env);
