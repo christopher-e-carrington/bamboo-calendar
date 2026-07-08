@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { HouseholdProvider } from "@/lib/household-store";
 import { NotificationsProvider } from "@/lib/notifications-store";
@@ -26,8 +26,25 @@ import { DashboardPage } from "@/components/dashboard-page";
 import { HouseholdPage } from "@/components/household-page";
 import { AuthScreen } from "@/components/auth-screen";
 import { OnboardingWizard } from "@/components/onboarding-wizard";
+import { UpgradeModal } from "@/components/upgrade-modal";
+import { PremiumLockedPage } from "@/components/premium-locked-page";
+import { PaymentTestModeBanner } from "@/components/payment-test-mode-banner";
+import { usePremium, PREMIUM_PAGES } from "@/hooks/use-premium";
 import { useAuth } from "@/hooks/use-auth";
 import { Leaf } from "lucide-react";
+
+const PAGE_LABELS: Record<string, string> = {
+  calendar: "Calendar",
+  events: "Events",
+  goals: "Goals",
+  projects: "Projects",
+  shopping: "Shopping",
+  meals: "Meals",
+  routines: "Routines",
+  inventory: "Inventory",
+  documents: "Documents",
+  memories: "Memories",
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -51,6 +68,8 @@ export const Route = createFileRoute("/")({
 function Index() {
   const { user, loading } = useAuth();
   const [active, setActive] = useState("today");
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [upgradeLabel, setUpgradeLabel] = useState<string | undefined>(undefined);
 
   if (loading) {
     return (
@@ -65,57 +84,94 @@ function Index() {
   return (
     <HouseholdProvider user={user}>
       <NotificationsProvider>
-      <OnboardingWizard user={user} />
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full">
-          <AppSidebar active={active} onSelect={setActive} />
-          <SidebarInset className="flex-1 flex flex-col min-w-0 bg-transparent">
-            <TopNav />
-            <main className="flex-1">
-              {active === "calendar" ? (
-                <CalendarView />
-              ) : active === "dashboard" ? (
-                <DashboardPage />
-              ) : active === "tomorrow" ? (
-                <TomorrowHomeScreen />
-              ) : active === "this-week" ? (
-                <ThisWeekPage />
-              ) : active === "events" ? (
-                <EventsPage />
-              ) : active === "notes" ? (
-                <NotesPage />
-              ) : active === "contacts" ? (
-                <ContactsPage />
-              ) : active === "documents" ? (
-                <DocumentsPage />
-              ) : active === "passwords" ? (
-                <PasswordsPage />
-              ) : active === "tasks" ? (
-                <TasksPage />
-              ) : active === "routines" ? (
-                <RoutinesPage />
-              ) : active === "goals" ? (
-                <GoalsPage />
-              ) : active === "projects" ? (
-                <ProjectsPage />
-              ) : active === "meals" ? (
-                <MealsPage />
-              ) : active === "shopping" ? (
-                <ShoppingListPage />
-              ) : active === "inventory" ? (
-                <InventoryPage />
-              ) : active === "memories" ? (
-                <MemoriesPage />
-              ) : active === "household" ? (
-                <HouseholdPage />
-              ) : (
-                <ProfileHomeScreen />
-              )}
-            </main>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
+        <OnboardingWizard user={user} />
+        <SidebarProvider>
+          <div className="min-h-screen flex w-full flex-col">
+            <PaymentTestModeBanner />
+            <div className="flex flex-1 w-full">
+              <AppSidebar
+                active={active}
+                onSelect={(id) => {
+                  if (id === "upgrade") {
+                    setUpgradeLabel(undefined);
+                    setUpgradeOpen(true);
+                    return;
+                  }
+                  setActive(id);
+                }}
+              />
+              <SidebarInset className="flex-1 flex flex-col min-w-0 bg-transparent">
+                <TopNav />
+                <main className="flex-1">
+                  <PageRouter
+                    active={active}
+                    onUpgrade={(label) => {
+                      setUpgradeLabel(label);
+                      setUpgradeOpen(true);
+                    }}
+                  />
+                </main>
+              </SidebarInset>
+            </div>
+          </div>
+        </SidebarProvider>
+        <UpgradeModal
+          open={upgradeOpen}
+          onOpenChange={setUpgradeOpen}
+          featureLabel={upgradeLabel}
+        />
       </NotificationsProvider>
     </HouseholdProvider>
   );
+}
+
+function PageRouter({
+  active,
+  onUpgrade,
+}: {
+  active: string;
+  onUpgrade: (label?: string) => void;
+}) {
+  const { isPremium, isLoading } = usePremium();
+
+  // Auto-open the upgrade modal if the URL hints at return-from-checkout.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("checkout") === "success") {
+      // Clean up so we don't re-trigger
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
+  if (PREMIUM_PAGES.has(active) && !isPremium && !isLoading) {
+    return (
+      <PremiumLockedPage
+        featureLabel={PAGE_LABELS[active] ?? active}
+        onUpgrade={() => onUpgrade(PAGE_LABELS[active] ?? active)}
+      />
+    );
+  }
+
+  switch (active) {
+    case "calendar": return <CalendarView />;
+    case "dashboard": return <DashboardPage />;
+    case "tomorrow": return <TomorrowHomeScreen />;
+    case "this-week": return <ThisWeekPage />;
+    case "events": return <EventsPage />;
+    case "notes": return <NotesPage />;
+    case "contacts": return <ContactsPage />;
+    case "documents": return <DocumentsPage />;
+    case "passwords": return <PasswordsPage />;
+    case "tasks": return <TasksPage />;
+    case "routines": return <RoutinesPage />;
+    case "goals": return <GoalsPage />;
+    case "projects": return <ProjectsPage />;
+    case "meals": return <MealsPage />;
+    case "shopping": return <ShoppingListPage />;
+    case "inventory": return <InventoryPage />;
+    case "memories": return <MemoriesPage />;
+    case "household": return <HouseholdPage />;
+    default: return <ProfileHomeScreen />;
+  }
 }

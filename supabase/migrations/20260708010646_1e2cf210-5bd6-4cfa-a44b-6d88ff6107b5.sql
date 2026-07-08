@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.household_is_premium(uuid, text) FROM anon;

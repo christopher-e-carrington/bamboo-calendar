@@ -1,4 +1,5 @@
-import { Calendar, CheckSquare, Image as ImageIcon, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard } from "lucide-react";
+import { Calendar, CheckSquare, Image as ImageIcon, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Lock, Sparkles } from "lucide-react";
+import { usePremium, PREMIUM_PAGES } from "@/hooks/use-premium";
 import {
   Sidebar,
   SidebarContent,
@@ -47,6 +48,7 @@ export function AppSidebar({
   const { state, setOpen, setOpenMobile, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const { hidden } = useHiddenPages();
+  const { isPremium } = usePremium();
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -80,22 +82,39 @@ export function AppSidebar({
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {NAV_ITEMS.filter((item) => !hidden.includes(item.id) || ALWAYS_VISIBLE_PAGES.has(item.id)).map((item) => (
-                <SidebarMenuItem key={item.id}>
+              {NAV_ITEMS.filter((item) => !hidden.includes(item.id) || ALWAYS_VISIBLE_PAGES.has(item.id)).map((item) => {
+                const isLocked = PREMIUM_PAGES.has(item.id) && !isPremium;
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton
+                      isActive={active === item.id}
+                      onClick={() => {
+                        onSelect(item.id);
+                        setOpen(false);
+                        setOpenMobile(false);
+                      }}
+                      className="data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:font-medium"
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span className="flex-1">{item.title}</span>
+                      {isLocked && !collapsed && (
+                        <Lock className="h-3 w-3 text-muted-foreground/70" aria-label="Premium" />
+                      )}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+              {!isPremium && !collapsed && (
+                <SidebarMenuItem>
                   <SidebarMenuButton
-                    isActive={active === item.id}
-                    onClick={() => {
-                      onSelect(item.id);
-                      setOpen(false);
-                      setOpenMobile(false);
-                    }}
-                    className="data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:font-medium"
+                    onClick={() => onSelect("upgrade")}
+                    className="mt-2 bg-gradient-to-r from-primary/15 to-[#C9A36B]/15 border border-primary/20 text-primary font-medium hover:from-primary/25 hover:to-[#C9A36B]/25"
                   >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.title}</span>
+                    <Sparkles className="h-4 w-4" />
+                    <span>Upgrade to Premium</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
