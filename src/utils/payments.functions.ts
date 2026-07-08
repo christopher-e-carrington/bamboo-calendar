@@ -53,8 +53,7 @@ async function ensureMawmawPromoCode(
   await stripe.promotionCodes.create({
     coupon: coupon.id,
     code: "mawmaw",
-    max_redemptions: undefined,
-  });
+  } as Stripe.PromotionCodeCreateParams);
 }
 
 const CheckoutSchema = z.object({
