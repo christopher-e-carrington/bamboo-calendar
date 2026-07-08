@@ -202,8 +202,8 @@ export function HouseholdInvites() {
             />
           </div>
         </div>
-        <Button onClick={createInvite} disabled={creating} className="w-full sm:w-auto">
-          {creating ? "Creating…" : "Create invite link"}
+        <Button onClick={createInvite} disabled={creating || atMemberLimit} className="w-full sm:w-auto">
+          {creating ? "Creating…" : atMemberLimit ? "Upgrade to invite more" : "Create invite link"}
         </Button>
         <p className="text-[11px] text-muted-foreground">
           You'll get a shareable link to send them. They'll create an account, confirm their
