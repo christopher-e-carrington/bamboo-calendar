@@ -40,6 +40,23 @@ async function resolveOrCreateCustomer(
   return created.id;
 }
 
+async function ensureMawmawPromoCode(
+  stripe: ReturnType<typeof createStripeClient>,
+): Promise<void> {
+  const existing = await stripe.promotionCodes.list({ code: "mawmaw", limit: 1 });
+  if (existing.data.length) return;
+  const coupon = await stripe.coupons.create({
+    percent_off: 100,
+    duration: "forever",
+    name: "Mawmaw — Free Forever",
+  });
+  await stripe.promotionCodes.create({
+    coupon: coupon.id,
+    code: "mawmaw",
+    max_redemptions: undefined,
+  });
+}
+
 const CheckoutSchema = z.object({
   priceId: z.string().regex(/^[a-zA-Z0-9_-]+$/),
   returnUrl: z.string().url(),
