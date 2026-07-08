@@ -1179,6 +1179,32 @@ function NotificationsMenu() {
   );
 }
 
+function UpgradeToPremiumButton() {
+  const { isPremium, isLoading } = usePremium();
+  const [open, setOpen] = useState(false);
+  if (isLoading || isPremium) return null;
+  return (
+    <>
+      <div className="rounded-xl border border-border bg-background/60 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="w-full flex items-center gap-3 p-3 text-left transition-colors hover:bg-muted/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <Sparkles className="h-4 w-4 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium">Upgrade to Premium</div>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+        </button>
+      </div>
+      <UpgradeModal open={open} onOpenChange={setOpen} />
+    </>
+  );
+}
+
 export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode }) {
   const { profiles } = useHousehold();
   return (
