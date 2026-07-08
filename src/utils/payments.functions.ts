@@ -40,6 +40,22 @@ async function resolveOrCreateCustomer(
   return created.id;
 }
 
+async function ensureMawmawPromoCode(
+  stripe: ReturnType<typeof createStripeClient>,
+): Promise<void> {
+  const existing = await stripe.promotionCodes.list({ code: "mawmaw", limit: 1 });
+  if (existing.data.length) return;
+  const coupon = await stripe.coupons.create({
+    percent_off: 100,
+    duration: "forever",
+    name: "Mawmaw — Free Forever",
+  });
+  await stripe.promotionCodes.create({
+    promotion: { type: "coupon", coupon: coupon.id },
+    code: "mawmaw",
+  });
+}
+
 const CheckoutSchema = z.object({
   priceId: z.string().regex(/^[a-zA-Z0-9_-]+$/),
   returnUrl: z.string().url(),
@@ -64,14 +80,28 @@ export const createPremiumCheckout = createServerFn({ method: "POST" })
 
       const customerId = await resolveOrCreateCustomer(stripe, { email, userId });
 
+      // Ensure the "mawmaw" 100%-off-forever promo code exists (idempotent).
+      await ensureMawmawPromoCode(stripe);
+
       const session = await stripe.checkout.sessions.create({
         line_items: [{ price: stripePrice.id, quantity: 1 }],
         mode: isRecurring ? "subscription" : "payment",
         ui_mode: "embedded_page",
         return_url: data.returnUrl,
         customer: customerId,
+        allow_promotion_codes: true,
         metadata: { userId },
-        ...(isRecurring && { subscription_data: { metadata: { userId } } }),
+        ...(isRecurring && {
+          subscription_data: {
+            metadata: { userId },
+            trial_period_days: 30,
+            // Don't require a payment method during the 30-day trial.
+            trial_settings: {
+              end_behavior: { missing_payment_method: "cancel" },
+            },
+          },
+          payment_method_collection: "if_required",
+        }),
       } as Stripe.Checkout.SessionCreateParams);
 
       return { clientSecret: session.client_secret ?? "" };
