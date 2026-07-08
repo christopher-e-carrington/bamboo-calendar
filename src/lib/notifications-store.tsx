@@ -247,9 +247,43 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     scanUpcoming();
     const timer = window.setInterval(scanUpcoming, 60 * 1000);
 
+    // ---------- Trial-ending scheduler ----------
+    // Notify starting 5 days before the trial ends, then daily until expiry.
+    const scanTrial = async () => {
+      const { data } = await (supabase as any)
+        .from("subscriptions")
+        .select("status,current_period_end,trial_end")
+        .eq("user_id", householdId)
+        .eq("status", "trialing")
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const row = (data ?? [])[0] as
+        | { status: string; current_period_end: string | null; trial_end: string | null }
+        | undefined;
+      if (!row) return;
+      const endStr = row.trial_end ?? row.current_period_end;
+      if (!endStr) return;
+      const end = new Date(endStr).getTime();
+      const now = Date.now();
+      const msLeft = end - now;
+      if (msLeft <= 0) return;
+      const daysLeft = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
+      if (daysLeft > 5) return;
+      const today = new Date().toISOString().slice(0, 10);
+      const key = `trial:end:${today}`;
+      const msg =
+        daysLeft === 1
+          ? "Your Premium trial ends tomorrow — upgrade now to keep full app features."
+          : `Your Premium trial ends in ${daysLeft} days — upgrade to keep full app features.`;
+      push(key, msg);
+    };
+    scanTrial();
+    const trialTimer = window.setInterval(scanTrial, 60 * 60 * 1000); // hourly
+
     return () => {
       supabase.removeChannel(channel);
       window.clearInterval(timer);
+      window.clearInterval(trialTimer);
     };
   }, [householdId]);
 
