@@ -250,7 +250,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     // ---------- Trial-ending scheduler ----------
     // Notify starting 5 days before the trial ends, then daily until expiry.
     const scanTrial = async () => {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from("subscriptions")
         .select("status,current_period_end,trial_end")
         .eq("user_id", householdId)
