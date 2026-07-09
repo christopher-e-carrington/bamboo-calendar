@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Leaf, Sparkles, Check, Loader2 } from "lucide-react";
-import { getStripe, getStripeEnvironment, hasPaymentsConfigured } from "@/lib/stripe";
+import { getStripe, hasPaymentsConfigured } from "@/lib/stripe";
 import { createPremiumCheckout } from "@/utils/payments.functions";
 import { usePremium } from "@/hooks/use-premium";
 
