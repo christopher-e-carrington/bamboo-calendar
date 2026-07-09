@@ -1272,7 +1272,9 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
         </SheetHeader>
         <div className="mt-4 space-y-3">
           <UpgradeToPremiumButton />
+          <ManageSubscriptionButton />
           <SettingsSection title="Default profile" icon={User}>
+
             <DefaultProfileMenu />
           </SettingsSection>
           <SettingsSection title="Users" icon={UsersIcon}>
