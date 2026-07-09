@@ -132,17 +132,30 @@ function PageRouter({
   active: string;
   onUpgrade: (label?: string) => void;
 }) {
-  const { isPremium, isLoading } = usePremium();
+  const { isPremium, isLoading, refetch } = usePremium();
 
-  // Auto-open the upgrade modal if the URL hints at return-from-checkout.
+  // After Stripe embedded checkout redirects back with ?checkout=success,
+  // toast + poll entitlement so the UI unlocks without a manual refresh.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
-    if (params.get("checkout") === "success") {
-      // Clean up so we don't re-trigger
-      window.history.replaceState({}, "", window.location.pathname);
-    }
-  }, []);
+    if (params.get("checkout") !== "success") return;
+    window.history.replaceState({}, "", window.location.pathname);
+    import("sonner").then(({ toast }) =>
+      toast.success("Welcome to Bamboo Premium!", {
+        description: "Your household now has full access. Enjoy!",
+      }),
+    );
+    // Webhook may take a couple seconds — retry a few times.
+    let attempts = 0;
+    const iv = setInterval(() => {
+      attempts += 1;
+      refetch();
+      if (attempts >= 6) clearInterval(iv);
+    }, 1500);
+    return () => clearInterval(iv);
+  }, [refetch]);
+
 
   if (PREMIUM_PAGES.has(active) && !isPremium && !isLoading) {
     return (

@@ -1205,6 +1205,53 @@ function UpgradeToPremiumButton() {
   );
 }
 
+function ManageSubscriptionButton() {
+  const { isPremium, isLoading, environment } = usePremium();
+  const [busy, setBusy] = useState(false);
+  if (isLoading || !isPremium) return null;
+  const openPortal = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const { createBillingPortalSession } = await import("@/utils/payments.functions");
+      const result = await createBillingPortalSession({
+        data: {
+          returnUrl: `${window.location.origin}/`,
+          environment,
+        },
+      });
+      if ("error" in result) throw new Error(result.error);
+      window.open(result.url, "_blank", "noopener,noreferrer");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not open billing portal");
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="rounded-xl border border-border bg-background/60 overflow-hidden">
+      <button
+        type="button"
+        onClick={openPortal}
+        disabled={busy}
+        className="w-full flex items-center gap-3 p-3 text-left transition-colors hover:bg-muted/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+      >
+        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          <Star className="h-4 w-4 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium">Manage subscription</div>
+          <div className="text-xs text-muted-foreground">
+            Update payment method, change plan, or cancel
+          </div>
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+      </button>
+    </div>
+  );
+}
+
+
 export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode }) {
   const { profiles } = useHousehold();
   return (
@@ -1225,7 +1272,9 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
         </SheetHeader>
         <div className="mt-4 space-y-3">
           <UpgradeToPremiumButton />
+          <ManageSubscriptionButton />
           <SettingsSection title="Default profile" icon={User}>
+
             <DefaultProfileMenu />
           </SettingsSection>
           <SettingsSection title="Users" icon={UsersIcon}>
