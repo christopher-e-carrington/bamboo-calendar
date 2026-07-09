@@ -28,7 +28,7 @@ export function UpgradeModal({ open, onOpenChange, featureLabel }: UpgradeModalP
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { refetch } = usePremium();
+  const { isPremium, refetch, environment } = usePremium();
 
   const startCheckout = async () => {
     if (!hasPaymentsConfigured()) {
@@ -38,11 +38,23 @@ export function UpgradeModal({ open, onOpenChange, featureLabel }: UpgradeModalP
     setLoading(true);
     setError(null);
     try {
+      // Existing subscribers manage plan changes in Stripe's Billing Portal
+      // instead of creating a duplicate subscription.
+      if (isPremium) {
+        const { createBillingPortalSession } = await import("@/utils/payments.functions");
+        const portal = await createBillingPortalSession({
+          data: { returnUrl: `${window.location.origin}/`, environment },
+        });
+        if ("error" in portal) throw new Error(portal.error);
+        window.open(portal.url, "_blank", "noopener,noreferrer");
+        onOpenChange(false);
+        return;
+      }
       const result = await createPremiumCheckout({
         data: {
           priceId: plan,
           returnUrl: `${window.location.origin}/?checkout=success`,
-          environment: getStripeEnvironment(),
+          environment,
         },
       });
       if ("error" in result) throw new Error(result.error);
@@ -53,6 +65,7 @@ export function UpgradeModal({ open, onOpenChange, featureLabel }: UpgradeModalP
       setLoading(false);
     }
   };
+
 
   const reset = () => {
     setClientSecret(null);
