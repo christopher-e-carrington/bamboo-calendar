@@ -935,13 +935,18 @@ export type Database = {
           created_at: string | null
           current_period_end: string | null
           current_period_start: string | null
+          entitlement: string | null
           environment: string
           id: string
-          price_id: string
-          product_id: string
+          platform: string
+          price_id: string | null
+          product_id: string | null
+          revenuecat_app_user_id: string | null
+          source: string
           status: string
-          stripe_customer_id: string
-          stripe_subscription_id: string
+          store_transaction_id: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
           trial_end: string | null
           updated_at: string | null
           user_id: string
@@ -951,13 +956,18 @@ export type Database = {
           created_at?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
+          entitlement?: string | null
           environment?: string
           id?: string
-          price_id: string
-          product_id: string
+          platform?: string
+          price_id?: string | null
+          product_id?: string | null
+          revenuecat_app_user_id?: string | null
+          source?: string
           status?: string
-          stripe_customer_id: string
-          stripe_subscription_id: string
+          store_transaction_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           trial_end?: string | null
           updated_at?: string | null
           user_id: string
@@ -967,13 +977,18 @@ export type Database = {
           created_at?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
+          entitlement?: string | null
           environment?: string
           id?: string
-          price_id?: string
-          product_id?: string
+          platform?: string
+          price_id?: string | null
+          product_id?: string | null
+          revenuecat_app_user_id?: string | null
+          source?: string
           status?: string
-          stripe_customer_id?: string
-          stripe_subscription_id?: string
+          store_transaction_id?: string | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
           trial_end?: string | null
           updated_at?: string | null
           user_id?: string
@@ -1056,6 +1071,10 @@ export type Database = {
           profile_name: string
           status: string
         }[]
+      }
+      has_active_subscription: {
+        Args: { check_env?: string; user_uuid: string }
+        Returns: boolean
       }
       household_is_premium: {
         Args: { _env?: string; _household: string }
