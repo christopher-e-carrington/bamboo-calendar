@@ -457,17 +457,11 @@ export function TomorrowHomeScreen() {
             </div>
             <span className="text-xs text-muted-foreground">{activeProfile.name} · tomorrow</span>
           </header>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Ring
-              value={pct(dailyDone, dailyTasks.length)}
-              label="Daily tasks"
-              sublabel={`${dailyDone} of ${dailyTasks.length} done`}
-            />
-            <Ring
-              value={pct(weeklyDone, weeklyTasks.length)}
-              label="Weekly tasks"
-              sublabel={`${weeklyDone} of ${weeklyTasks.length} done`}
-              color="hsl(var(--accent-foreground))"
+              value={pct(tomorrowDone, tomorrowTasks.length)}
+              label="Tasks tomorrow"
+              sublabel={`${tomorrowDone} of ${tomorrowTasks.length} done`}
             />
             <Ring
               value={goalProgress}
