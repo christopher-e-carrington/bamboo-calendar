@@ -268,8 +268,21 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
         t.due_at &&
         new Date(t.due_at) < startOfToday,
     );
+    // Completed one-time tasks: disappear the day after they were completed.
+    const oneTimeCompletedStale = (tasksQ.data ?? []).filter(
+      (t: any) =>
+        t.done &&
+        (!t.recurrence || t.recurrence === "none") &&
+        t.completed_at &&
+        new Date(t.completed_at) < startOfToday,
+    );
 
-    if (toReset.length === 0 && toRoll.length === 0 && dailyStale.length === 0) {
+    if (
+      toReset.length === 0 &&
+      toRoll.length === 0 &&
+      dailyStale.length === 0 &&
+      oneTimeCompletedStale.length === 0
+    ) {
       cleanupRanRef.current = `${householdId}:${todayKey}`;
       return;
     }
@@ -290,6 +303,12 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       }
       if (dailyStale.length > 0) {
         await supabase.from("tasks").delete().in("id", dailyStale.map((t) => t.id));
+      }
+      if (oneTimeCompletedStale.length > 0) {
+        await supabase
+          .from("tasks")
+          .delete()
+          .in("id", oneTimeCompletedStale.map((t) => t.id));
       }
       qc.invalidateQueries({ queryKey: ["tasks", householdId] });
     })();
