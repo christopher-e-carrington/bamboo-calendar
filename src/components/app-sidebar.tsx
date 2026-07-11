@@ -24,6 +24,7 @@ export const NAV_ITEMS = [
   { id: "notes", title: "Notes", icon: NotebookPen },
   { id: "tasks", title: "To-Dos", icon: CheckSquare },
   { id: "routines", title: "Routines", icon: Repeat },
+  { id: "reminders", title: "Reminders", icon: Bell },
   { id: "goals", title: "Goals", icon: Target },
   { id: "projects", title: "Projects", icon: FolderKanban },
   { id: "meals", title: "Meals", icon: ChefHat },
