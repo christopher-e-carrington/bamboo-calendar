@@ -1,4 +1,4 @@
-import { Calendar, CheckSquare, Image as ImageIcon, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Lock, Sparkles } from "lucide-react";
+import { Calendar, CheckSquare, Image as ImageIcon, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Lock, Sparkles, Bell } from "lucide-react";
 import { usePremium, PREMIUM_PAGES } from "@/hooks/use-premium";
 import {
   Sidebar,
