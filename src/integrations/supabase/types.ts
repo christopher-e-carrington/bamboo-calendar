@@ -817,6 +817,48 @@ export type Database = {
         }
         Relationships: []
       }
+      reminders: {
+        Row: {
+          channels: string[]
+          created_at: string
+          created_by: string
+          delivery_status: Json | null
+          id: string
+          message: string
+          owner_id: string
+          recipient_profile_ids: string[]
+          send_at: string
+          sent_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          channels?: string[]
+          created_at?: string
+          created_by: string
+          delivery_status?: Json | null
+          id?: string
+          message: string
+          owner_id: string
+          recipient_profile_ids?: string[]
+          send_at: string
+          sent_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          channels?: string[]
+          created_at?: string
+          created_by?: string
+          delivery_status?: Json | null
+          id?: string
+          message?: string
+          owner_id?: string
+          recipient_profile_ids?: string[]
+          send_at?: string
+          sent_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       routines: {
         Row: {
           created_at: string
