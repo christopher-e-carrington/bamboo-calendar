@@ -351,10 +351,7 @@ export function ProfileHomeScreen() {
     return <div className="px-5 py-10 text-center text-muted-foreground text-sm">Loading…</div>;
   }
 
-  const dailyTasks = visibleTasks.filter((t) => t.tier === "daily");
-  const weeklyTasks = visibleTasks.filter((t) => t.tier === "weekly");
-  const dailyDone = dailyTasks.filter((t) => t.done).length;
-  const weeklyDone = weeklyTasks.filter((t) => t.done).length;
+  const todayDone = todayTasks.filter((t) => t.done).length;
 
   const goalProgress = (() => {
     const set = todayGoals;
