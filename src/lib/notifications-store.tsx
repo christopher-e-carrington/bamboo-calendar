@@ -320,6 +320,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       supabase.removeChannel(channel);
       window.clearInterval(timer);
       window.clearInterval(trialTimer);
+      window.clearInterval(reminderTimer);
     };
   }, [householdId]);
 
