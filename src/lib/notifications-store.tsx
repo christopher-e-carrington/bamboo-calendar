@@ -280,6 +280,42 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     scanTrial();
     const trialTimer = window.setInterval(scanTrial, 60 * 60 * 1000); // hourly
 
+    // ---------- Reminders due scheduler ----------
+    // Fires an in-app notification when a reminder's send_at time arrives,
+    // and marks it as sent so it doesn't fire again.
+    const scanReminders = async () => {
+      const nowIso = new Date().toISOString();
+      const { data } = await (supabase as any)
+        .from("reminders")
+        .select("id,message,recipient_profile_ids,channels,send_at,sent_at")
+        .eq("owner_id", householdId)
+        .is("sent_at", null)
+        .lte("send_at", nowIso);
+      const rows = (data ?? []) as Array<{
+        id: string;
+        message: string;
+        recipient_profile_ids: string[];
+        channels: string[];
+        send_at: string;
+        sent_at: string | null;
+      }>;
+      for (const r of rows) {
+        if (r.channels?.includes("app")) {
+          const names = (r.recipient_profile_ids ?? [])
+            .map((id) => profileName(id))
+            .join(", ");
+          push(`reminder:${r.id}`, `Reminder for ${names || "you"}: ${r.message}`);
+        }
+        await (supabase as any)
+          .from("reminders")
+          .update({ sent_at: new Date().toISOString() })
+          .eq("id", r.id);
+      }
+    };
+    scanReminders();
+    const reminderTimer = window.setInterval(scanReminders, 30 * 1000);
+
+
     return () => {
       supabase.removeChannel(channel);
       window.clearInterval(timer);
