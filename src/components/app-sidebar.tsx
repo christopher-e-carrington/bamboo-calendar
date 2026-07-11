@@ -1,4 +1,4 @@
-import { Calendar, CheckSquare, Image as ImageIcon, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Lock, Sparkles } from "lucide-react";
+import { Calendar, CheckSquare, Image as ImageIcon, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Lock, Sparkles, Bell } from "lucide-react";
 import { usePremium, PREMIUM_PAGES } from "@/hooks/use-premium";
 import {
   Sidebar,
@@ -24,6 +24,7 @@ export const NAV_ITEMS = [
   { id: "notes", title: "Notes", icon: NotebookPen },
   { id: "tasks", title: "To-Dos", icon: CheckSquare },
   { id: "routines", title: "Routines", icon: Repeat },
+  { id: "reminders", title: "Reminders", icon: Bell },
   { id: "goals", title: "Goals", icon: Target },
   { id: "projects", title: "Projects", icon: FolderKanban },
   { id: "meals", title: "Meals", icon: ChefHat },

@@ -16,6 +16,7 @@ import { DocumentsPage } from "@/components/documents-page";
 import { PasswordsPage } from "@/components/passwords-page";
 import { TasksPage } from "@/components/tasks-page";
 import { RoutinesPage } from "@/components/routines-page";
+import { RemindersPage } from "@/components/reminders-page";
 import { GoalsPage } from "@/components/goals-page";
 import { ProjectsPage } from "@/components/projects-page";
 import { MealsPage } from "@/components/meals-page";
@@ -178,6 +179,7 @@ function PageRouter({
     case "passwords": return <PasswordsPage />;
     case "tasks": return <TasksPage />;
     case "routines": return <RoutinesPage />;
+    case "reminders": return <RemindersPage />;
     case "goals": return <GoalsPage />;
     case "projects": return <ProjectsPage />;
     case "meals": return <MealsPage />;
