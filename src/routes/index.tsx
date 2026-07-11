@@ -179,6 +179,7 @@ function PageRouter({
     case "passwords": return <PasswordsPage />;
     case "tasks": return <TasksPage />;
     case "routines": return <RoutinesPage />;
+    case "reminders": return <RemindersPage />;
     case "goals": return <GoalsPage />;
     case "projects": return <ProjectsPage />;
     case "meals": return <MealsPage />;
