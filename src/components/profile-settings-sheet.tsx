@@ -425,6 +425,77 @@ function ViewMenu() {
     updateCustomTheme,
     deleteCustomTheme,
   } = useTheme();
+  const HIDDEN_KEY = "bamboo.themes.hidden";
+  const [hiddenBuiltIns, setHiddenBuiltIns] = useState<string[]>(() => {
+    if (typeof localStorage === "undefined") return [];
+    try {
+      const raw = localStorage.getItem(HIDDEN_KEY);
+      return raw ? (JSON.parse(raw) as string[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  const persistHidden = (next: string[]) => {
+    setHiddenBuiltIns(next);
+    try {
+      localStorage.setItem(HIDDEN_KEY, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  };
+  const hideBuiltIn = (id: string) => {
+    if (hiddenBuiltIns.includes(id)) return;
+    persistHidden([...hiddenBuiltIns, id]);
+  };
+  const restoreHidden = () => persistHidden([]);
+  const readBuiltInColors = (id: string): CustomThemeColors | null => {
+    if (typeof document === "undefined") return null;
+    const probe = document.createElement("div");
+    probe.className = `theme-${id}`;
+    probe.style.cssText = "position:absolute;left:-9999px;top:-9999px;visibility:hidden;pointer-events:none;";
+    document.body.appendChild(probe);
+    const cs = getComputedStyle(probe);
+    const read = (v: string, fb: string) => {
+      const raw = cs.getPropertyValue(v).trim();
+      return raw || fb;
+    };
+    const toHex = (input: string, fallback: string) => {
+      if (!input) return fallback;
+      const s = input.trim();
+      if (s.startsWith("#")) return s;
+      const m = s.match(/rgba?\(([^)]+)\)/i);
+      if (m) {
+        const parts = m[1].split(",").map((p) => parseFloat(p.trim()));
+        const [r, g, b] = parts;
+        const h = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+        return `#${h(r)}${h(g)}${h(b)}`;
+      }
+      // For hsl/oklch/etc, paint into a canvas via a temp element then read
+      const t = document.createElement("div");
+      t.style.color = s;
+      document.body.appendChild(t);
+      const computed = getComputedStyle(t).color;
+      document.body.removeChild(t);
+      const mm = computed.match(/rgba?\(([^)]+)\)/i);
+      if (mm) {
+        const parts = mm[1].split(",").map((p) => parseFloat(p.trim()));
+        const [r, g, b] = parts;
+        const h = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+        return `#${h(r)}${h(g)}${h(b)}`;
+      }
+      return fallback;
+    };
+    const out: CustomThemeColors = {
+      background: toHex(read("--background", ""), "#f6f1e4"),
+      foreground: toHex(read("--foreground", ""), "#2a2a22"),
+      card: toHex(read("--card", ""), "#fbf7ec"),
+      primary: toHex(read("--primary", ""), "#7a9a72"),
+      accent: toHex(read("--accent", ""), "#c2a878"),
+      border: toHex(read("--border", ""), "#e2dac6"),
+    };
+    document.body.removeChild(probe);
+    return out;
+  };
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
