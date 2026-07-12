@@ -551,6 +551,21 @@ function ViewMenu() {
     setSidebarOpacity(typeof c.sidebarOpacity === "number" ? c.sidebarOpacity : 1);
   };
 
+  const startEditBuiltIn = (id: string, displayName: string) => {
+    const c = readBuiltInColors(id);
+    if (!c) return;
+    setEditingId(null); // save as a new custom copy
+    setCreating(true);
+    setName(`${displayName} (copy)`);
+    setColors(c);
+    setBackgroundImage(null);
+    setCardOpacity(1);
+    setSidebarEnabled(false);
+    setSidebarColor(c.background);
+    setSidebarOpacity(1);
+    toast.info(`Editing "${displayName}" — saving creates a custom copy.`);
+  };
+
   const handleSave = async () => {
     const trimmed = name.trim();
     if (!trimmed) {
