@@ -32,6 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ColorScroller } from "@/components/ui/color-scroller";
 
 function randomToken() {
   const bytes = new Uint8Array(24);
