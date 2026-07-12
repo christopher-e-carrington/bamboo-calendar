@@ -655,17 +655,14 @@ function ViewMenu() {
               className="h-8 text-sm"
             />
           </div>
-          <div className="space-y-3">
+          <div className="space-y-1.5">
             {COLOR_FIELDS.map((f) => (
-              <div key={f.key} className="space-y-1">
-                <Label htmlFor={`color-${f.key}`} className="text-[11px] text-muted-foreground">
-                  {f.label}
-                </Label>
-                <ColorScroller
-                  value={colors[f.key]}
-                  onChange={(hex) => setColors((c) => ({ ...c, [f.key]: hex }))}
-                />
-              </div>
+              <ColorFieldRow
+                key={f.key}
+                label={f.label}
+                value={colors[f.key]}
+                onChange={(hex) => setColors((c) => ({ ...c, [f.key]: hex }))}
+              />
             ))}
           </div>
 
