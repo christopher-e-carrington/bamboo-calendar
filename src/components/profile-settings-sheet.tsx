@@ -655,24 +655,16 @@ function ViewMenu() {
               className="h-8 text-sm"
             />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-3">
             {COLOR_FIELDS.map((f) => (
               <div key={f.key} className="space-y-1">
                 <Label htmlFor={`color-${f.key}`} className="text-[11px] text-muted-foreground">
                   {f.label}
                 </Label>
-                <div className="flex items-center gap-2 rounded-md border border-input px-2 py-1">
-                  <input
-                    id={`color-${f.key}`}
-                    type="color"
-                    value={colors[f.key]}
-                    onChange={(e) => setColors((c) => ({ ...c, [f.key]: e.target.value }))}
-                    className="h-6 w-8 cursor-pointer border-0 bg-transparent p-0"
-                  />
-                  <span className="text-xs font-mono uppercase text-muted-foreground">
-                    {colors[f.key]}
-                  </span>
-                </div>
+                <ColorScroller
+                  value={colors[f.key]}
+                  onChange={(hex) => setColors((c) => ({ ...c, [f.key]: hex }))}
+                />
               </div>
             ))}
           </div>
