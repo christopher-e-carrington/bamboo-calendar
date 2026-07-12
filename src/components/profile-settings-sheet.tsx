@@ -782,6 +782,19 @@ function ViewMenu() {
         })}
       </div>
 
+      {hiddenBuiltIns.length > 0 && (
+        <button
+          type="button"
+          onClick={() => {
+            restoreHidden();
+            toast.success(`Restored ${hiddenBuiltIns.length} hidden view${hiddenBuiltIns.length === 1 ? "" : "s"}`);
+          }}
+          className="text-[11px] text-muted-foreground hover:text-primary underline underline-offset-2"
+        >
+          Restore {hiddenBuiltIns.length} hidden view{hiddenBuiltIns.length === 1 ? "" : "s"}
+        </button>
+      )}
+
       {!creating ? (
         <Button
           type="button"
