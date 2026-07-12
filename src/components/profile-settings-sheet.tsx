@@ -772,17 +772,7 @@ function ViewMenu() {
               />
             </div>
             <div className={cn("space-y-2", !sidebarEnabled && "opacity-50 pointer-events-none")}>
-              <div className="flex items-center gap-2 rounded-md border border-input px-2 py-1">
-                <input
-                  type="color"
-                  value={sidebarColor}
-                  onChange={(e) => setSidebarColor(e.target.value)}
-                  className="h-6 w-8 cursor-pointer border-0 bg-transparent p-0"
-                />
-                <span className="text-xs font-mono uppercase text-muted-foreground flex-1">
-                  {sidebarColor}
-                </span>
-              </div>
+              <ColorScroller value={sidebarColor} onChange={setSidebarColor} />
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <Label className="text-[11px]">Transparency</Label>
