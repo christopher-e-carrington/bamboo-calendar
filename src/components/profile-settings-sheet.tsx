@@ -32,6 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ColorScroller } from "@/components/ui/color-scroller";
 
 function randomToken() {
   const bytes = new Uint8Array(24);
@@ -654,24 +655,16 @@ function ViewMenu() {
               className="h-8 text-sm"
             />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-3">
             {COLOR_FIELDS.map((f) => (
               <div key={f.key} className="space-y-1">
                 <Label htmlFor={`color-${f.key}`} className="text-[11px] text-muted-foreground">
                   {f.label}
                 </Label>
-                <div className="flex items-center gap-2 rounded-md border border-input px-2 py-1">
-                  <input
-                    id={`color-${f.key}`}
-                    type="color"
-                    value={colors[f.key]}
-                    onChange={(e) => setColors((c) => ({ ...c, [f.key]: e.target.value }))}
-                    className="h-6 w-8 cursor-pointer border-0 bg-transparent p-0"
-                  />
-                  <span className="text-xs font-mono uppercase text-muted-foreground">
-                    {colors[f.key]}
-                  </span>
-                </div>
+                <ColorScroller
+                  value={colors[f.key]}
+                  onChange={(hex) => setColors((c) => ({ ...c, [f.key]: hex }))}
+                />
               </div>
             ))}
           </div>
@@ -779,17 +772,7 @@ function ViewMenu() {
               />
             </div>
             <div className={cn("space-y-2", !sidebarEnabled && "opacity-50 pointer-events-none")}>
-              <div className="flex items-center gap-2 rounded-md border border-input px-2 py-1">
-                <input
-                  type="color"
-                  value={sidebarColor}
-                  onChange={(e) => setSidebarColor(e.target.value)}
-                  className="h-6 w-8 cursor-pointer border-0 bg-transparent p-0"
-                />
-                <span className="text-xs font-mono uppercase text-muted-foreground flex-1">
-                  {sidebarColor}
-                </span>
-              </div>
+              <ColorScroller value={sidebarColor} onChange={setSidebarColor} />
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <Label className="text-[11px]">Transparency</Label>
