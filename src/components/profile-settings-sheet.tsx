@@ -40,6 +40,47 @@ function randomToken() {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+function ColorFieldRow({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (hex: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-md border border-input bg-background">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-2 px-2 py-1.5 text-left"
+        aria-expanded={open}
+      >
+        <span
+          className="h-5 w-5 rounded border border-black/10 shrink-0"
+          style={{ backgroundColor: value }}
+        />
+        <span className="text-xs font-medium flex-1">{label}</span>
+        <span className="text-[10px] font-mono uppercase text-muted-foreground">{value}</span>
+        <ChevronDown
+          className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")}
+        />
+      </button>
+      {open && (
+        <div className="border-t border-border p-2">
+          <ColorScroller value={value} onChange={onChange} />
+        </div>
+      )}
+    </div>
+  );
+}
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 const PALETTE = ["#7BA37A", "#C1785E", "#D4A843", "#C78B9E", "#7BA3B8", "#B5896B", "#9B8DB5", "#6BA89B"];
 
 function NicknameRow({ profile }: { profile: Profile }) {
