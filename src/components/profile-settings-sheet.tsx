@@ -714,7 +714,7 @@ function ViewMenu() {
                 >
                   <Star className={cn("h-3.5 w-3.5", isDefault && "fill-current")} />
                 </button>
-                {t.custom && t.themeRef && (
+                {t.custom && t.themeRef ? (
                   <>
                     <button
                       type="button"
@@ -736,6 +736,38 @@ function ViewMenu() {
                           if (defaultTheme === t.id) setDefaultTheme(null);
                           deleteCustomTheme(t.id);
                           toast.success(`Deleted ${t.name}`);
+                        }
+                      }}
+                      className="h-6 w-6 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      aria-label={`Edit ${t.name}`}
+                      title="Edit as a custom copy"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEditBuiltIn(t.id, t.name);
+                      }}
+                      className="h-6 w-6 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Hide ${t.name}`}
+                      title="Hide this view on this device"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm(`Hide "${t.name}" from the view list? You can restore it later.`)) {
+                          if (defaultTheme === t.id) setDefaultTheme(null);
+                          if (theme === t.id) setTheme(DEFAULT_THEME_ID);
+                          hideBuiltIn(t.id);
+                          toast.success(`Hidden: ${t.name}`);
                         }
                       }}
                       className="h-6 w-6 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center"
