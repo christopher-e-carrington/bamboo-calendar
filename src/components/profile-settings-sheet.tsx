@@ -76,10 +76,6 @@ function ColorFieldRow({
     </div>
   );
 }
-  const bytes = new Uint8Array(24);
-  crypto.getRandomValues(bytes);
-  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-}
 
 const PALETTE = ["#7BA37A", "#C1785E", "#D4A843", "#C78B9E", "#7BA3B8", "#B5896B", "#9B8DB5", "#6BA89B"];
 
