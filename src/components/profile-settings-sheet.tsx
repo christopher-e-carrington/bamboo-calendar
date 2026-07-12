@@ -425,6 +425,77 @@ function ViewMenu() {
     updateCustomTheme,
     deleteCustomTheme,
   } = useTheme();
+  const HIDDEN_KEY = "bamboo.themes.hidden";
+  const [hiddenBuiltIns, setHiddenBuiltIns] = useState<string[]>(() => {
+    if (typeof localStorage === "undefined") return [];
+    try {
+      const raw = localStorage.getItem(HIDDEN_KEY);
+      return raw ? (JSON.parse(raw) as string[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  const persistHidden = (next: string[]) => {
+    setHiddenBuiltIns(next);
+    try {
+      localStorage.setItem(HIDDEN_KEY, JSON.stringify(next));
+    } catch {
+      // ignore
+    }
+  };
+  const hideBuiltIn = (id: string) => {
+    if (hiddenBuiltIns.includes(id)) return;
+    persistHidden([...hiddenBuiltIns, id]);
+  };
+  const restoreHidden = () => persistHidden([]);
+  const readBuiltInColors = (id: string): CustomThemeColors | null => {
+    if (typeof document === "undefined") return null;
+    const probe = document.createElement("div");
+    probe.className = `theme-${id}`;
+    probe.style.cssText = "position:absolute;left:-9999px;top:-9999px;visibility:hidden;pointer-events:none;";
+    document.body.appendChild(probe);
+    const cs = getComputedStyle(probe);
+    const read = (v: string, fb: string) => {
+      const raw = cs.getPropertyValue(v).trim();
+      return raw || fb;
+    };
+    const toHex = (input: string, fallback: string) => {
+      if (!input) return fallback;
+      const s = input.trim();
+      if (s.startsWith("#")) return s;
+      const m = s.match(/rgba?\(([^)]+)\)/i);
+      if (m) {
+        const parts = m[1].split(",").map((p) => parseFloat(p.trim()));
+        const [r, g, b] = parts;
+        const h = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+        return `#${h(r)}${h(g)}${h(b)}`;
+      }
+      // For hsl/oklch/etc, paint into a canvas via a temp element then read
+      const t = document.createElement("div");
+      t.style.color = s;
+      document.body.appendChild(t);
+      const computed = getComputedStyle(t).color;
+      document.body.removeChild(t);
+      const mm = computed.match(/rgba?\(([^)]+)\)/i);
+      if (mm) {
+        const parts = mm[1].split(",").map((p) => parseFloat(p.trim()));
+        const [r, g, b] = parts;
+        const h = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+        return `#${h(r)}${h(g)}${h(b)}`;
+      }
+      return fallback;
+    };
+    const out: CustomThemeColors = {
+      background: toHex(read("--background", ""), "#f6f1e4"),
+      foreground: toHex(read("--foreground", ""), "#2a2a22"),
+      card: toHex(read("--card", ""), "#fbf7ec"),
+      primary: toHex(read("--primary", ""), "#7a9a72"),
+      accent: toHex(read("--accent", ""), "#c2a878"),
+      border: toHex(read("--border", ""), "#e2dac6"),
+    };
+    document.body.removeChild(probe);
+    return out;
+  };
   const [creating, setCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -478,6 +549,21 @@ function ViewMenu() {
     setSidebarEnabled(hasSidebar);
     setSidebarColor(c.sidebarColor ?? c.colors.background);
     setSidebarOpacity(typeof c.sidebarOpacity === "number" ? c.sidebarOpacity : 1);
+  };
+
+  const startEditBuiltIn = (id: string, displayName: string) => {
+    const c = readBuiltInColors(id);
+    if (!c) return;
+    setEditingId(null); // save as a new custom copy
+    setCreating(true);
+    setName(`${displayName} (copy)`);
+    setColors(c);
+    setBackgroundImage(null);
+    setCardOpacity(1);
+    setSidebarEnabled(false);
+    setSidebarColor(c.background);
+    setSidebarOpacity(1);
+    toast.info(`Editing "${displayName}" — saving creates a custom copy.`);
   };
 
   const handleSave = async () => {
@@ -537,7 +623,7 @@ function ViewMenu() {
   })();
 
   const allOptions = [
-    ...THEMES.map((t) => ({
+    ...THEMES.filter((t) => !hiddenBuiltIns.includes(t.id)).map((t) => ({
       id: t.id as string,
       name: t.name,
       description: t.description,
@@ -628,7 +714,7 @@ function ViewMenu() {
                 >
                   <Star className={cn("h-3.5 w-3.5", isDefault && "fill-current")} />
                 </button>
-                {t.custom && t.themeRef && (
+                {t.custom && t.themeRef ? (
                   <>
                     <button
                       type="button"
@@ -657,12 +743,57 @@ function ViewMenu() {
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      aria-label={`Edit ${t.name}`}
+                      title="Edit as a custom copy"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEditBuiltIn(t.id, t.name);
+                      }}
+                      className="h-6 w-6 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Hide ${t.name}`}
+                      title="Hide this view on this device"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm(`Hide "${t.name}" from the view list? You can restore it later.`)) {
+                          if (defaultTheme === t.id) setDefaultTheme(null);
+                          if (theme === t.id) setTheme("parchment");
+                          hideBuiltIn(t.id);
+                          toast.success(`Hidden: ${t.name}`);
+                        }
+                      }}
+                      className="h-6 w-6 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </>
                 )}
               </div>
             </div>
           );
         })}
       </div>
+
+      {hiddenBuiltIns.length > 0 && (
+        <button
+          type="button"
+          onClick={() => {
+            restoreHidden();
+            toast.success(`Restored ${hiddenBuiltIns.length} hidden view${hiddenBuiltIns.length === 1 ? "" : "s"}`);
+          }}
+          className="text-[11px] text-muted-foreground hover:text-primary underline underline-offset-2"
+        >
+          Restore {hiddenBuiltIns.length} hidden view{hiddenBuiltIns.length === 1 ? "" : "s"}
+        </button>
+      )}
 
       {!creating ? (
         <Button
