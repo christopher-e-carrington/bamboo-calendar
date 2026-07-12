@@ -623,7 +623,7 @@ function ViewMenu() {
   })();
 
   const allOptions = [
-    ...THEMES.map((t) => ({
+    ...THEMES.filter((t) => !hiddenBuiltIns.includes(t.id)).map((t) => ({
       id: t.id as string,
       name: t.name,
       description: t.description,
