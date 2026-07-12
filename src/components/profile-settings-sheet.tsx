@@ -765,7 +765,7 @@ function ViewMenu() {
                         e.stopPropagation();
                         if (confirm(`Hide "${t.name}" from the view list? You can restore it later.`)) {
                           if (defaultTheme === t.id) setDefaultTheme(null);
-                          if (theme === t.id) setTheme(DEFAULT_THEME_ID);
+                          if (theme === t.id) setTheme("parchment");
                           hideBuiltIn(t.id);
                           toast.success(`Hidden: ${t.name}`);
                         }
