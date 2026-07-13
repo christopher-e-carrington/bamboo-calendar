@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/lib/household-store";
 import { useAuth } from "@/hooks/use-auth";
-import { usePremium, useHouseholdMemberCount, FREE_MEMBER_LIMIT } from "@/hooks/use-premium";
+import { usePremium, useHouseholdMemberCount, FREE_MEMBER_LIMIT, PREMIUM_MEMBER_LIMIT } from "@/hooks/use-premium";
 import { UpgradeModal } from "@/components/upgrade-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
