@@ -89,7 +89,8 @@ export function HouseholdInvites() {
   const createInvite = async () => {
     if (!user) return;
     if (atMemberLimit) {
-      setUpgradeOpen(true);
+      if (!isPremium) setUpgradeOpen(true);
+      else toast.error(`Premium households are limited to ${PREMIUM_MEMBER_LIMIT} members`);
       return;
     }
     setCreating(true);
