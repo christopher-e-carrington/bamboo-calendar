@@ -48,7 +48,8 @@ export function HouseholdInvites() {
   const [copied, setCopied] = useState<string | null>(null);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
-  const atMemberLimit = !isPremium && memberCount >= FREE_MEMBER_LIMIT;
+  const memberLimit = isPremium ? PREMIUM_MEMBER_LIMIT : FREE_MEMBER_LIMIT;
+  const atMemberLimit = memberCount >= memberLimit;
 
   const invitesQ = useQuery({
     queryKey: ["invites", householdId],
