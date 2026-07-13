@@ -19,9 +19,11 @@ export const PREMIUM_PAGES = new Set<string>([
   "inventory",
   "documents",
   "memories",
+  "reminders",
 ]);
 
 export const FREE_MEMBER_LIMIT = 2;
+export const PREMIUM_MEMBER_LIMIT = 10;
 
 function currentEnv(): "sandbox" | "live" {
   try {
