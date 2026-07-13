@@ -146,17 +146,23 @@ export function HouseholdInvites() {
             <Sparkles className="h-4 w-4" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-medium">You've reached the free household limit</div>
+            <div className="font-medium">
+              {isPremium ? "You've reached the household member limit" : "You've reached the free household limit"}
+            </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Free households include up to {FREE_MEMBER_LIMIT} members. Upgrade to Bamboo Premium to invite unlimited family and friends.
+              {isPremium
+                ? `Bamboo Premium households can include up to ${PREMIUM_MEMBER_LIMIT} members.`
+                : `Free households include up to ${FREE_MEMBER_LIMIT} members. Upgrade to Bamboo Premium to invite up to ${PREMIUM_MEMBER_LIMIT} family and friends.`}
             </p>
           </div>
-          <Button size="sm" onClick={() => setUpgradeOpen(true)} className="shrink-0">
-            Upgrade
-          </Button>
+          {!isPremium && (
+            <Button size="sm" onClick={() => setUpgradeOpen(true)} className="shrink-0">
+              Upgrade
+            </Button>
+          )}
         </div>
       )}
-      <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} featureLabel="Unlimited members" />
+      <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} featureLabel="More household members" />
       <div className="rounded-xl border border-border p-4 bg-secondary/30 space-y-3">
         <div className="flex items-center gap-2 text-sm font-medium">
           <UserPlus className="h-4 w-4 text-primary" /> Invite someone
