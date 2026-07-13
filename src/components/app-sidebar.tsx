@@ -1,4 +1,4 @@
-import { Calendar, CheckSquare, Image as ImageIcon, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Lock, Sparkles, Bell } from "lucide-react";
+import { Calendar, CheckSquare, Image as ImageIcon, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Lock, Bell } from "lucide-react";
 import { usePremium, PREMIUM_PAGES } from "@/hooks/use-premium";
 import {
   Sidebar,
@@ -105,17 +105,6 @@ export function AppSidebar({
                   </SidebarMenuItem>
                 );
               })}
-              {!isPremium && !collapsed && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => onSelect("upgrade")}
-                    className="mt-2 bg-gradient-to-r from-primary/15 to-[#C9A36B]/15 border border-primary/20 text-primary font-medium hover:from-primary/25 hover:to-[#C9A36B]/25"
-                  >
-                    <Sparkles className="h-4 w-4" />
-                    <span>Upgrade to Premium</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
