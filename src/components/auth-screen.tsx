@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import bambooHero from "@/assets/bamboo-hero.jpg";
 
+type Mode = "signin" | "signup" | "forgot";
+
 export function AuthScreen() {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,7 +23,7 @@ export function AuthScreen() {
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-      } else {
+      } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -29,11 +31,21 @@ export function AuthScreen() {
         });
         if (error) throw error;
         toast.success("Welcome to Bamboo", { description: "Setting up your household…" });
+      } else {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("Check your email", {
+          description: "We sent a link to reset your password.",
+        });
+        setMode("signin");
       }
     } catch (err) {
-      toast.error("Authentication failed", {
-        description: err instanceof Error ? err.message : "Please try again.",
-      });
+      toast.error(
+        mode === "forgot" ? "Couldn't send reset email" : "Authentication failed",
+        { description: err instanceof Error ? err.message : "Please try again." },
+      );
     } finally {
       setLoading(false);
     }
@@ -49,6 +61,19 @@ export function AuthScreen() {
       setLoading(false);
     }
   };
+
+  const heading =
+    mode === "signin"
+      ? "Welcome back"
+      : mode === "signup"
+        ? "Plant your household"
+        : "Reset your password";
+  const subheading =
+    mode === "signin"
+      ? "Sign in to your household account."
+      : mode === "signup"
+        ? "Create the master account that holds all your profiles."
+        : "Enter your email and we'll send you a reset link.";
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
@@ -82,33 +107,31 @@ export function AuthScreen() {
             <span className="font-display text-xl">Bamboo</span>
           </div>
 
-          <h2 className="font-display text-3xl">
-            {mode === "signin" ? "Welcome back" : "Plant your household"}
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1.5">
-            {mode === "signin"
-              ? "Sign in to your household account."
-              : "Create the master account that holds all your profiles."}
-          </p>
+          <h2 className="font-display text-3xl">{heading}</h2>
+          <p className="text-sm text-muted-foreground mt-1.5">{subheading}</p>
 
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full mt-6 gap-2"
-            onClick={google}
-            disabled={loading}
-          >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden>
-              <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.46-1.74 4.28-5.5 4.28-3.32 0-6.02-2.74-6.02-6.12S8.68 6.14 12 6.14c1.88 0 3.14.8 3.86 1.48l2.64-2.54C16.86 3.6 14.66 2.7 12 2.7 6.94 2.7 2.84 6.8 2.84 11.86c0 5.06 4.1 9.16 9.16 9.16 5.28 0 8.78-3.7 8.78-8.92 0-.6-.06-1.06-.14-1.5H12z" />
-            </svg>
-            Continue with Google
-          </Button>
+          {mode !== "forgot" && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full mt-6 gap-2"
+                onClick={google}
+                disabled={loading}
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden>
+                  <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.46-1.74 4.28-5.5 4.28-3.32 0-6.02-2.74-6.02-6.12S8.68 6.14 12 6.14c1.88 0 3.14.8 3.86 1.48l2.64-2.54C16.86 3.6 14.66 2.7 12 2.7 6.94 2.7 2.84 6.8 2.84 11.86c0 5.06 4.1 9.16 9.16 9.16 5.28 0 8.78-3.7 8.78-8.92 0-.6-.06-1.06-.14-1.5H12z" />
+                </svg>
+                Continue with Google
+              </Button>
 
-          <div className="flex items-center gap-3 my-5 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
-          </div>
+              <div className="flex items-center gap-3 my-5 text-xs text-muted-foreground">
+                <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
+              </div>
+            </>
+          )}
 
-          <form onSubmit={submit} className="space-y-3">
+          <form onSubmit={submit} className={mode === "forgot" ? "space-y-3 mt-6" : "space-y-3"}>
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
@@ -121,33 +144,64 @@ export function AuthScreen() {
                 autoComplete="email"
               />
             </div>
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                autoComplete={mode === "signin" ? "current-password" : "new-password"}
-              />
-            </div>
+            {mode !== "forgot" && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  {mode === "signin" && (
+                    <button
+                      type="button"
+                      onClick={() => setMode("forgot")}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                />
+              </div>
+            )}
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+              {loading
+                ? "Please wait…"
+                : mode === "signin"
+                  ? "Sign in"
+                  : mode === "signup"
+                    ? "Create account"
+                    : "Send reset link"}
             </Button>
           </form>
 
           <p className="text-sm text-muted-foreground text-center mt-5">
-            {mode === "signin" ? "New here?" : "Already have an account?"}{" "}
-            <button
-              type="button"
-              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-              className="text-primary font-medium hover:underline"
-            >
-              {mode === "signin" ? "Create account" : "Sign in"}
-            </button>
+            {mode === "forgot" ? (
+              <button
+                type="button"
+                onClick={() => setMode("signin")}
+                className="text-primary font-medium hover:underline"
+              >
+                Back to sign in
+              </button>
+            ) : (
+              <>
+                {mode === "signin" ? "New here?" : "Already have an account?"}{" "}
+                <button
+                  type="button"
+                  onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+                  className="text-primary font-medium hover:underline"
+                >
+                  {mode === "signin" ? "Create account" : "Sign in"}
+                </button>
+              </>
+            )}
           </p>
         </div>
       </main>
