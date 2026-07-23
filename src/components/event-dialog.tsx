@@ -170,6 +170,23 @@ export function EventDialog({
           </div>
 
           <div>
+            <Label htmlFor="ev-repeat" className="text-xs flex items-center gap-1">
+              <Repeat className="h-3 w-3" /> Repeat
+            </Label>
+            <Select value={recurrence} onValueChange={(v) => setRecurrence(v as CalendarEvent["recurrence"])}>
+              <SelectTrigger id="ev-repeat">
+                <SelectValue placeholder="Does not repeat" />
+              </SelectTrigger>
+              <SelectContent>
+                {RECURRENCE_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+
+          <div>
             <Label htmlFor="ev-loc" className="text-xs flex items-center gap-1">
               <MapPin className="h-3 w-3" /> Location
             </Label>
