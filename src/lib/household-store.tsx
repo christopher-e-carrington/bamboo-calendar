@@ -31,7 +31,15 @@ export interface CalendarEvent {
   end_at?: string | null;
   location?: string | null;
   notes?: string | null;
-  recurrence: "none" | "yearly";
+  recurrence:
+    | "none"
+    | "weekly"
+    | "biweekly"
+    | "monthly_date"
+    | "monthly_dow"
+    | "quarterly_date"
+    | "quarterly_dow"
+    | "yearly";
   contact_id?: string | null;
 }
 
