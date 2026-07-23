@@ -49,9 +49,10 @@ export function EventsPage() {
   );
 
   const handleDelete = async (id: string) => {
+    const realId = id.split(":")[0];
     setBusyId(id);
     try {
-      await deleteEvent(id);
+      await deleteEvent(realId);
       toast.success("Event deleted");
     } catch {
       toast.error("Could not delete event");
