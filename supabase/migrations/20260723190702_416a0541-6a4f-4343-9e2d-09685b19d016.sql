@@ -1,0 +1,2 @@
+ALTER TABLE public.events DROP CONSTRAINT IF EXISTS events_recurrence_check;
+ALTER TABLE public.events ADD CONSTRAINT events_recurrence_check CHECK (recurrence = ANY (ARRAY['none','weekly','biweekly','monthly_date','monthly_dow','quarterly_date','quarterly_dow','yearly']));
