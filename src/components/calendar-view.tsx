@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useHousehold, type CalendarEvent } from "@/lib/household-store";
+import { expandEvents } from "@/lib/event-recurrence";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Plus, Cake, Image as ImageIcon } from "lucide-react";
 import { EventDialog } from "./event-dialog";
@@ -34,28 +35,6 @@ function dayKey(d: Date) {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
 
-/** Expand recurring (yearly) events into virtual occurrences for the year range. */
-function expandEvents(events: CalendarEvent[], rangeStart: Date, rangeEnd: Date): CalendarEvent[] {
-  const out: CalendarEvent[] = [];
-  for (const ev of events) {
-    if (ev.recurrence !== "yearly") {
-      out.push(ev);
-      continue;
-    }
-    const base = new Date(ev.start_at);
-    const baseEnd = ev.end_at ? new Date(ev.end_at) : null;
-    const durationMs = baseEnd ? +baseEnd - +base : 0;
-    for (let y = rangeStart.getFullYear(); y <= rangeEnd.getFullYear(); y++) {
-      const occ = new Date(base);
-      occ.setFullYear(y);
-      if (occ >= rangeStart && occ <= rangeEnd) {
-        const occEnd = baseEnd ? new Date(+occ + durationMs).toISOString() : null;
-        out.push({ ...ev, id: `${ev.id}:${y}`, start_at: occ.toISOString(), end_at: occEnd });
-      }
-    }
-  }
-  return out;
-}
 
 export function CalendarView() {
   const { user } = useAuth();

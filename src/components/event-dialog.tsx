@@ -5,9 +5,11 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useHousehold } from "@/lib/household-store";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useHousehold, type CalendarEvent } from "@/lib/household-store";
+import { RECURRENCE_OPTIONS } from "@/lib/event-recurrence";
 import { ProfileAvatar } from "./profile-avatar";
-import { CalendarPlus, MapPin, Sparkles } from "lucide-react";
+import { CalendarPlus, MapPin, Sparkles, Repeat } from "lucide-react";
 import { toast } from "sonner";
 
 function pad(n: number) {
@@ -46,6 +48,7 @@ export function EventDialog({
   const [end, setEnd] = useState(addHourLocal(nowLocalRounded()));
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
+  const [recurrence, setRecurrence] = useState<CalendarEvent["recurrence"]>("none");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -55,6 +58,7 @@ export function EventDialog({
         : nowLocalRounded();
       setStart(s);
       setEnd(addHourLocal(s));
+      setRecurrence("none");
       const pre = activeProfile?.id ?? familyProfile?.id ?? profiles[0]?.id;
       setSelected(new Set(pre ? [pre] : []));
     }
@@ -80,12 +84,14 @@ export function EventDialog({
         end_at: end ? new Date(end).toISOString() : null,
         location: location.trim() || null,
         notes: notes.trim() || null,
+        recurrence,
       });
       toast.success("Event planted 🌱");
       setOpen(false);
       setTitle("");
       setLocation("");
       setNotes("");
+      setRecurrence("none");
     } catch {
       toast.error("Could not save event");
     } finally {
@@ -162,6 +168,23 @@ export function EventDialog({
               <Input id="ev-end" type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} />
             </div>
           </div>
+
+          <div>
+            <Label htmlFor="ev-repeat" className="text-xs flex items-center gap-1">
+              <Repeat className="h-3 w-3" /> Repeat
+            </Label>
+            <Select value={recurrence} onValueChange={(v) => setRecurrence(v as CalendarEvent["recurrence"])}>
+              <SelectTrigger id="ev-repeat">
+                <SelectValue placeholder="Does not repeat" />
+              </SelectTrigger>
+              <SelectContent>
+                {RECURRENCE_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
 
           <div>
             <Label htmlFor="ev-loc" className="text-xs flex items-center gap-1">
