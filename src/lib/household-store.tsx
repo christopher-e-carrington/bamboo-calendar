@@ -112,6 +112,7 @@ interface HouseholdState {
     end_at?: string | null;
     location?: string | null;
     notes?: string | null;
+    recurrence?: CalendarEvent["recurrence"];
   }) => Promise<void>;
   addTask: (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence; tier?: Tier }) => Promise<void>;
   updateTask: (id: string, patch: { title?: string; due_at?: string | null; recurrence?: Recurrence; tier?: Tier }) => Promise<void>;
