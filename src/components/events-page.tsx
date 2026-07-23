@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useHousehold } from "@/lib/household-store";
+import { expandEvents } from "@/lib/event-recurrence";
 import { EventDialog } from "./event-dialog";
 import { ProfileAvatar } from "./profile-avatar";
 import {
