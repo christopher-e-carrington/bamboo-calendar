@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useHousehold, type CalendarEvent } from "@/lib/household-store";
+import { expandEvents } from "@/lib/event-recurrence";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Plus, Cake, Image as ImageIcon } from "lucide-react";
 import { EventDialog } from "./event-dialog";
