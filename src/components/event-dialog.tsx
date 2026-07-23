@@ -5,9 +5,11 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useHousehold } from "@/lib/household-store";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useHousehold, type CalendarEvent } from "@/lib/household-store";
+import { RECURRENCE_OPTIONS } from "@/lib/event-recurrence";
 import { ProfileAvatar } from "./profile-avatar";
-import { CalendarPlus, MapPin, Sparkles } from "lucide-react";
+import { CalendarPlus, MapPin, Sparkles, Repeat } from "lucide-react";
 import { toast } from "sonner";
 
 function pad(n: number) {
