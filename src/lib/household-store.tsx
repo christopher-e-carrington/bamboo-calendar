@@ -432,6 +432,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       end_at?: string | null;
       location?: string | null;
       notes?: string | null;
+      recurrence?: CalendarEvent["recurrence"];
     }) => {
       const primary = input.profile_ids[0];
       if (!primary) throw new Error("Assign at least one profile");
@@ -444,7 +445,8 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
         end_at: input.end_at ?? null,
         location: input.location ?? null,
         notes: input.notes ?? null,
-      }).select("id").single();
+        recurrence: input.recurrence ?? "none",
+      } as any).select("id").single();
       if (error) throw error;
       return data?.id as string | undefined;
     },
