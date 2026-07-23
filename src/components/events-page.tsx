@@ -35,7 +35,9 @@ export function EventsPage() {
   const upcoming = useMemo(() => {
     const now = Date.now();
     const source = visibleEvents?.length ? visibleEvents : events;
-    return [...source]
+    const rangeStart = new Date(now - 60 * 60 * 1000);
+    const rangeEnd = new Date(now + 365 * 24 * 60 * 60 * 1000);
+    return expandEvents(source, rangeStart, rangeEnd)
       .filter((e) => new Date(e.start_at).getTime() >= now - 60 * 60 * 1000)
       .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
       .slice(0, 30);
