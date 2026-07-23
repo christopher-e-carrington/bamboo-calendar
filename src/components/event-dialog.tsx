@@ -48,6 +48,7 @@ export function EventDialog({
   const [end, setEnd] = useState(addHourLocal(nowLocalRounded()));
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
+  const [recurrence, setRecurrence] = useState<CalendarEvent["recurrence"]>("none");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
