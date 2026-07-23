@@ -58,6 +58,7 @@ export function EventDialog({
         : nowLocalRounded();
       setStart(s);
       setEnd(addHourLocal(s));
+      setRecurrence("none");
       const pre = activeProfile?.id ?? familyProfile?.id ?? profiles[0]?.id;
       setSelected(new Set(pre ? [pre] : []));
     }
@@ -83,12 +84,14 @@ export function EventDialog({
         end_at: end ? new Date(end).toISOString() : null,
         location: location.trim() || null,
         notes: notes.trim() || null,
+        recurrence,
       });
       toast.success("Event planted 🌱");
       setOpen(false);
       setTitle("");
       setLocation("");
       setNotes("");
+      setRecurrence("none");
     } catch {
       toast.error("Could not save event");
     } finally {
