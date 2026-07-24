@@ -27,6 +27,7 @@ export const NAV_ITEMS = [
   { id: "notes", title: "Notes", icon: NotebookPen },
   { id: "shopping", title: "Shopping", icon: ShoppingCart },
   { id: "meals", title: "Meals", icon: ChefHat },
+  { id: "journal", title: "Journal", icon: BookHeart },
   { id: "contacts", title: "Contacts", icon: BookUser },
   { id: "passwords", title: "Passwords", icon: KeyRound },
   { id: "documents", title: "Documents", icon: FileText },
