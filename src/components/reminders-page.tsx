@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Bell, Trash2, Plus, Mail, MessageSquare, Smartphone, Clock, Check } from "lucide-react";
+import { Bell, Trash2, Plus, Mail, Clock, Check } from "lucide-react";
 import { toast } from "sonner";
 
-type Channel = "app" | "email" | "sms";
+type Channel = "app" | "email";
 
 interface Reminder {
   id: string;
