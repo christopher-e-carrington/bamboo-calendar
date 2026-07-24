@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Bell, Trash2, Plus, Mail, MessageSquare, Smartphone, Clock, Check } from "lucide-react";
+import { Bell, Trash2, Plus, Mail, Clock, Check } from "lucide-react";
 import { toast } from "sonner";
 
-type Channel = "app" | "email" | "sms";
+type Channel = "app" | "email";
 
 interface Reminder {
   id: string;
@@ -153,15 +153,6 @@ export function RemindersPage() {
         warnings.push(`No email in Contacts for: ${names}`);
       }
     }
-    if (channels.includes("sms")) {
-      const missing = recipientIds.filter((id) => !lookupContact(id).phone);
-      if (missing.length) {
-        const names = missing
-          .map((id) => profiles.find((p) => p.id === id)?.name ?? "someone")
-          .join(", ");
-        warnings.push(`No phone in Contacts for: ${names}`);
-      }
-    }
     return warnings;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channels, recipientIds, contacts, profiles]);
@@ -242,7 +233,7 @@ export function RemindersPage() {
 
         <div className="space-y-1.5">
           <Label>How to send it</Label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <ChannelToggle
               label="In-app notification"
               icon={<Bell className="h-4 w-4" />}
@@ -254,12 +245,6 @@ export function RemindersPage() {
               icon={<Mail className="h-4 w-4" />}
               checked={channels.includes("email")}
               onToggle={() => toggleChannel("email")}
-            />
-            <ChannelToggle
-              label="SMS"
-              icon={<MessageSquare className="h-4 w-4" />}
-              checked={channels.includes("sms")}
-              onToggle={() => toggleChannel("sms")}
             />
           </div>
           {channelWarnings.length > 0 && (
@@ -376,11 +361,12 @@ function ReminderCard({
     .map((id) => profiles.find((p) => p.id === id))
     .filter(Boolean) as { id: string; name: string; color: string; initials: string }[];
 
-  const channelIcons: Record<Channel, React.ReactNode> = {
+  const channelIcons: Record<string, React.ReactNode | undefined> = {
     app: <Bell className="h-3 w-3" />,
     email: <Mail className="h-3 w-3" />,
-    sms: <Smartphone className="h-3 w-3" />,
   };
+
+  const displayChannels = (reminder.channels as string[]).filter((c) => c === "app" || c === "email");
 
   return (
     <div
@@ -402,7 +388,7 @@ function ReminderCard({
             })}
           </span>
           <span className="flex items-center gap-1">
-            {reminder.channels.map((c) => (
+            {displayChannels.map((c) => (
               <span key={c} className="inline-flex items-center gap-0.5">
                 {channelIcons[c]}
               </span>
