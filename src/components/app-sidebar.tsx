@@ -1,4 +1,4 @@
-import { Calendar, CheckSquare, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Bell } from "lucide-react";
+import { Calendar, CheckSquare, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Bell, BookHeart } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
