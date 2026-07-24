@@ -12,9 +12,7 @@ import { DISPLAYS, useDisplay, type DisplayId } from "@/lib/display-store";
 import { GoogleCalendarMenu } from "./google-calendar-settings";
 import { toast } from "sonner";
 import { THEMES, useTheme, type ThemeId, type CustomThemeColors } from "@/lib/theme-store";
-import { Trash2, Sparkles, Pencil, PanelLeft, Star, ChevronRight } from "lucide-react";
-import { UpgradeModal } from "./upgrade-modal";
-import { usePremium } from "@/hooks/use-premium";
+import { Trash2, Sparkles, Pencil, PanelLeft, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, ALWAYS_VISIBLE_PAGES } from "./app-sidebar";
 import { useHiddenPages } from "@/lib/hidden-pages-store";
@@ -1327,78 +1325,6 @@ function NotificationsMenu() {
   );
 }
 
-function UpgradeToPremiumButton() {
-  const { isPremium, isLoading } = usePremium();
-  const [open, setOpen] = useState(false);
-  if (isLoading || isPremium) return null;
-  return (
-    <>
-      <div className="rounded-xl border border-border bg-background/60 overflow-hidden">
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="w-full flex items-center gap-3 p-3 text-left transition-colors hover:bg-muted/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <Sparkles className="h-4 w-4 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium">Upgrade to Premium</div>
-          </div>
-          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-        </button>
-      </div>
-      <UpgradeModal open={open} onOpenChange={setOpen} />
-    </>
-  );
-}
-
-function ManageSubscriptionButton() {
-  const { isPremium, isLoading, environment } = usePremium();
-  const [busy, setBusy] = useState(false);
-  if (isLoading || !isPremium) return null;
-  const openPortal = async () => {
-    if (busy) return;
-    setBusy(true);
-    try {
-      const { createBillingPortalSession } = await import("@/utils/payments.functions");
-      const result = await createBillingPortalSession({
-        data: {
-          returnUrl: `${window.location.origin}/`,
-          environment,
-        },
-      });
-      if ("error" in result) throw new Error(result.error);
-      window.open(result.url, "_blank", "noopener,noreferrer");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not open billing portal");
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <div className="rounded-xl border border-border bg-background/60 overflow-hidden">
-      <button
-        type="button"
-        onClick={openPortal}
-        disabled={busy}
-        className="w-full flex items-center gap-3 p-3 text-left transition-colors hover:bg-muted/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
-      >
-        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-          <Star className="h-4 w-4 text-primary" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium">Manage subscription</div>
-          <div className="text-xs text-muted-foreground">
-            Update payment method, change plan, or cancel
-          </div>
-        </div>
-        <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-      </button>
-    </div>
-  );
-}
-
 
 export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode }) {
   const { profiles } = useHousehold();
@@ -1419,8 +1345,6 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
           </SheetDescription>
         </SheetHeader>
         <div className="mt-4 space-y-3">
-          <UpgradeToPremiumButton />
-          <ManageSubscriptionButton />
           <SettingsSection title="Default profile" icon={User}>
 
             <DefaultProfileMenu />
