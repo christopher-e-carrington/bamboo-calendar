@@ -361,11 +361,12 @@ function ReminderCard({
     .map((id) => profiles.find((p) => p.id === id))
     .filter(Boolean) as { id: string; name: string; color: string; initials: string }[];
 
-  const channelIcons: Record<Channel, React.ReactNode> = {
+  const channelIcons: Record<string, React.ReactNode | undefined> = {
     app: <Bell className="h-3 w-3" />,
     email: <Mail className="h-3 w-3" />,
-    sms: <Smartphone className="h-3 w-3" />,
   };
+
+  const displayChannels = (reminder.channels as string[]).filter((c) => c === "app" || c === "email");
 
   return (
     <div
