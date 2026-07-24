@@ -527,6 +527,54 @@ export type Database = {
         }
         Relationships: []
       }
+      journal_entries: {
+        Row: {
+          content: string
+          created_at: string
+          entry_date: string
+          id: string
+          is_favorite: boolean
+          location: string | null
+          mood: string | null
+          owner_id: string
+          profile_id: string | null
+          tags: string[]
+          title: string | null
+          updated_at: string
+          weather: string | null
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          entry_date?: string
+          id?: string
+          is_favorite?: boolean
+          location?: string | null
+          mood?: string | null
+          owner_id: string
+          profile_id?: string | null
+          tags?: string[]
+          title?: string | null
+          updated_at?: string
+          weather?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          entry_date?: string
+          id?: string
+          is_favorite?: boolean
+          location?: string | null
+          mood?: string | null
+          owner_id?: string
+          profile_id?: string | null
+          tags?: string[]
+          title?: string | null
+          updated_at?: string
+          weather?: string | null
+        }
+        Relationships: []
+      }
       meal_plan: {
         Row: {
           created_at: string

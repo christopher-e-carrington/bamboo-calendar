@@ -1,4 +1,4 @@
-import { Calendar, CheckSquare, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Bell } from "lucide-react";
+import { Calendar, CheckSquare, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Bell, BookHeart } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -27,6 +27,7 @@ export const NAV_ITEMS = [
   { id: "notes", title: "Notes", icon: NotebookPen },
   { id: "shopping", title: "Shopping", icon: ShoppingCart },
   { id: "meals", title: "Meals", icon: ChefHat },
+  { id: "journal", title: "Journal", icon: BookHeart },
   { id: "contacts", title: "Contacts", icon: BookUser },
   { id: "passwords", title: "Passwords", icon: KeyRound },
   { id: "documents", title: "Documents", icon: FileText },
