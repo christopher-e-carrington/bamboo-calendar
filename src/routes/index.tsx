@@ -27,10 +27,6 @@ import { DashboardPage } from "@/components/dashboard-page";
 import { HouseholdPage } from "@/components/household-page";
 import { AuthScreen } from "@/components/auth-screen";
 import { OnboardingWizard } from "@/components/onboarding-wizard";
-import { UpgradeModal } from "@/components/upgrade-modal";
-import { PremiumLockedPage } from "@/components/premium-locked-page";
-import { PaymentTestModeBanner } from "@/components/payment-test-mode-banner";
-import { usePremium, PREMIUM_PAGES } from "@/hooks/use-premium";
 import { useAuth } from "@/hooks/use-auth";
 import { Leaf } from "lucide-react";
 
