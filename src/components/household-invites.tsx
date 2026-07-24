@@ -3,8 +3,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/lib/household-store";
 import { useAuth } from "@/hooks/use-auth";
-import { usePremium, useHouseholdMemberCount, FREE_MEMBER_LIMIT, PREMIUM_MEMBER_LIMIT } from "@/hooks/use-premium";
-import { UpgradeModal } from "@/components/upgrade-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Copy, Mail, Trash2, UserPlus, Check, Sparkles } from "lucide-react";
+import { Copy, Mail, Trash2, UserPlus, Check } from "lucide-react";
 import { toast } from "sonner";
 
 type Invitation = {
@@ -38,18 +36,12 @@ function randomToken() {
 export function HouseholdInvites() {
   const { user } = useAuth();
   const { householdId, isHouseholdOwner, profiles } = useHousehold();
-  const { isPremium } = usePremium();
-  const memberCount = useHouseholdMemberCount();
   const qc = useQueryClient();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [profileId, setProfileId] = useState<string>("__new__");
   const [creating, setCreating] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
-  const [upgradeOpen, setUpgradeOpen] = useState(false);
-
-  const memberLimit = isPremium ? PREMIUM_MEMBER_LIMIT : FREE_MEMBER_LIMIT;
-  const atMemberLimit = memberCount >= memberLimit;
 
   const invitesQ = useQuery({
     queryKey: ["invites", householdId],
@@ -88,11 +80,6 @@ export function HouseholdInvites() {
 
   const createInvite = async () => {
     if (!user) return;
-    if (atMemberLimit) {
-      if (!isPremium) setUpgradeOpen(true);
-      else toast.error(`Premium households are limited to ${PREMIUM_MEMBER_LIMIT} members`);
-      return;
-    }
     setCreating(true);
     try {
       const token = randomToken();
@@ -141,29 +128,6 @@ export function HouseholdInvites() {
 
   return (
     <div className="space-y-4">
-      {atMemberLimit && (
-        <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/10 to-[#C9A36B]/10 p-4 flex items-start gap-3">
-          <div className="h-9 w-9 rounded-lg bg-primary/20 text-primary grid place-items-center shrink-0">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="font-medium">
-              {isPremium ? "You've reached the household member limit" : "You've reached the free household limit"}
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {isPremium
-                ? `Bamboo Premium households can include up to ${PREMIUM_MEMBER_LIMIT} members.`
-                : `Free households include up to ${FREE_MEMBER_LIMIT} members. Upgrade to Bamboo Premium to invite up to ${PREMIUM_MEMBER_LIMIT} family and friends.`}
-            </p>
-          </div>
-          {!isPremium && (
-            <Button size="sm" onClick={() => setUpgradeOpen(true)} className="shrink-0">
-              Upgrade
-            </Button>
-          )}
-        </div>
-      )}
-      <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} featureLabel="More household members" />
       <div className="rounded-xl border border-border p-4 bg-secondary/30 space-y-3">
         <div className="flex items-center gap-2 text-sm font-medium">
           <UserPlus className="h-4 w-4 text-primary" /> Invite someone
@@ -210,8 +174,8 @@ export function HouseholdInvites() {
             />
           </div>
         </div>
-        <Button onClick={createInvite} disabled={creating || atMemberLimit} className="w-full sm:w-auto">
-          {creating ? "Creating…" : atMemberLimit ? "Upgrade to invite more" : "Create invite link"}
+        <Button onClick={createInvite} disabled={creating} className="w-full sm:w-auto">
+          {creating ? "Creating…" : "Create invite link"}
         </Button>
         <p className="text-[11px] text-muted-foreground">
           You'll get a shareable link to send them. They'll create an account, confirm their
