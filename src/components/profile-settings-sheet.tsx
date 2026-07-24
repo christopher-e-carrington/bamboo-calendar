@@ -12,7 +12,7 @@ import { DISPLAYS, useDisplay, type DisplayId } from "@/lib/display-store";
 import { GoogleCalendarMenu } from "./google-calendar-settings";
 import { toast } from "sonner";
 import { THEMES, useTheme, type ThemeId, type CustomThemeColors } from "@/lib/theme-store";
-import { Trash2, Sparkles, Pencil, PanelLeft, Star, ChevronRight } from "lucide-react";
+import { Trash2, Sparkles, Pencil, PanelLeft, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, ALWAYS_VISIBLE_PAGES } from "./app-sidebar";
 import { useHiddenPages } from "@/lib/hidden-pages-store";
