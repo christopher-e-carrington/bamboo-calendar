@@ -14,8 +14,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as ApiPublicGoogleOauthCallbackRouteImport } from './routes/api/public/google-oauth-callback'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
-import { Route as ApiPublicRevenuecatWebhookRouteImport } from './routes/api/public/revenuecat/webhook'
-import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -44,26 +42,12 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicRevenuecatWebhookRoute =
-  ApiPublicRevenuecatWebhookRouteImport.update({
-    id: '/api/public/revenuecat/webhook',
-    path: '/api/public/revenuecat/webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicPaymentsWebhookRoute =
-  ApiPublicPaymentsWebhookRouteImport.update({
-    id: '/api/public/payments/webhook',
-    path: '/api/public/payments/webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/invite/$token': typeof InviteTokenRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
-  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
-  '/api/public/revenuecat/webhook': typeof ApiPublicRevenuecatWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
@@ -71,8 +55,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/invite/$token': typeof InviteTokenRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
-  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
-  '/api/public/revenuecat/webhook': typeof ApiPublicRevenuecatWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
@@ -81,8 +63,6 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/invite/$token': typeof InviteTokenRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
-  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
-  '/api/public/revenuecat/webhook': typeof ApiPublicRevenuecatWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
@@ -92,8 +72,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/invite/$token'
     | '/api/public/google-oauth-callback'
-    | '/api/public/payments/webhook'
-    | '/api/public/revenuecat/webhook'
     | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -101,8 +79,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/invite/$token'
     | '/api/public/google-oauth-callback'
-    | '/api/public/payments/webhook'
-    | '/api/public/revenuecat/webhook'
     | '/lovable/email/queue/process'
   id:
     | '__root__'
@@ -110,8 +86,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/invite/$token'
     | '/api/public/google-oauth-callback'
-    | '/api/public/payments/webhook'
-    | '/api/public/revenuecat/webhook'
     | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
@@ -120,8 +94,6 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   InviteTokenRoute: typeof InviteTokenRoute
   ApiPublicGoogleOauthCallbackRoute: typeof ApiPublicGoogleOauthCallbackRoute
-  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
-  ApiPublicRevenuecatWebhookRoute: typeof ApiPublicRevenuecatWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
@@ -162,20 +134,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/revenuecat/webhook': {
-      id: '/api/public/revenuecat/webhook'
-      path: '/api/public/revenuecat/webhook'
-      fullPath: '/api/public/revenuecat/webhook'
-      preLoaderRoute: typeof ApiPublicRevenuecatWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/payments/webhook': {
-      id: '/api/public/payments/webhook'
-      path: '/api/public/payments/webhook'
-      fullPath: '/api/public/payments/webhook'
-      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -184,20 +142,8 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   InviteTokenRoute: InviteTokenRoute,
   ApiPublicGoogleOauthCallbackRoute: ApiPublicGoogleOauthCallbackRoute,
-  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
-  ApiPublicRevenuecatWebhookRoute: ApiPublicRevenuecatWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
