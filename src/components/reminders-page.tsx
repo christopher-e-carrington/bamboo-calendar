@@ -388,7 +388,7 @@ function ReminderCard({
             })}
           </span>
           <span className="flex items-center gap-1">
-            {reminder.channels.map((c) => (
+            {displayChannels.map((c) => (
               <span key={c} className="inline-flex items-center gap-0.5">
                 {channelIcons[c]}
               </span>
