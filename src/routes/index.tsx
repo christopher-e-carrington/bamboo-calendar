@@ -103,6 +103,7 @@ function PageRouter({ active }: { active: string }) {
     case "goals": return <GoalsPage />;
     case "projects": return <ProjectsPage />;
     case "meals": return <MealsPage />;
+    case "journal": return <JournalPage />;
     case "shopping": return <ShoppingListPage />;
     case "inventory": return <InventoryPage />;
     case "memories": return <MemoriesPage />;
