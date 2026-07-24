@@ -233,7 +233,7 @@ export function RemindersPage() {
 
         <div className="space-y-1.5">
           <Label>How to send it</Label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <ChannelToggle
               label="In-app notification"
               icon={<Bell className="h-4 w-4" />}
@@ -245,12 +245,6 @@ export function RemindersPage() {
               icon={<Mail className="h-4 w-4" />}
               checked={channels.includes("email")}
               onToggle={() => toggleChannel("email")}
-            />
-            <ChannelToggle
-              label="SMS"
-              icon={<MessageSquare className="h-4 w-4" />}
-              checked={channels.includes("sms")}
-              onToggle={() => toggleChannel("sms")}
             />
           </div>
           {channelWarnings.length > 0 && (
