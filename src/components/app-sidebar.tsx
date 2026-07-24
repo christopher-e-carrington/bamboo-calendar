@@ -16,24 +16,23 @@ import { useHiddenPages } from "@/lib/hidden-pages-store";
 
 export const NAV_ITEMS = [
   { id: "today", title: "Today", icon: Home },
-  { id: "dashboard", title: "Dashboard", icon: LayoutDashboard },
   { id: "tomorrow", title: "Tomorrow", icon: Sunrise },
-  { id: "this-week", title: "This Week", icon: CalendarRange },
   { id: "calendar", title: "Calendar", icon: Calendar },
+  { id: "this-week", title: "This Week", icon: CalendarRange },
   { id: "events", title: "Events", icon: CalendarPlus },
-  { id: "notes", title: "Notes", icon: NotebookPen },
   { id: "tasks", title: "To-Dos", icon: CheckSquare },
   { id: "routines", title: "Routines", icon: Repeat },
-  { id: "reminders", title: "Reminders", icon: Bell },
   { id: "goals", title: "Goals", icon: Target },
   { id: "projects", title: "Projects", icon: FolderKanban },
-  { id: "meals", title: "Meals", icon: ChefHat },
+  { id: "reminders", title: "Reminders", icon: Bell },
+  { id: "notes", title: "Notes", icon: NotebookPen },
   { id: "shopping", title: "Shopping", icon: ShoppingCart },
-  { id: "inventory", title: "Inventory", icon: Boxes },
+  { id: "meals", title: "Meals", icon: ChefHat },
   { id: "contacts", title: "Contacts", icon: BookUser },
-  { id: "documents", title: "Documents", icon: FileText },
   { id: "passwords", title: "Passwords", icon: KeyRound },
-  { id: "memories", title: "Memories", icon: ImageIcon },
+  { id: "documents", title: "Documents", icon: FileText },
+  { id: "inventory", title: "Inventory", icon: Boxes },
+  { id: "dashboard", title: "Dashboard", icon: LayoutDashboard },
 ];
 // Pages that can never be hidden from the sidebar.
 export const ALWAYS_VISIBLE_PAGES = new Set(["today"]);
