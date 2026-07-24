@@ -20,6 +20,7 @@ import { RemindersPage } from "@/components/reminders-page";
 import { GoalsPage } from "@/components/goals-page";
 import { ProjectsPage } from "@/components/projects-page";
 import { MealsPage } from "@/components/meals-page";
+import { JournalPage } from "@/components/journal-page";
 import { ShoppingListPage } from "@/components/shopping-list-page";
 import { InventoryPage } from "@/components/inventory-page";
 import { MemoriesPage } from "@/components/memories-page";
