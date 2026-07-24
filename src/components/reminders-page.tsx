@@ -153,15 +153,6 @@ export function RemindersPage() {
         warnings.push(`No email in Contacts for: ${names}`);
       }
     }
-    if (channels.includes("sms")) {
-      const missing = recipientIds.filter((id) => !lookupContact(id).phone);
-      if (missing.length) {
-        const names = missing
-          .map((id) => profiles.find((p) => p.id === id)?.name ?? "someone")
-          .join(", ");
-        warnings.push(`No phone in Contacts for: ${names}`);
-      }
-    }
     return warnings;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channels, recipientIds, contacts, profiles]);
