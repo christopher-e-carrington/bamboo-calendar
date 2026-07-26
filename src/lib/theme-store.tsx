@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { readScoped, writeScoped, subscribePrefsUser } from "@/lib/user-device-prefs";
 import auraBg from "@/assets/aura.png.asset.json";
 import bambooBg from "@/assets/bamboo.jpg.asset.json";
 import sketchBg from "@/assets/sketch.png.asset.json";
