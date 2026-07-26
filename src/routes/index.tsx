@@ -52,7 +52,18 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { user, loading } = useAuth();
-  const [active, setActive] = useState("today");
+  const { homePage } = useDefaultHomePage();
+  const [active, setActive] = useState(DEFAULT_HOME_PAGE);
+  const touched = useRef(false);
+
+  useEffect(() => {
+    if (!touched.current) setActive(homePage);
+  }, [homePage]);
+
+  const select = (id: string) => {
+    touched.current = true;
+    setActive(id);
+  };
 
   if (loading) {
     return (
@@ -71,7 +82,7 @@ function Index() {
         <SidebarProvider>
           <div className="min-h-screen flex w-full flex-col">
             <div className="flex flex-1 w-full">
-              <AppSidebar active={active} onSelect={setActive} />
+              <AppSidebar active={active} onSelect={select} />
               <SidebarInset className="flex-1 flex flex-col min-w-0 bg-transparent">
                 <TopNav />
                 <main className="flex-1">
