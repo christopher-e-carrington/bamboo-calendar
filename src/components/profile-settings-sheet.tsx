@@ -1412,6 +1412,9 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
           <SettingsSection title="View" icon={Eye}>
             <ViewMenu />
           </SettingsSection>
+          <SettingsSection title="Starting page" icon={Home}>
+            <StartupMenu />
+          </SettingsSection>
           <SettingsSection title="Displays" icon={MonitorSmartphone}>
             <DisplaysMenu />
           </SettingsSection>
