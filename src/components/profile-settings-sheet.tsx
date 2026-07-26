@@ -12,7 +12,7 @@ import { DISPLAYS, useDisplay, type DisplayId } from "@/lib/display-store";
 import { GoogleCalendarMenu } from "./google-calendar-settings";
 import { toast } from "sonner";
 import { THEMES, useTheme, type ThemeId, type CustomThemeColors } from "@/lib/theme-store";
-import { Trash2, Sparkles, Pencil, PanelLeft, Star } from "lucide-react";
+import { Trash2, Sparkles, Pencil, PanelLeft, Star, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS, ALWAYS_VISIBLE_PAGES } from "./app-sidebar";
 import { useHiddenPages } from "@/lib/hidden-pages-store";
@@ -20,6 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ManageProfilesDialog } from "./manage-profiles-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useDefaultHomePage, DEFAULT_HOME_PAGE } from "@/lib/user-device-prefs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1326,6 +1327,62 @@ function NotificationsMenu() {
 }
 
 
+function StartupMenu() {
+  const { homePage, setHomePage } = useDefaultHomePage();
+  const { hidden } = useHiddenPages();
+  const items = NAV_ITEMS.filter((i) => !hidden.includes(i.id) || ALWAYS_VISIBLE_PAGES.has(i.id));
+  return (
+    <div className="rounded-xl border border-border bg-background/60 p-3 space-y-3">
+      <div>
+        <div className="text-sm font-medium">Starting page</div>
+        <div className="text-xs text-muted-foreground">
+          The page Bamboo opens on. Saved for you on this device — each person, and each
+          device, can have their own.
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {items.map((i) => {
+          const active = homePage === i.id;
+          const Icon = i.icon;
+          return (
+            <button
+              key={i.id}
+              type="button"
+              onClick={() => {
+                setHomePage(i.id);
+                toast.success(`Starting page: ${i.title}`);
+              }}
+              className={cn(
+                "flex items-center gap-2 rounded-lg border p-2 text-left text-sm transition-colors hover:border-primary/60",
+                active ? "border-primary bg-primary/5" : "border-border bg-background",
+              )}
+            >
+              <Icon className="h-4 w-4 text-primary shrink-0" />
+              <span className="truncate">{i.title}</span>
+              {active && <Check className="h-4 w-4 text-primary ml-auto shrink-0" />}
+            </button>
+          );
+        })}
+      </div>
+      {homePage !== DEFAULT_HOME_PAGE && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="w-full"
+          onClick={() => {
+            setHomePage(DEFAULT_HOME_PAGE);
+            toast.success("Starting page: Today");
+          }}
+        >
+          Reset to Today
+        </Button>
+      )}
+    </div>
+  );
+}
+
+
 export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode }) {
   const { profiles } = useHousehold();
   return (
@@ -1354,6 +1411,9 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
           </SettingsSection>
           <SettingsSection title="View" icon={Eye}>
             <ViewMenu />
+          </SettingsSection>
+          <SettingsSection title="Starting page" icon={Home}>
+            <StartupMenu />
           </SettingsSection>
           <SettingsSection title="Displays" icon={MonitorSmartphone}>
             <DisplaysMenu />
