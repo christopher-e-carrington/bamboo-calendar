@@ -85,6 +85,10 @@ export function HouseholdInvites() {
       const token = randomToken();
       const isClaim = profileId !== "__new__";
       const claimProfile = isClaim ? profiles.find((p) => p.id === profileId) : null;
+      if (!isClaim && countHouseholdUsers(profiles) >= MAX_HOUSEHOLD_USERS) {
+        toast.error(`This account is limited to ${MAX_HOUSEHOLD_USERS} users.`);
+        return;
+      }
       const { error } = await supabase.from("household_invitations").insert({
         household_id: householdId,
         token,
