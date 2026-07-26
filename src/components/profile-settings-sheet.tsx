@@ -20,6 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ManageProfilesDialog } from "./manage-profiles-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { useDefaultHomePage, DEFAULT_HOME_PAGE } from "@/lib/user-device-prefs";
 import {
   AlertDialog,
   AlertDialogAction,
