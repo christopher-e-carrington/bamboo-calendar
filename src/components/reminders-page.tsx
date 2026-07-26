@@ -233,28 +233,16 @@ export function RemindersPage() {
 
         <div className="space-y-1.5">
           <Label>How to send it</Label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2">
             <ChannelToggle
               label="In-app notification"
               icon={<Bell className="h-4 w-4" />}
               checked={channels.includes("app")}
               onToggle={() => toggleChannel("app")}
             />
-            <ChannelToggle
-              label="Email"
-              icon={<Mail className="h-4 w-4" />}
-              checked={channels.includes("email")}
-              onToggle={() => toggleChannel("email")}
-            />
           </div>
-          {channelWarnings.length > 0 && (
-            <ul className="text-[11px] text-amber-700 dark:text-amber-400 space-y-0.5 mt-1">
-              {channelWarnings.map((w, i) => (
-                <li key={i}>⚠ {w} — add it in Contacts so we can reach them.</li>
-              ))}
-            </ul>
-          )}
         </div>
+
 
         <div className="flex justify-end">
           <Button
