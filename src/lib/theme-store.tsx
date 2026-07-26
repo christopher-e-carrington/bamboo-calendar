@@ -352,42 +352,60 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return themes;
   }, []);
 
+  // Resolve (or re-resolve) the theme for the current user on this device.
+  const resolveForScope = useCallback(
+    (customs: CustomTheme[]) => {
+      const storedDefault = readScoped(DEFAULT_KEY) || "";
+      const stored = readScoped(STORAGE_KEY) || "";
+      const pick = storedDefault || stored || DEFAULT_THEME;
+      setDefaultThemeState(storedDefault || null);
+      const valid = THEMES.some((t) => t.id === pick) || customs.some((c) => c.id === pick);
+      const next = valid ? pick : DEFAULT_THEME;
+      setThemeState(next);
+      applyTheme(next, customs);
+      return next;
+    },
+    [],
+  );
+
   useEffect(() => {
-    const storedDefault = (typeof localStorage !== "undefined" && localStorage.getItem(DEFAULT_KEY)) || "";
-    const stored = (typeof localStorage !== "undefined" && localStorage.getItem(STORAGE_KEY)) || "";
-    const pick = storedDefault || stored;
-    const builtInValid = THEMES.some((t) => t.id === pick);
-    const initial = builtInValid ? pick : pick || DEFAULT_THEME;
-    if (storedDefault) setDefaultThemeState(storedDefault);
     // Clean up old global sidebar override (replaced by per-theme sidebar)
     try {
       localStorage.removeItem(SIDEBAR_KEY);
     } catch {
       // ignore
     }
-    setThemeState(initial);
-    applyTheme(initial, []);
+    resolveForScope([]);
 
     let active = true;
+    let latest: CustomTheme[] = [];
     refresh().then((themes) => {
       if (!active) return;
-      const valid = THEMES.some((t) => t.id === initial) || themes.some((c) => c.id === initial);
-      const next = valid ? initial : DEFAULT_THEME;
-      setThemeState(next);
-      applyTheme(next, themes);
+      latest = themes;
+      resolveForScope(themes);
+    });
+
+    const unsubScope = subscribePrefsUser(() => {
+      refresh().then((themes) => {
+        latest = themes;
+        resolveForScope(themes);
+      });
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         refresh().then((themes) => {
-          applyTheme(theme, themes);
+          latest = themes;
+          resolveForScope(themes);
         });
       }
     });
 
     return () => {
       active = false;
+      unsubScope();
       sub.subscription.unsubscribe();
+      void latest;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -396,14 +414,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     (t: ThemeId) => {
       setThemeState(t);
       applyTheme(t, customThemes);
-      try {
-        localStorage.setItem(STORAGE_KEY, t);
-      } catch {
-        // ignore
-      }
+      writeScoped(STORAGE_KEY, t);
     },
     [customThemes],
   );
+
 
   const saveCustomTheme = useCallback(
     async (input: {
