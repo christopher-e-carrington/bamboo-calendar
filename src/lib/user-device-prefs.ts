@@ -35,7 +35,12 @@ export function subscribePrefsUser(fn: () => void) {
 /** Re-renders (and re-reads scoped prefs) whenever the signed-in user changes. */
 export function usePrefsUser() {
   const [id, setId] = useState<string | null>(currentUserId);
-  useEffect(() => subscribePrefsUser(() => setId(currentUserId)), []);
+  useEffect(() => {
+    const unsub = subscribePrefsUser(() => setId(currentUserId));
+    return () => {
+      unsub();
+    };
+  }, []);
   return id;
 }
 
