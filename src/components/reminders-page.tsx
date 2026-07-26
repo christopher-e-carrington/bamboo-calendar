@@ -363,10 +363,9 @@ function ReminderCard({
 
   const channelIcons: Record<string, React.ReactNode | undefined> = {
     app: <Bell className="h-3 w-3" />,
-    email: <Mail className="h-3 w-3" />,
   };
 
-  const displayChannels = (reminder.channels as string[]).filter((c) => c === "app" || c === "email");
+  const displayChannels = (reminder.channels as string[]).filter((c) => c === "app");
 
   return (
     <div
