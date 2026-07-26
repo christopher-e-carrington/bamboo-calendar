@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescri
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useHousehold, type Profile } from "@/lib/household-store";
+import { useHousehold, countHouseholdUsers, MAX_HOUSEHOLD_USERS, type Profile } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
 import { Lock, LockOpen, Settings2, Check, Palette, ChevronDown, User, Eye, Shield, LayoutGrid, Users as UsersIcon, Share2, Plus, CalendarCheck, MonitorSmartphone, Bell } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
