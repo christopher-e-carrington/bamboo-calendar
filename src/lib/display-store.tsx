@@ -100,19 +100,22 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
   const [detected, setDetected] = useState<DisplayId>("monitor-horizontal");
   const [assigned, setAssigned] = useState<DisplayId | null>(null);
 
-  // Initial resolution
+  // Initial resolution + re-resolution whenever the signed-in user changes
+  // (defaults are per user AND per device).
   useEffect(() => {
-    let stored: DisplayId | null = null;
-    try {
-      const v = localStorage.getItem(STORAGE_KEY);
-      if (v && DISPLAYS.some((d) => d.id === v)) stored = v as DisplayId;
-    } catch {
-      // ignore
-    }
-    const d = detectDisplay();
-    setDetected(d);
-    setAssigned(stored);
-    applyDisplay(stored ?? d);
+    const resolve = () => {
+      const v = readScoped(STORAGE_KEY);
+      const stored = v && DISPLAYS.some((d) => d.id === v) ? (v as DisplayId) : null;
+      const d = detectDisplay();
+      setDetected(d);
+      setAssigned(stored);
+      applyDisplay(stored ?? d);
+    };
+    resolve();
+    const unsub = subscribePrefsUser(resolve);
+    return () => {
+      unsub();
+    };
   }, []);
 
   // Re-detect on resize / orientation change (only affects the effective
@@ -133,16 +136,13 @@ export function DisplayProvider({ children }: { children: ReactNode }) {
 
   const assignDisplay = useCallback((id: DisplayId) => {
     setAssigned(id);
-    try {
-      localStorage.setItem(STORAGE_KEY, id);
-    } catch {
-      // ignore
-    }
+    writeScoped(STORAGE_KEY, id);
     applyDisplay(id);
   }, []);
 
   const clearAssignment = useCallback(() => {
     setAssigned(null);
+    writeScoped(STORAGE_KEY, null);
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
