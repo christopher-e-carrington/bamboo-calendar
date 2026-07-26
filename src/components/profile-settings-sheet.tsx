@@ -267,13 +267,20 @@ function UsersMenu() {
           );
         })}
       </div>
-      <ManageProfilesDialog
-        trigger={
-          <Button variant="default" size="sm" className="w-full gap-1.5">
-            <Plus className="h-4 w-4" /> Add new user
-          </Button>
-        }
-      />
+      {countHouseholdUsers(profiles) >= MAX_HOUSEHOLD_USERS ? (
+        <div className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground text-center">
+          You've reached the limit of {MAX_HOUSEHOLD_USERS} users on this account. Delete a user to
+          add someone new.
+        </div>
+      ) : (
+        <ManageProfilesDialog
+          trigger={
+            <Button variant="default" size="sm" className="w-full gap-1.5">
+              <Plus className="h-4 w-4" /> Add new user
+            </Button>
+          }
+        />
+      )}
 
       <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>
