@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useHousehold } from "@/lib/household-store";
+import { useHousehold, countHouseholdUsers, MAX_HOUSEHOLD_USERS } from "@/lib/household-store";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
