@@ -506,11 +506,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       if (theme === id) {
         setThemeState(DEFAULT_THEME);
         applyTheme(DEFAULT_THEME, list);
-        try {
-          localStorage.setItem(STORAGE_KEY, DEFAULT_THEME);
-        } catch {
-          // ignore
-        }
+        writeScoped(STORAGE_KEY, DEFAULT_THEME);
       }
     },
     [customThemes, theme],
@@ -518,11 +514,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setDefaultTheme = useCallback((t: ThemeId | null) => {
     setDefaultThemeState(t);
-    try {
-      if (t) localStorage.setItem(DEFAULT_KEY, t);
-      else localStorage.removeItem(DEFAULT_KEY);
-    } catch {
-      // ignore
+    writeScoped(DEFAULT_KEY, t);
+    if (!t) {
+      try {
+        localStorage.removeItem(DEFAULT_KEY);
+      } catch {
+        // ignore
+      }
     }
   }, []);
 
