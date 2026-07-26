@@ -372,6 +372,9 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
 
   const addMut = useMutation({
     mutationFn: async (input: { name: string; role: ProfileRole; color: string; birthday?: string | null }) => {
+      if (countHouseholdUsers(profiles) >= MAX_HOUSEHOLD_USERS) {
+        throw new Error(`This account is limited to ${MAX_HOUSEHOLD_USERS} users.`);
+      }
       const initials = input.name.trim().slice(0, 2).toUpperCase() || "NP";
       const sort_order = (profiles.at(-1)?.sort_order ?? 0) + 1;
       const { error } = await supabase.from("household_profiles").insert({
