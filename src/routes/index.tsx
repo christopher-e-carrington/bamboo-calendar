@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useDefaultHomePage, DEFAULT_HOME_PAGE } from "@/lib/user-device-prefs";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { HouseholdProvider } from "@/lib/household-store";
 import { NotificationsProvider } from "@/lib/notifications-store";
