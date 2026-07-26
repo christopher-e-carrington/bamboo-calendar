@@ -132,30 +132,8 @@ export function RemindersPage() {
     );
   };
 
-  // Look up email/phone for a profile via the household contacts (name match).
-  const lookupContact = (profileId: string) => {
-    const p = profiles.find((x) => x.id === profileId);
-    if (!p) return { email: null as string | null, phone: null as string | null };
-    const c = contacts.find(
-      (c) => c.name.trim().toLowerCase() === p.name.trim().toLowerCase(),
-    );
-    return { email: c?.email ?? null, phone: c?.phone ?? null };
-  };
 
-  const channelWarnings = useMemo(() => {
-    const warnings: string[] = [];
-    if (channels.includes("email")) {
-      const missing = recipientIds.filter((id) => !lookupContact(id).email);
-      if (missing.length) {
-        const names = missing
-          .map((id) => profiles.find((p) => p.id === id)?.name ?? "someone")
-          .join(", ");
-        warnings.push(`No email in Contacts for: ${names}`);
-      }
-    }
-    return warnings;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [channels, recipientIds, contacts, profiles]);
+
 
   const upcoming = (remindersQ.data ?? []).filter((r) => !r.sent_at);
   const sent = (remindersQ.data ?? []).filter((r) => !!r.sent_at);
