@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Bell, Trash2, Plus, Mail, Clock, Check } from "lucide-react";
+import { Bell, Trash2, Plus, Clock, Check } from "lucide-react";
 import { toast } from "sonner";
 
-type Channel = "app" | "email";
+type Channel = "app";
 
 interface Reminder {
   id: string;
@@ -31,7 +31,7 @@ function toLocalInputValue(d: Date) {
 
 export function RemindersPage() {
   const { user } = useAuth();
-  const { householdId, profiles, contacts } = useHousehold();
+  const { householdId, profiles } = useHousehold();
   const qc = useQueryClient();
 
   // The profile that maps to the current user
@@ -132,30 +132,8 @@ export function RemindersPage() {
     );
   };
 
-  // Look up email/phone for a profile via the household contacts (name match).
-  const lookupContact = (profileId: string) => {
-    const p = profiles.find((x) => x.id === profileId);
-    if (!p) return { email: null as string | null, phone: null as string | null };
-    const c = contacts.find(
-      (c) => c.name.trim().toLowerCase() === p.name.trim().toLowerCase(),
-    );
-    return { email: c?.email ?? null, phone: c?.phone ?? null };
-  };
 
-  const channelWarnings = useMemo(() => {
-    const warnings: string[] = [];
-    if (channels.includes("email")) {
-      const missing = recipientIds.filter((id) => !lookupContact(id).email);
-      if (missing.length) {
-        const names = missing
-          .map((id) => profiles.find((p) => p.id === id)?.name ?? "someone")
-          .join(", ");
-        warnings.push(`No email in Contacts for: ${names}`);
-      }
-    }
-    return warnings;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [channels, recipientIds, contacts, profiles]);
+
 
   const upcoming = (remindersQ.data ?? []).filter((r) => !r.sent_at);
   const sent = (remindersQ.data ?? []).filter((r) => !!r.sent_at);
@@ -233,28 +211,16 @@ export function RemindersPage() {
 
         <div className="space-y-1.5">
           <Label>How to send it</Label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2">
             <ChannelToggle
               label="In-app notification"
               icon={<Bell className="h-4 w-4" />}
               checked={channels.includes("app")}
               onToggle={() => toggleChannel("app")}
             />
-            <ChannelToggle
-              label="Email"
-              icon={<Mail className="h-4 w-4" />}
-              checked={channels.includes("email")}
-              onToggle={() => toggleChannel("email")}
-            />
           </div>
-          {channelWarnings.length > 0 && (
-            <ul className="text-[11px] text-amber-700 dark:text-amber-400 space-y-0.5 mt-1">
-              {channelWarnings.map((w, i) => (
-                <li key={i}>⚠ {w} — add it in Contacts so we can reach them.</li>
-              ))}
-            </ul>
-          )}
         </div>
+
 
         <div className="flex justify-end">
           <Button
@@ -363,10 +329,9 @@ function ReminderCard({
 
   const channelIcons: Record<string, React.ReactNode | undefined> = {
     app: <Bell className="h-3 w-3" />,
-    email: <Mail className="h-3 w-3" />,
   };
 
-  const displayChannels = (reminder.channels as string[]).filter((c) => c === "app" || c === "email");
+  const displayChannels = (reminder.channels as string[]).filter((c) => c === "app");
 
   return (
     <div
