@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { Smartphone, Tablet, Monitor, Tv, RotateCcw } from "lucide-react";
+import { readScoped, writeScoped, subscribePrefsUser } from "@/lib/user-device-prefs";
 
 export type DisplayId =
   | "phone"
