@@ -456,11 +456,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       setCustomThemes(list);
       setThemeState(next.id);
       applyTheme(next.id, list);
-      try {
-        localStorage.setItem(STORAGE_KEY, next.id);
-      } catch {
-        // ignore
-      }
+      writeScoped(STORAGE_KEY, next.id);
       return next;
     },
     [customThemes],
