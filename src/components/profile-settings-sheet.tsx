@@ -3,7 +3,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescri
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useHousehold, type Profile } from "@/lib/household-store";
+import { useHousehold, countHouseholdUsers, MAX_HOUSEHOLD_USERS, type Profile } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
 import { Lock, LockOpen, Settings2, Check, Palette, ChevronDown, User, Eye, Shield, LayoutGrid, Users as UsersIcon, Share2, Plus, CalendarCheck, MonitorSmartphone, Bell } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
@@ -267,13 +267,20 @@ function UsersMenu() {
           );
         })}
       </div>
-      <ManageProfilesDialog
-        trigger={
-          <Button variant="default" size="sm" className="w-full gap-1.5">
-            <Plus className="h-4 w-4" /> Add new user
-          </Button>
-        }
-      />
+      {countHouseholdUsers(profiles) >= MAX_HOUSEHOLD_USERS ? (
+        <div className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground text-center">
+          You've reached the limit of {MAX_HOUSEHOLD_USERS} users on this account. Delete a user to
+          add someone new.
+        </div>
+      ) : (
+        <ManageProfilesDialog
+          trigger={
+            <Button variant="default" size="sm" className="w-full gap-1.5">
+              <Plus className="h-4 w-4" /> Add new user
+            </Button>
+          }
+        />
+      )}
 
       <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>

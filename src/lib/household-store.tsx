@@ -82,6 +82,16 @@ export interface Goal {
   created_at: string;
 }
 
+/** Maximum number of user profiles allowed per account (the shared household
+ *  profile does not count toward the limit). */
+export const MAX_HOUSEHOLD_USERS = 10;
+
+/** Counts real users in a household, ignoring the shared household profile. */
+export function countHouseholdUsers(profiles: { sort_order?: number | null }[]) {
+  const sorted = [...profiles].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+  return Math.max(0, sorted.length - 1);
+}
+
 interface HouseholdState {
   profiles: Profile[];
   events: CalendarEvent[];
@@ -372,6 +382,9 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
 
   const addMut = useMutation({
     mutationFn: async (input: { name: string; role: ProfileRole; color: string; birthday?: string | null }) => {
+      if (countHouseholdUsers(profiles) >= MAX_HOUSEHOLD_USERS) {
+        throw new Error(`This account is limited to ${MAX_HOUSEHOLD_USERS} users.`);
+      }
       const initials = input.name.trim().slice(0, 2).toUpperCase() || "NP";
       const sort_order = (profiles.at(-1)?.sort_order ?? 0) + 1;
       const { error } = await supabase.from("household_profiles").insert({

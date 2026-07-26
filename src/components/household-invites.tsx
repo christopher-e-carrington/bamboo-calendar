@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useHousehold } from "@/lib/household-store";
+import { useHousehold, countHouseholdUsers, MAX_HOUSEHOLD_USERS } from "@/lib/household-store";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,6 +85,10 @@ export function HouseholdInvites() {
       const token = randomToken();
       const isClaim = profileId !== "__new__";
       const claimProfile = isClaim ? profiles.find((p) => p.id === profileId) : null;
+      if (!isClaim && countHouseholdUsers(profiles) >= MAX_HOUSEHOLD_USERS) {
+        toast.error(`This account is limited to ${MAX_HOUSEHOLD_USERS} users.`);
+        return;
+      }
       const { error } = await supabase.from("household_invitations").insert({
         household_id: householdId,
         token,
