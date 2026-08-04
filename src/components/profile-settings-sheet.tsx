@@ -8,6 +8,7 @@ import { ProfileAvatar } from "./profile-avatar";
 import { Lock, LockOpen, Settings2, Check, Palette, ChevronDown, User, Eye, Shield, LayoutGrid, Users as UsersIcon, Share2, Plus, CalendarCheck, MonitorSmartphone, Bell } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useNotifPrefs, setPref, type NotifPrefs, type NotifCategory } from "@/lib/notification-prefs";
+import { useDevicePush } from "@/lib/device-push";
 import { DISPLAYS, useDisplay, type DisplayId } from "@/lib/display-store";
 import { GoogleCalendarMenu } from "./google-calendar-settings";
 import { toast } from "sonner";
