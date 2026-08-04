@@ -33,6 +33,11 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const profilesRef = useRef(profiles);
   profilesRef.current = profiles;
 
+  // Ask for system notification permission (push is on by default)
+  useEffect(() => {
+    initDevicePush();
+  }, []);
+
   // Load persisted notifications when household changes
   useEffect(() => {
     if (!householdId) return;
