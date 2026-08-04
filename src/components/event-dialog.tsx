@@ -137,9 +137,10 @@ export function EventDialog({
         <DialogHeader>
           <DialogTitle className="font-display flex items-center gap-2">
             <CalendarPlus className="h-5 w-5 text-primary" />
-            New event
+            {isEdit ? "Edit event" : "New event"}
           </DialogTitle>
         </DialogHeader>
+
 
         <div className="space-y-4">
           <div>
