@@ -12,9 +12,10 @@ const KEY = "bamboo:device-push";
 function load(): boolean {
   if (typeof window === "undefined") return false;
   try {
-    return localStorage.getItem(KEY) === "1";
+    // Default ON: only off when the user explicitly turned it off.
+    return localStorage.getItem(KEY) !== "0";
   } catch {
-    return false;
+    return true;
   }
 }
 
