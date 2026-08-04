@@ -90,6 +90,10 @@ export function EventsPage() {
             {upcoming.map((e) => {
               const ids = e.profile_ids?.length ? e.profile_ids : [e.profile_id];
               const ps = ids.map((id) => profileMap[id]).filter(Boolean);
+              const realId = e.id.split(":")[0];
+              const original =
+                (visibleEvents ?? []).find((x) => x.id === realId) ??
+                events.find((x) => x.id === realId);
               return (
                 <li key={e.id} className="py-3 flex items-start gap-3">
                   <div className="flex -space-x-2 mt-0.5">
@@ -108,6 +112,22 @@ export function EventsPage() {
                       </div>
                     )}
                   </div>
+                  {original && (
+                    <EventDialog
+                      event={original}
+                      trigger={
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground"
+                        >
+                          <Pencil className="h-4 w-4" />
+                          <span className="sr-only">Edit event</span>
+                        </Button>
+                      }
+                    />
+                  )}
+
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
