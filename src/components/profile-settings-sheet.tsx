@@ -8,6 +8,7 @@ import { ProfileAvatar } from "./profile-avatar";
 import { Lock, LockOpen, Settings2, Check, Palette, ChevronDown, User, Eye, Shield, LayoutGrid, Users as UsersIcon, Share2, Plus, CalendarCheck, MonitorSmartphone, Bell } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useNotifPrefs, setPref, type NotifPrefs, type NotifCategory } from "@/lib/notification-prefs";
+import { useDevicePush } from "@/lib/device-push";
 import { DISPLAYS, useDisplay, type DisplayId } from "@/lib/display-store";
 import { GoogleCalendarMenu } from "./google-calendar-settings";
 import { toast } from "sonner";
@@ -1298,6 +1299,7 @@ const NOTIF_GROUPS: { cat: NotifCategory; title: string; rows: PrefRow[] }[] = [
 
 function NotificationsMenu() {
   const prefs = useNotifPrefs();
+  const devicePush = useDevicePush();
   return (
     <div className="rounded-xl border border-border bg-background/60 p-3 space-y-3">
       <div>
@@ -1307,7 +1309,31 @@ function NotificationsMenu() {
           each device you sign in from has its own preferences.
         </div>
       </div>
+      <div className="rounded-lg border border-border bg-background p-2.5">
+        <label
+          htmlFor="notif-device-push"
+          className="flex items-center justify-between gap-3 cursor-pointer"
+        >
+          <span>
+            <span className="text-sm block">Push notifications on this device</span>
+            <span className="text-[11px] text-muted-foreground block">
+              {!devicePush.supported
+                ? "This device or browser doesn't support push notifications."
+                : devicePush.permission === "denied"
+                ? "Blocked in your browser settings — allow notifications for this site to enable."
+                : "Get a pop-up alert whenever a new notification arrives."}
+            </span>
+          </span>
+          <Switch
+            id="notif-device-push"
+            checked={devicePush.enabled}
+            disabled={!devicePush.supported || devicePush.permission === "denied"}
+            onCheckedChange={(v) => void devicePush.setEnabled(!!v)}
+          />
+        </label>
+      </div>
       <div className="space-y-3">
+
         {NOTIF_GROUPS.map((g) => (
           <div key={g.cat} className="rounded-lg border border-border bg-background p-2.5 space-y-1.5">
             <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{g.title}</div>

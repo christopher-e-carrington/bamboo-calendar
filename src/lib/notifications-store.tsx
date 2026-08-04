@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/lib/household-store";
 import { getPrefs } from "@/lib/notification-prefs";
+import { showDevicePush } from "@/lib/device-push";
 
 export interface Notification {
   id: string;
@@ -66,6 +67,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     const push = (key: string, message: string) => {
       if (seenRef.current.has(key)) return;
       seenRef.current.add(key);
+      showDevicePush(message, key);
       setItems((prev) =>
         [{ id: key, message, at: Date.now(), read: false }, ...prev].slice(0, MAX_ITEMS),
       );
