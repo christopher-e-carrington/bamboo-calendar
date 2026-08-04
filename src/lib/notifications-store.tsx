@@ -67,6 +67,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     const push = (key: string, message: string) => {
       if (seenRef.current.has(key)) return;
       seenRef.current.add(key);
+      showDevicePush(message, key);
       setItems((prev) =>
         [{ id: key, message, at: Date.now(), read: false }, ...prev].slice(0, MAX_ITEMS),
       );
