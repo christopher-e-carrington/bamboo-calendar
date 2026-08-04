@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as ApiPublicGoogleOauthCallbackRouteImport } from './routes/api/public/google-oauth-callback'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as ApiPublicHooksPushDispatchRouteImport } from './routes/api/public/hooks/push-dispatch'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -42,12 +43,19 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksPushDispatchRoute =
+  ApiPublicHooksPushDispatchRouteImport.update({
+    id: '/api/public/hooks/push-dispatch',
+    path: '/api/public/hooks/push-dispatch',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/reset-password': typeof ResetPasswordRoute
   '/invite/$token': typeof InviteTokenRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
+  '/api/public/hooks/push-dispatch': typeof ApiPublicHooksPushDispatchRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
@@ -55,6 +63,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/invite/$token': typeof InviteTokenRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
+  '/api/public/hooks/push-dispatch': typeof ApiPublicHooksPushDispatchRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
@@ -63,6 +72,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/invite/$token': typeof InviteTokenRoute
   '/api/public/google-oauth-callback': typeof ApiPublicGoogleOauthCallbackRoute
+  '/api/public/hooks/push-dispatch': typeof ApiPublicHooksPushDispatchRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
@@ -72,6 +82,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/invite/$token'
     | '/api/public/google-oauth-callback'
+    | '/api/public/hooks/push-dispatch'
     | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -79,6 +90,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/invite/$token'
     | '/api/public/google-oauth-callback'
+    | '/api/public/hooks/push-dispatch'
     | '/lovable/email/queue/process'
   id:
     | '__root__'
@@ -86,6 +98,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/invite/$token'
     | '/api/public/google-oauth-callback'
+    | '/api/public/hooks/push-dispatch'
     | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
@@ -94,6 +107,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   InviteTokenRoute: typeof InviteTokenRoute
   ApiPublicGoogleOauthCallbackRoute: typeof ApiPublicGoogleOauthCallbackRoute
+  ApiPublicHooksPushDispatchRoute: typeof ApiPublicHooksPushDispatchRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
@@ -134,6 +148,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/push-dispatch': {
+      id: '/api/public/hooks/push-dispatch'
+      path: '/api/public/hooks/push-dispatch'
+      fullPath: '/api/public/hooks/push-dispatch'
+      preLoaderRoute: typeof ApiPublicHooksPushDispatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -142,6 +163,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   InviteTokenRoute: InviteTokenRoute,
   ApiPublicGoogleOauthCallbackRoute: ApiPublicGoogleOauthCallbackRoute,
+  ApiPublicHooksPushDispatchRoute: ApiPublicHooksPushDispatchRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport

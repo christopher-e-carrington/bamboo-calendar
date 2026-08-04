@@ -52,7 +52,7 @@ export const Route = createFileRoute("/api/public/hooks/push-dispatch")({
               { endpoint: sub.endpoint, expirationTime: null, keys: { p256dh: sub.p256dh, auth: sub.auth } },
               vapid,
             );
-            const res = await fetch(sub.endpoint, payload);
+            const res = await fetch(sub.endpoint, payload as unknown as RequestInit);
             if (res.status === 404 || res.status === 410) {
               await supabase.from("push_subscriptions").delete().eq("id", sub.id);
             } else if (res.ok) {
