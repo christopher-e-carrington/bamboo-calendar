@@ -259,6 +259,24 @@ export type Database = {
           },
         ]
       }
+      event_push_log: {
+        Row: {
+          at: string
+          event_id: string
+          kind: string
+        }
+        Insert: {
+          at?: string
+          event_id: string
+          kind: string
+        }
+        Update: {
+          at?: string
+          event_id?: string
+          kind?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           contact_id: string | null
@@ -919,6 +937,75 @@ export type Database = {
           },
         ]
       }
+      push_outbox: {
+        Row: {
+          actor_user_id: string | null
+          body: string
+          created_at: string
+          household_id: string
+          id: string
+          sent_at: string | null
+          tag: string | null
+          title: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          body: string
+          created_at?: string
+          household_id: string
+          id?: string
+          sent_at?: string | null
+          tag?: string | null
+          title?: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          body?: string
+          created_at?: string
+          household_id?: string
+          id?: string
+          sent_at?: string | null
+          tag?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          household_id: string
+          id: string
+          label: string | null
+          p256dh: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          household_id: string
+          id?: string
+          label?: string | null
+          p256dh: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          household_id?: string
+          id?: string
+          label?: string | null
+          p256dh?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       recipes: {
         Row: {
           created_at: string
@@ -961,6 +1048,7 @@ export type Database = {
           id: string
           message: string
           owner_id: string
+          pushed_at: string | null
           recipient_profile_ids: string[]
           send_at: string
           sent_at: string | null
@@ -974,6 +1062,7 @@ export type Database = {
           id?: string
           message: string
           owner_id: string
+          pushed_at?: string | null
           recipient_profile_ids?: string[]
           send_at: string
           sent_at?: string | null
@@ -987,6 +1076,7 @@ export type Database = {
           id?: string
           message?: string
           owner_id?: string
+          pushed_at?: string | null
           recipient_profile_ids?: string[]
           send_at?: string
           sent_at?: string | null
