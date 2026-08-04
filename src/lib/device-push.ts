@@ -71,31 +71,68 @@ export async function setDevicePushEnabled(next: boolean): Promise<boolean> {
   return next;
 }
 
+const SW_URL = "/notif-sw.js";
+let swReg: ServiceWorkerRegistration | null = null;
+let swPromise: Promise<ServiceWorkerRegistration | null> | null = null;
+
+/**
+ * Register the notification-only service worker.
+ * Mobile browsers (notably Android Chrome) throw on `new Notification()`,
+ * so notifications must be shown via the service worker registration.
+ */
+async function ensureServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return null;
+  if (swReg) return swReg;
+  if (!swPromise) {
+    swPromise = navigator.serviceWorker
+      .register(SW_URL, { scope: "/" })
+      .then(async (reg) => {
+        await navigator.serviceWorker.ready.catch(() => undefined);
+        swReg = reg;
+        return reg;
+      })
+      .catch(() => null);
+  }
+  return swPromise;
+}
+
 /** Fire a system notification for an in-app notification message. */
 export function showDevicePush(message: string, tag?: string) {
   if (!enabled || !devicePushSupported()) return;
   if (Notification.permission !== "granted") return;
-  if (typeof document !== "undefined" && document.visibilityState === "visible") {
-    // still show — users asked for an alert on every notification
-  }
-  try {
-    const n = new Notification("Bamboo Calendar", {
-      body: message,
-      tag,
-      icon: "/favicon.ico",
-      badge: "/favicon.ico",
-    });
-    n.onclick = () => {
+
+  const options: NotificationOptions = {
+    body: message,
+    tag,
+    icon: "/favicon.ico",
+    badge: "/favicon.ico",
+  };
+
+  void (async () => {
+    // Preferred path: service worker (required on mobile).
+    const reg = await ensureServiceWorker();
+    if (reg) {
       try {
-        window.focus();
+        await reg.showNotification("Bamboo Calendar", options);
+        return;
       } catch {
-        // ignore
+        // fall through to the constructor path
       }
-      n.close();
-    };
-  } catch {
-    // ignore
-  }
+    }
+    try {
+      const n = new Notification("Bamboo Calendar", options);
+      n.onclick = () => {
+        try {
+          window.focus();
+        } catch {
+          // ignore
+        }
+        n.close();
+      };
+    } catch {
+      // ignore
+    }
+  })();
 }
 
 /** Ask for notification permission once, since push is on by default. */
@@ -109,7 +146,11 @@ export async function initDevicePush() {
     }
     emit();
   }
+  if (Notification.permission === "granted") {
+    await ensureServiceWorker();
+  }
 }
+
 
 
 export function useDevicePush() {
