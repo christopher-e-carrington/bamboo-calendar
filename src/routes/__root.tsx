@@ -74,7 +74,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
+      { name: "theme-color", content: "#8FA97A" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "Bamboo" },
+      { title: "Bamboo Calendar — Household Planner" },
+
       { name: "description", content: "Bamboo Calendar is a cross-platform web app for managing schedules and tasks with a calming, nature-inspired theme." },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Lovable App" },
@@ -95,7 +99,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap",
       },
       { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "icon", type: "image/png", href: "/favicon.png" },
+      { rel: "apple-touch-icon", href: "/app-icon-192.png" },
     ],
+
   }),
   shellComponent: RootShell,
   component: RootComponent,

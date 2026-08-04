@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/lib/household-store";
 import { getPrefs } from "@/lib/notification-prefs";
-import { showDevicePush, initDevicePush } from "@/lib/device-push";
+import { showDevicePush, initDevicePush, registerWebPush } from "@/lib/device-push";
 
 export interface Notification {
   id: string;
@@ -33,10 +33,35 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const profilesRef = useRef(profiles);
   profilesRef.current = profiles;
 
-  // Ask for system notification permission (push is on by default)
+  // Ask for system notification permission (push is on by default) and
+  // register this device for background Web Push.
   useEffect(() => {
-    initDevicePush();
-  }, []);
+    let cancelled = false;
+    (async () => {
+      await initDevicePush();
+      if (cancelled || !householdId) return;
+      const { data: auth } = await supabase.auth.getUser();
+      const userId = auth.user?.id;
+      if (!userId) return;
+      await registerWebPush(async (sub) => {
+        await supabase.from("push_subscriptions").upsert(
+          {
+            household_id: householdId,
+            user_id: userId,
+            endpoint: sub.endpoint,
+            p256dh: sub.p256dh,
+            auth: sub.auth,
+            label: sub.label,
+          },
+          { onConflict: "endpoint" },
+        );
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [householdId]);
+
 
   // Load persisted notifications when household changes
   useEffect(() => {
