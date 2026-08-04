@@ -26,21 +26,30 @@ function addHourLocal(local: string) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+function toLocalInput(iso: string) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export function EventDialog({
   trigger,
   initialDate,
+  event,
   open: controlledOpen,
   onOpenChange: setControlledOpen,
 }: {
   trigger?: React.ReactNode;
   initialDate?: Date;
+  /** When provided, the dialog edits this existing event instead of creating one. */
+  event?: CalendarEvent;
   open?: boolean;
   onOpenChange?: (o: boolean) => void;
 }) {
-  const { profiles, activeProfile, familyProfile, addEvent } = useHousehold();
+  const { profiles, activeProfile, familyProfile, addEvent, updateEvent } = useHousehold();
   const [uncontrolled, setUncontrolled] = useState(false);
   const open = controlledOpen ?? uncontrolled;
   const setOpen = setControlledOpen ?? setUncontrolled;
+  const isEdit = !!event;
 
   const [title, setTitle] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -52,17 +61,30 @@ export function EventDialog({
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (open) {
-      const s = initialDate
-        ? `${initialDate.getFullYear()}-${pad(initialDate.getMonth() + 1)}-${pad(initialDate.getDate())}T09:00`
-        : nowLocalRounded();
-      setStart(s);
-      setEnd(addHourLocal(s));
-      setRecurrence("none");
-      const pre = activeProfile?.id ?? familyProfile?.id ?? profiles[0]?.id;
-      setSelected(new Set(pre ? [pre] : []));
+    if (!open) return;
+    if (event) {
+      setTitle(event.title ?? "");
+      setStart(toLocalInput(event.start_at));
+      setEnd(event.end_at ? toLocalInput(event.end_at) : addHourLocal(toLocalInput(event.start_at)));
+      setLocation(event.location ?? "");
+      setNotes(event.notes ?? "");
+      setRecurrence(event.recurrence ?? "none");
+      const ids = event.profile_ids?.length ? event.profile_ids : [event.profile_id];
+      setSelected(new Set(ids.filter(Boolean) as string[]));
+      return;
     }
-  }, [open, initialDate, activeProfile, familyProfile, profiles]);
+    const s = initialDate
+      ? `${initialDate.getFullYear()}-${pad(initialDate.getMonth() + 1)}-${pad(initialDate.getDate())}T09:00`
+      : nowLocalRounded();
+    setTitle("");
+    setLocation("");
+    setNotes("");
+    setStart(s);
+    setEnd(addHourLocal(s));
+    setRecurrence("none");
+    const pre = activeProfile?.id ?? familyProfile?.id ?? profiles[0]?.id;
+    setSelected(new Set(pre ? [pre] : []));
+  }, [open, initialDate, event, activeProfile, familyProfile, profiles]);
 
   const toggle = (id: string) => {
     setSelected((prev) => {
@@ -77,7 +99,7 @@ export function EventDialog({
     if (!title.trim() || selected.size === 0 || !start) return;
     setBusy(true);
     try {
-      await addEvent({
+      const payload = {
         profile_ids: Array.from(selected),
         title: title.trim(),
         start_at: new Date(start).toISOString(),
@@ -85,19 +107,28 @@ export function EventDialog({
         location: location.trim() || null,
         notes: notes.trim() || null,
         recurrence,
-      });
-      toast.success("Event planted 🌱");
+      };
+      if (event) {
+        await updateEvent(event.id, payload);
+        toast.success("Event updated");
+      } else {
+        await addEvent(payload);
+        toast.success("Event planted 🌱");
+      }
       setOpen(false);
-      setTitle("");
-      setLocation("");
-      setNotes("");
-      setRecurrence("none");
+      if (!event) {
+        setTitle("");
+        setLocation("");
+        setNotes("");
+        setRecurrence("none");
+      }
     } catch {
       toast.error("Could not save event");
     } finally {
       setBusy(false);
     }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -106,9 +137,10 @@ export function EventDialog({
         <DialogHeader>
           <DialogTitle className="font-display flex items-center gap-2">
             <CalendarPlus className="h-5 w-5 text-primary" />
-            New event
+            {isEdit ? "Edit event" : "New event"}
           </DialogTitle>
         </DialogHeader>
+
 
         <div className="space-y-4">
           <div>
@@ -216,7 +248,7 @@ export function EventDialog({
           <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
           <Button onClick={submit} disabled={!title.trim() || selected.size === 0 || busy} className="gap-1.5">
             <Sparkles className="h-4 w-4" />
-            {busy ? "Saving…" : "Add event"}
+            {busy ? "Saving…" : isEdit ? "Save changes" : "Add event"}
           </Button>
         </DialogFooter>
       </DialogContent>
