@@ -221,6 +221,42 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       })
       .subscribe();
 
+    // ---------- Polling fallback ----------
+    // Realtime can silently drop a subscription (sleeping tab, reconnect, proxy).
+    // Poll for newly created events / shopping items so notifications still land.
+    const since = new Date().toISOString();
+    const pollNew = async () => {
+      const [evRes, shopRes] = await Promise.all([
+        supabase
+          .from("events")
+          .select("id,title,profile_id,created_at")
+          .eq("owner_id", householdId)
+          .gt("created_at", since)
+          .order("created_at", { ascending: true })
+          .limit(20),
+        supabase
+          .from("shopping_items")
+          .select("id,name,created_at")
+          .eq("owner_id", householdId)
+          .gt("created_at", since)
+          .order("created_at", { ascending: true })
+          .limit(20),
+      ]);
+      if (getPrefs().events.added) {
+        (evRes.data ?? []).forEach((row) => {
+          push(`event:insert:${row.id}`, `${profileName(row.profile_id)}'s event "${row.title}" was added`);
+        });
+      }
+      if (getPrefs().shopping.added) {
+        (shopRes.data ?? []).forEach((row) => {
+          push(`shop:insert:${row.id}`, `"${row.name}" was added to the shopping list`);
+        });
+      }
+    };
+    const pollTimer = window.setInterval(pollNew, 15 * 1000);
+
+
+
     // Seed known project ids so step updates can be attributed to this household
     supabase
       .from("projects")
