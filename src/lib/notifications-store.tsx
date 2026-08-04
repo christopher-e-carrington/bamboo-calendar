@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/lib/household-store";
 import { getPrefs } from "@/lib/notification-prefs";
-import { showDevicePush } from "@/lib/device-push";
+import { showDevicePush, initDevicePush } from "@/lib/device-push";
 
 export interface Notification {
   id: string;
@@ -32,6 +32,11 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
   const seenRef = useRef<Set<string>>(new Set());
   const profilesRef = useRef(profiles);
   profilesRef.current = profiles;
+
+  // Ask for system notification permission (push is on by default)
+  useEffect(() => {
+    initDevicePush();
+  }, []);
 
   // Load persisted notifications when household changes
   useEffect(() => {

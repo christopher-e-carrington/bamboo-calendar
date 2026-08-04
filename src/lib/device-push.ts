@@ -12,9 +12,10 @@ const KEY = "bamboo:device-push";
 function load(): boolean {
   if (typeof window === "undefined") return false;
   try {
-    return localStorage.getItem(KEY) === "1";
+    // Default ON: only off when the user explicitly turned it off.
+    return localStorage.getItem(KEY) !== "0";
   } catch {
-    return false;
+    return true;
   }
 }
 
@@ -96,6 +97,20 @@ export function showDevicePush(message: string, tag?: string) {
     // ignore
   }
 }
+
+/** Ask for notification permission once, since push is on by default. */
+export async function initDevicePush() {
+  if (!enabled || !devicePushSupported()) return;
+  if (Notification.permission === "default") {
+    try {
+      await Notification.requestPermission();
+    } catch {
+      // ignore
+    }
+    emit();
+  }
+}
+
 
 export function useDevicePush() {
   const on = useSyncExternalStore(subscribe, isDevicePushEnabled, () => false);
