@@ -87,8 +87,10 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     const filter = `owner_id=eq.${householdId}`;
     const projectIds = new Set<string>();
 
+    // Unique topic per mount: reusing a fixed topic can leave a "joined" channel
+    // with no server-side subscription when React remounts the effect.
     const channel = supabase
-      .channel(`notifications:${householdId}`)
+      .channel(`notifications:${householdId}:${Math.random().toString(36).slice(2)}`)
       // ---------- Events ----------
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "events", filter }, (payload) => {
         if (!getPrefs().events.added) return;
