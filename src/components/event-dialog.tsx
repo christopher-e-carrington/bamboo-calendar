@@ -248,7 +248,7 @@ export function EventDialog({
           <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
           <Button onClick={submit} disabled={!title.trim() || selected.size === 0 || busy} className="gap-1.5">
             <Sparkles className="h-4 w-4" />
-            {busy ? "Saving…" : "Add event"}
+            {busy ? "Saving…" : isEdit ? "Save changes" : "Add event"}
           </Button>
         </DialogFooter>
       </DialogContent>
