@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { CalendarPlus, CalendarClock, MapPin, Trash2 } from "lucide-react";
+import { CalendarPlus, CalendarClock, MapPin, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 function fmt(d: Date) {
