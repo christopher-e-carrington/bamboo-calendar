@@ -151,6 +151,76 @@ export async function initDevicePush() {
   }
 }
 
+/* ------------------------------------------------------------------ *
+ * Web Push — notifications that arrive with the app / browser closed
+ * ------------------------------------------------------------------ */
+
+const VAPID_PUBLIC_KEY =
+  "BPcRsy5FMe3rdnMSqC1cbY7irLG6-oCpTT2NkeiDBetx8GN5fbtYZdLVPccpNIbYNVflYOLJc-3Yzrig5HxjMls";
+
+function urlBase64ToUint8Array(base64: string) {
+  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+  const raw = atob((base64 + padding).replace(/-/g, "+").replace(/_/g, "/"));
+  const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i += 1) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
+function bufToBase64Url(buf: ArrayBuffer | null) {
+  if (!buf) return "";
+  let str = "";
+  new Uint8Array(buf).forEach((b) => {
+    str += String.fromCharCode(b);
+  });
+  return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+export function webPushSupported() {
+  return (
+    typeof window !== "undefined" &&
+    "serviceWorker" in navigator &&
+    "PushManager" in window &&
+    "Notification" in window
+  );
+}
+
+/**
+ * Register this device for background Web Push and store the subscription
+ * so the backend can deliver notifications when nothing is open.
+ */
+export async function registerWebPush(
+  saveSubscription: (sub: { endpoint: string; p256dh: string; auth: string; label: string }) => Promise<void>,
+) {
+  if (!enabled || !webPushSupported()) return;
+  if (Notification.permission !== "granted") return;
+
+  const reg = await ensureServiceWorker();
+  if (!reg) return;
+
+  try {
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource,
+      });
+    }
+    const json = sub.toJSON() as { keys?: { p256dh?: string; auth?: string } };
+    const p256dh = json.keys?.p256dh ?? bufToBase64Url(sub.getKey("p256dh"));
+    const auth = json.keys?.auth ?? bufToBase64Url(sub.getKey("auth"));
+    if (!p256dh || !auth) return;
+    await saveSubscription({
+      endpoint: sub.endpoint,
+      p256dh,
+      auth,
+      label: navigator.userAgent.slice(0, 120),
+    });
+  } catch {
+    // ignore — push simply stays unavailable on this device
+  }
+}
+
+
 
 
 export function useDevicePush() {
