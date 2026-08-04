@@ -481,6 +481,37 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     onSettled: () => qc.invalidateQueries({ queryKey: ["events", householdId] }),
   });
 
+  const updateEventMut = useMutation({
+    mutationFn: async ({
+      id,
+      patch,
+    }: {
+      id: string;
+      patch: {
+        profile_ids?: string[];
+        title?: string;
+        start_at?: string;
+        end_at?: string | null;
+        location?: string | null;
+        notes?: string | null;
+        recurrence?: CalendarEvent["recurrence"];
+      };
+    }) => {
+      const row: Record<string, unknown> = { ...patch };
+      if (patch.profile_ids) {
+        if (!patch.profile_ids[0]) throw new Error("Assign at least one profile");
+        row.profile_id = patch.profile_ids[0];
+      }
+      const { error } = await supabase.from("events").update(row as any).eq("id", id);
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: (id) => {
+      if (id) fireAndForget(pushEventToGoogle({ data: { eventId: id } }));
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["events", householdId] }),
+  });
+
   const addTaskMut = useMutation({
     mutationFn: async (input: { profile_id: string; title: string; due_at?: string | null; recurrence?: Recurrence; tier?: Tier }) => {
       const { error } = await supabase.from("tasks").insert({
