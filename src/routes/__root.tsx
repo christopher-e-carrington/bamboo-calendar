@@ -74,7 +74,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
+      { name: "theme-color", content: "#8FA97A" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "Bamboo" },
+      { title: "Bamboo Calendar — Household Planner" },
+
       { name: "description", content: "Bamboo Calendar is a cross-platform web app for managing schedules and tasks with a calming, nature-inspired theme." },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Lovable App" },
