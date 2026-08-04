@@ -98,6 +98,20 @@ export function showDevicePush(message: string, tag?: string) {
   }
 }
 
+/** Ask for notification permission once, since push is on by default. */
+export async function initDevicePush() {
+  if (!enabled || !devicePushSupported()) return;
+  if (Notification.permission === "default") {
+    try {
+      await Notification.requestPermission();
+    } catch {
+      // ignore
+    }
+    emit();
+  }
+}
+
+
 export function useDevicePush() {
   const on = useSyncExternalStore(subscribe, isDevicePushEnabled, () => false);
   const toggle = useCallback((v: boolean) => setDevicePushEnabled(v), []);
