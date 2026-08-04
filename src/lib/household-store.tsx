@@ -700,6 +700,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     removeProfile: (id) => removeMut.mutateAsync(id).then(() => undefined),
     setProfilePin: (id, pin) => setPinMut.mutateAsync({ id, pin }).then(() => undefined),
     addEvent: (input) => addEventMut.mutateAsync(input).then(() => undefined),
+    updateEvent: (id, patch) => updateEventMut.mutateAsync({ id, patch }).then(() => undefined),
     addTask: (input) => addTaskMut.mutateAsync(input).then(() => undefined),
     updateTask: (id, patch) => updateTaskMut.mutateAsync({ id, patch }).then(() => undefined),
     deleteEvent: (id) => deleteEventMut.mutateAsync(id).then(() => undefined),
