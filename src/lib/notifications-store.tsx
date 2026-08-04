@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { supabase } from "@/integrations/supabase/client";
 import { useHousehold } from "@/lib/household-store";
 import { getPrefs } from "@/lib/notification-prefs";
-import { showDevicePush } from "@/lib/device-push";
+import { showDevicePush, initDevicePush } from "@/lib/device-push";
 
 export interface Notification {
   id: string;
