@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
 import {
   Outlet,
   Link,
@@ -11,6 +12,8 @@ import {
 import appCss from "../styles.css?url";
 import { ThemeProvider } from "@/lib/theme-store";
 import { DisplayProvider } from "@/lib/display-store";
+import { OfflineBanner } from "@/components/offline-banner";
+import { initOffline } from "@/lib/offline/init";
 
 function NotFoundComponent() {
   return (
