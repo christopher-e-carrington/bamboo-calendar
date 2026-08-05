@@ -71,7 +71,9 @@ export async function setDevicePushEnabled(next: boolean): Promise<boolean> {
   return next;
 }
 
-const SW_URL = "/notif-sw.js";
+// In the published app this is the offline+push worker (`/sw.js`, which imports
+// the push handlers); elsewhere it's the notification-only worker.
+const SW_URL = appServiceWorkerUrl();
 let swReg: ServiceWorkerRegistration | null = null;
 let swPromise: Promise<ServiceWorkerRegistration | null> | null = null;
 
