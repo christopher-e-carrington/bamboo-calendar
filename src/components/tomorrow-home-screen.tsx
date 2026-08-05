@@ -326,16 +326,25 @@ export function TomorrowHomeScreen() {
     return { tomorrowEvents: t, upcoming: u.slice(0, 4) };
   }, [visibleEvents, tomorrow]);
 
+  // A daily to-do completed today starts fresh tomorrow: repeating ones show
+  // unchecked, one-time ones that are already done won't carry over at all.
+  const isDailyRepeat = (t: { tier?: string | null; recurrence?: string | null }) =>
+    t.recurrence === "daily" || (t.tier === "daily" && t.recurrence !== "none" && !!t.recurrence);
+
   const tomorrowTasks = useMemo(
     () =>
       visibleTasks.filter((t) => {
-        if (t.tier === "daily" || t.recurrence === "daily") return true;
+        if (isDailyRepeat(t)) return true;
+        if (t.tier === "daily") return !t.done;
         if (!t.due_at) return false;
         const due = new Date(t.due_at);
         return isSameDay(due, tomorrow);
       }),
     [visibleTasks, tomorrow],
   );
+  const doneTomorrow = (t: { done: boolean; tier?: string | null; recurrence?: string | null }) =>
+    isDailyRepeat(t) ? false : t.done;
+
   const tomorrowGoals = useMemo(
     () => visibleGoals.filter((g) => g.tier === "daily" || g.tier === "weekly"),
     [visibleGoals],
