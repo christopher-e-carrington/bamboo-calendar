@@ -27,8 +27,6 @@ export default defineConfig({
           // Keeps the existing push/notification worker running inside the same worker.
           importScripts: ["/notif-sw.js"],
           globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest,woff2}"],
-          navigateFallback: "/",
-          navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//, /^\/lovable\//, /^\/invite\//],
           cleanupOutdatedCaches: true,
           runtimeCaching: [
             {
