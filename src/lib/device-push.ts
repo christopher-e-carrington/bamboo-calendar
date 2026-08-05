@@ -1,4 +1,5 @@
 import { useCallback, useSyncExternalStore } from "react";
+import { appServiceWorkerUrl } from "@/lib/offline/sw";
 
 /**
  * Device-level push/system notifications.
