@@ -107,8 +107,8 @@ export function showDevicePush(message: string, tag?: string) {
   const options: NotificationOptions = {
     body: message,
     tag,
-    icon: "/favicon.ico",
-    badge: "/favicon.ico",
+    icon: "/app-icon-192.png",
+    badge: "/favicon.png",
   };
 
   void (async () => {
