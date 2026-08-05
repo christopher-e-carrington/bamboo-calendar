@@ -18,6 +18,7 @@ export default defineConfig({
       VitePWA({
         // Offline app shell. Registration happens only from src/lib/offline/sw.ts.
         registerType: "autoUpdate",
+        outDir: "dist/client",
         injectRegister: null,
         devOptions: { enabled: false },
         filename: "sw.js",
