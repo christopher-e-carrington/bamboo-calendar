@@ -354,7 +354,7 @@ export function TomorrowHomeScreen() {
     return <div className="px-5 py-10 text-center text-muted-foreground text-sm">Loading…</div>;
   }
 
-  const tomorrowDone = tomorrowTasks.filter((t) => t.done).length;
+  const tomorrowDone = tomorrowTasks.filter((t) => doneTomorrow(t)).length;
 
   const goalProgress = (() => {
     const set = tomorrowGoals;
@@ -488,7 +488,7 @@ export function TomorrowHomeScreen() {
               <h2 className="font-display text-lg">Tomorrow's snapshot</h2>
             </div>
             <span className="text-xs text-muted-foreground">
-              {tomorrowTasks.filter((t) => !t.done).length} open
+              {tomorrowTasks.filter((t) => !doneTomorrow(t)).length} open
             </span>
           </header>
 
@@ -503,8 +503,12 @@ export function TomorrowHomeScreen() {
                   key={t.id}
                   className="flex items-center gap-3 rounded-lg p-2.5 hover:bg-secondary/60 transition-colors"
                 >
-                  <Checkbox checked={t.done} onCheckedChange={(v) => toggleTask(t.id, Boolean(v))} />
-                  <span className={`flex-1 text-sm ${t.done ? "line-through text-muted-foreground" : ""}`}>
+                  <Checkbox
+                    checked={doneTomorrow(t)}
+                    disabled={isDailyRepeat(t)}
+                    onCheckedChange={(v) => toggleTask(t.id, Boolean(v))}
+                  />
+                  <span className={`flex-1 text-sm ${doneTomorrow(t) ? "line-through text-muted-foreground" : ""}`}>
                     {t.title}
                   </span>
                   <span className="text-[10px] uppercase tracking-wide text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded-full">
