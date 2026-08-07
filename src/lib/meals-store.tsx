@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -197,23 +198,50 @@ export function useMealPlan(weekStart: string) {
 
 export function useShopping() {
   const { user } = useAuth();
+  const { householdId } = useHousehold();
   const qc = useQueryClient();
-  const key = ["shopping", user?.id];
+  const key = ["shopping", householdId];
 
   const q = useQuery({
     queryKey: key,
-    enabled: !!user,
+    enabled: !!user && !!householdId,
     queryFn: async (): Promise<ShoppingItem[]> => {
-      const { data, error } = await sb.from("shopping_items").select("*").order("created_at", { ascending: true });
+      const { data, error } = await sb
+        .from("shopping_items")
+        .select("*")
+        .eq("owner_id", householdId)
+        .order("created_at", { ascending: true });
       if (error) throw error;
       return data ?? [];
     },
   });
 
+  // Live sync: any household member's add/remove/tick shows up everywhere.
+  useEffect(() => {
+    if (!householdId) return;
+    const channel = supabase
+      .channel(`shopping-sync-${householdId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "shopping_items", filter: `owner_id=eq.${householdId}` },
+        () => qc.invalidateQueries({ queryKey: ["shopping", householdId] }),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "shopping_stores", filter: `owner_id=eq.${householdId}` },
+        () => qc.invalidateQueries({ queryKey: ["shopping_stores", householdId] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [householdId, qc]);
+
+
   const add = useMutation({
     mutationFn: async (input: { name: string; quantity?: string | null; source?: string; store_id?: string | null }) => {
       const { error } = await sb.from("shopping_items").insert({
-        owner_id: user!.id,
+        owner_id: householdId,
         name: input.name,
         quantity: input.quantity ?? null,
         source: input.source ?? "manual",
@@ -228,7 +256,7 @@ export function useShopping() {
     mutationFn: async (items: { name: string; source?: string }[]) => {
       if (!items.length) return;
       const rows = items.map((i) => ({
-        owner_id: user!.id,
+        owner_id: householdId,
         name: i.name,
         source: i.source ?? "recipe",
       }));
@@ -263,7 +291,7 @@ export function useShopping() {
 
   const clearDone = useMutation({
     mutationFn: async () => {
-      const { error } = await sb.from("shopping_items").delete().eq("done", true);
+      const { error } = await sb.from("shopping_items").delete().eq("owner_id", householdId).eq("done", true);
       if (error) throw error;
     },
     onSettled: () => qc.invalidateQueries({ queryKey: key }),
@@ -335,16 +363,18 @@ export function useInventory() {
 
 export function useShoppingStores() {
   const { user } = useAuth();
+  const { householdId } = useHousehold();
   const qc = useQueryClient();
-  const key = ["shopping_stores", user?.id];
+  const key = ["shopping_stores", householdId];
 
   const q = useQuery({
     queryKey: key,
-    enabled: !!user,
+    enabled: !!user && !!householdId,
     queryFn: async (): Promise<ShoppingStore[]> => {
       const { data, error } = await sb
         .from("shopping_stores")
         .select("*")
+        .eq("owner_id", householdId)
         .order("created_at", { ascending: true });
       if (error) throw error;
       return data ?? [];
@@ -353,7 +383,7 @@ export function useShoppingStores() {
 
   const add = useMutation({
     mutationFn: async (name: string) => {
-      const { error } = await sb.from("shopping_stores").insert({ owner_id: user!.id, name });
+      const { error } = await sb.from("shopping_stores").insert({ owner_id: householdId, name });
       if (error) throw error;
     },
     onSettled: () => qc.invalidateQueries({ queryKey: key }),
@@ -366,7 +396,7 @@ export function useShoppingStores() {
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: key });
-      qc.invalidateQueries({ queryKey: ["shopping", user?.id] });
+      qc.invalidateQueries({ queryKey: ["shopping", householdId] });
     },
   });
 
