@@ -122,11 +122,18 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     const push = (key: string, message: string) => {
       if (seenRef.current.has(key)) return;
       seenRef.current.add(key);
+      // Persisted guard: survives reloads, remounts and other tabs so the same
+      // change never produces a second alert.
+      if (markSeen(householdId, key)) return;
+      if (markSeen(householdId, `msg:${message}`)) return;
       showDevicePush(message, key);
       setItems((prev) =>
-        [{ id: key, message, at: Date.now(), read: false }, ...prev].slice(0, MAX_ITEMS),
+        prev.some((n) => n.id === key || n.message === message)
+          ? prev
+          : [{ id: key, message, at: Date.now(), read: false }, ...prev].slice(0, MAX_ITEMS),
       );
     };
+
 
     const profileName = (id: string | null | undefined) => {
       if (!id) return "Someone";
