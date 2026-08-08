@@ -21,10 +21,35 @@ interface NotificationsState {
 const Ctx = createContext<NotificationsState | undefined>(undefined);
 
 const MAX_ITEMS = 50;
+const SEEN_TTL = 24 * 60 * 60 * 1000;
 
 function storageKey(householdId: string) {
   return `bamboo:notifications:${householdId}`;
 }
+
+function seenKeyStore(householdId: string) {
+  return `bamboo:notifications-seen:${householdId}`;
+}
+
+/** Persisted, cross-tab/reload de-duplication of notification keys+messages. */
+function markSeen(householdId: string, key: string): boolean {
+  try {
+    const raw = localStorage.getItem(seenKeyStore(householdId));
+    const map = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+    const now = Date.now();
+    for (const k of Object.keys(map)) if (now - map[k]! > SEEN_TTL) delete map[k];
+    if (map[key] !== undefined) {
+      localStorage.setItem(seenKeyStore(householdId), JSON.stringify(map));
+      return true;
+    }
+    map[key] = now;
+    localStorage.setItem(seenKeyStore(householdId), JSON.stringify(map));
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { householdId, profiles } = useHousehold();
