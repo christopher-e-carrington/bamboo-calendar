@@ -99,10 +99,43 @@ async function ensureServiceWorker(): Promise<ServiceWorkerRegistration | null> 
   return swPromise;
 }
 
+/* ---- cross-tab / cross-reload de-duplication ---------------------- */
+const DEDUPE_KEY = "bamboo:push-shown";
+const DEDUPE_TTL = 10 * 60 * 1000;
+
+function readShown(): Record<string, number> {
+  try {
+    return JSON.parse(localStorage.getItem(DEDUPE_KEY) ?? "{}") as Record<string, number>;
+  } catch {
+    return {};
+  }
+}
+
+/** Returns true when this exact alert was already shown recently. */
+function alreadyShown(key: string) {
+  try {
+    const now = Date.now();
+    const map = readShown();
+    for (const k of Object.keys(map)) if (now - map[k]! > DEDUPE_TTL) delete map[k];
+    if (map[key] !== undefined) {
+      localStorage.setItem(DEDUPE_KEY, JSON.stringify(map));
+      return true;
+    }
+    map[key] = now;
+    localStorage.setItem(DEDUPE_KEY, JSON.stringify(map));
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 /** Fire a system notification for an in-app notification message. */
 export function showDevicePush(message: string, tag?: string) {
   if (!enabled || !devicePushSupported()) return;
   if (Notification.permission !== "granted") return;
+  if (alreadyShown(tag || message)) return;
+  if (tag && alreadyShown(`msg:${message}`)) return;
+
 
   const options: NotificationOptions = {
     body: message,

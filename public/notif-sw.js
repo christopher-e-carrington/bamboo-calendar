@@ -23,7 +23,16 @@ self.addEventListener("push", (event) => {
     badge: "/app-icon-192.png",
     data: { url: payload.url || "/" },
   };
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    (async () => {
+      // Skip if the same alert is already on screen (e.g. shown by the open tab)
+      const existing = await self.registration.getNotifications();
+      if (existing.some((n) => (options.tag && n.tag === options.tag) || n.body === options.body)) {
+        return;
+      }
+      await self.registration.showNotification(title, options);
+    })(),
+  );
 });
 
 self.addEventListener("notificationclick", (event) => {
