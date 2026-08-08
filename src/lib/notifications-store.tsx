@@ -165,10 +165,8 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         const row = payload.new as { id: string; name: string };
         push(`shop:insert:${row.id}`, `"${row.name}" was added to the shopping list`);
       })
-      .on("postgres_changes", { event: "DELETE", schema: "public", table: "shopping_items", filter }, (payload) => {
-        const row = payload.old as { id: string; name?: string };
-        push(`shop:delete:${row.id}`, `"${row.name ?? "Item"}" was removed from the shopping list`);
-      })
+      // Deletions (including clearing the picked-up list) intentionally do not notify.
+
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "shopping_items", filter }, (payload) => {
         if (!getPrefs().shopping.checkedOff) return;
         const oldRow = payload.old as { id: string; done?: boolean };
