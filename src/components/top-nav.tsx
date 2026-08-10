@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Bell, CalendarPlus, Plus, Search } from "lucide-react";
+import { Bell, CalendarPlus, Home, Calendar, Plus, Search } from "lucide-react";
 import { useHousehold } from "@/lib/household-store";
 import { useNotifications } from "@/lib/notifications-store";
 import { EventDialog } from "./event-dialog";
