@@ -56,7 +56,7 @@ export function RemindersPage() {
   const [message, setMessage] = useState("");
   const [sendAt, setSendAt] = useState(defaultSendAt);
   const [recipientIds, setRecipientIds] = useState<string[]>([]);
-  const [channels, setChannels] = useState<Channel[]>(["app"]);
+  const channels: Channel[] = ["app"];
 
   // Ensure the current user is preselected once profiles load
   useMemo(() => {
@@ -85,7 +85,6 @@ export function RemindersPage() {
       const trimmed = message.trim();
       if (!trimmed) throw new Error("Please enter what to be reminded of");
       if (recipientIds.length === 0) throw new Error("Pick at least one person");
-      if (channels.length === 0) throw new Error("Pick at least one way to send it");
       const when = new Date(sendAt);
       if (Number.isNaN(when.getTime())) throw new Error("Choose a valid date & time");
       const { error } = await supabase.from("reminders" as never).insert({
@@ -102,7 +101,6 @@ export function RemindersPage() {
       toast.success("Reminder scheduled");
       setMessage("");
       setSendAt(defaultSendAt);
-      setChannels(["app"]);
       setRecipientIds(myProfile ? [myProfile.id] : []);
       qc.invalidateQueries({ queryKey: ["reminders", householdId] });
     },
@@ -126,11 +124,6 @@ export function RemindersPage() {
     );
   };
 
-  const toggleChannel = (c: Channel) => {
-    setChannels((prev) =>
-      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c],
-    );
-  };
 
 
 
@@ -229,19 +222,6 @@ export function RemindersPage() {
           />
         </div>
 
-        <div className="space-y-1.5">
-          <Label>How to send it</Label>
-          <div className="grid grid-cols-1 gap-2">
-            <ChannelToggle
-              label="In-app notification"
-              icon={<Bell className="h-4 w-4" />}
-              checked={channels.includes("app")}
-              onToggle={() => toggleChannel("app")}
-            />
-          </div>
-        </div>
-
-
         <div className="flex justify-end">
           <Button
             onClick={() => addM.mutate()}
@@ -297,40 +277,6 @@ export function RemindersPage() {
   );
 }
 
-function ChannelToggle({
-  label,
-  icon,
-  checked,
-  onToggle,
-}: {
-  label: string;
-  icon: React.ReactNode;
-  checked: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors text-left ${
-        checked
-          ? "border-primary/60 bg-primary/5"
-          : "border-border bg-background hover:bg-muted/50"
-      }`}
-    >
-      <span
-        className={`h-4 w-4 rounded border grid place-items-center ${
-          checked ? "border-primary bg-primary text-primary-foreground" : "border-border"
-        }`}
-      >
-        {checked && <Check className="h-3 w-3" />}
-      </span>
-      {icon}
-      <span>{label}</span>
-    </button>
-  );
-}
-
 function ReminderCard({
   reminder,
   profiles,
@@ -347,11 +293,6 @@ function ReminderCard({
     .map((id) => profiles.find((p) => p.id === id))
     .filter(Boolean) as { id: string; name: string; color: string; initials: string }[];
 
-  const channelIcons: Record<string, React.ReactNode | undefined> = {
-    app: <Bell className="h-3 w-3" />,
-  };
-
-  const displayChannels = (reminder.channels as string[]).filter((c) => c === "app");
 
   return (
     <div
@@ -371,13 +312,6 @@ function ReminderCard({
               hour: "numeric",
               minute: "2-digit",
             })}
-          </span>
-          <span className="flex items-center gap-1">
-            {displayChannels.map((c) => (
-              <span key={c} className="inline-flex items-center gap-0.5">
-                {channelIcons[c]}
-              </span>
-            ))}
           </span>
         </div>
         <div className="flex flex-wrap gap-1">
