@@ -29,7 +29,7 @@ function timeAgo(ts: number): string {
   return `${d}d ago`;
 }
 
-export function TopNav() {
+export function TopNav({ onNavigate }: { onNavigate: (id: string) => void }) {
   const { activeProfile, familyProfile } = useHousehold();
   const { items, unreadCount, markAllRead, clear } = useNotifications();
   const [eventOpen, setEventOpen] = useState(false);
