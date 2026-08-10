@@ -41,11 +41,8 @@ export function RemindersPage() {
     [profiles, user?.id],
   );
 
-  // Selectable recipients: exclude the shared/household profile
-  const selectableProfiles = useMemo(
-    () => profiles.filter((p) => p.role !== "shared"),
-    [profiles],
-  );
+  // All household profiles are selectable recipients
+  const selectableProfiles = profiles;
 
   const defaultSendAt = useMemo(() => {
     const d = new Date();
