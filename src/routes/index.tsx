@@ -30,6 +30,7 @@ import { HouseholdPage } from "@/components/household-page";
 import { AuthScreen } from "@/components/auth-screen";
 import { OnboardingWizard } from "@/components/onboarding-wizard";
 import { useAuth } from "@/hooks/use-auth";
+import { PageBoundary } from "@/components/page-boundary";
 import { Leaf } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -87,7 +88,9 @@ function Index() {
               <SidebarInset className="flex-1 flex flex-col min-w-0 bg-transparent">
                 <TopNav onNavigate={select} />
                 <main className="flex-1">
-                  <PageRouter active={active} />
+                  <PageBoundary resetKey={active}>
+                    <PageRouter active={active} />
+                  </PageBoundary>
                 </main>
               </SidebarInset>
             </div>

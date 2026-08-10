@@ -4,6 +4,7 @@ import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persist
 import { supabase } from "@/integrations/supabase/client";
 import { installOfflineFetch } from "./fetch-interceptor";
 import { cleanupOfflineSw, offlineSwAllowed } from "./sw";
+import { installChunkRecovery } from "./chunk-recovery";
 
 let initialised = false;
 
@@ -13,6 +14,8 @@ const SENSITIVE = ["passwords", "documents"];
 export function initOffline(queryClient: QueryClient) {
   if (initialised || typeof window === "undefined") return;
   initialised = true;
+
+  installChunkRecovery();
 
   persistQueryClient({
     queryClient,
