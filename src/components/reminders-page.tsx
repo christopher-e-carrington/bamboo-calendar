@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Bell, Trash2, Plus, Clock, Check } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Bell, Trash2, Plus, Clock, Users, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 type Channel = "app";
@@ -56,7 +57,7 @@ export function RemindersPage() {
   const [message, setMessage] = useState("");
   const [sendAt, setSendAt] = useState(defaultSendAt);
   const [recipientIds, setRecipientIds] = useState<string[]>([]);
-  const [channels, setChannels] = useState<Channel[]>(["app"]);
+  const channels: Channel[] = ["app"];
 
   // Ensure the current user is preselected once profiles load
   useMemo(() => {
@@ -85,7 +86,6 @@ export function RemindersPage() {
       const trimmed = message.trim();
       if (!trimmed) throw new Error("Please enter what to be reminded of");
       if (recipientIds.length === 0) throw new Error("Pick at least one person");
-      if (channels.length === 0) throw new Error("Pick at least one way to send it");
       const when = new Date(sendAt);
       if (Number.isNaN(when.getTime())) throw new Error("Choose a valid date & time");
       const { error } = await supabase.from("reminders" as never).insert({
@@ -102,7 +102,6 @@ export function RemindersPage() {
       toast.success("Reminder scheduled");
       setMessage("");
       setSendAt(defaultSendAt);
-      setChannels(["app"]);
       setRecipientIds(myProfile ? [myProfile.id] : []);
       qc.invalidateQueries({ queryKey: ["reminders", householdId] });
     },
@@ -126,11 +125,6 @@ export function RemindersPage() {
     );
   };
 
-  const toggleChannel = (c: Channel) => {
-    setChannels((prev) =>
-      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c],
-    );
-  };
 
 
 
@@ -151,59 +145,79 @@ export function RemindersPage() {
 
       <section className="rounded-2xl border border-border bg-card/60 p-4 space-y-4">
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <Label>Who to remind</Label>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="text-xs text-primary hover:underline"
-                onClick={() => setRecipientIds(selectableProfiles.map((p) => p.id))}
+          <Label>Who to remind</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-between font-normal"
               >
-                Everyone
-              </button>
-              <span className="text-xs text-muted-foreground">·</span>
-              <button
-                type="button"
-                className="text-xs text-primary hover:underline"
-                onClick={() => setRecipientIds(myProfile ? [myProfile.id] : [])}
-              >
-                Just me
-              </button>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-
-            {selectableProfiles.map((p) => {
-              const checked = recipientIds.includes(p.id);
-              const isMe = p.id === myProfile?.id;
-              return (
-                <label
-                  key={p.id}
-                  className={`flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
-                    checked
-                      ? "border-primary/60 bg-primary/5"
-                      : "border-border bg-background hover:bg-muted/50"
-                  }`}
+                <span className="flex items-center gap-1.5 truncate">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  {recipientIds.length === 0
+                    ? "Select people"
+                    : recipientIds.length === selectableProfiles.length
+                      ? "Everyone"
+                      : selectableProfiles
+                          .filter((p) => recipientIds.includes(p.id))
+                          .map((p) => p.name)
+                          .join(", ")}
+                </span>
+                <ChevronDown className="h-4 w-4 opacity-60 shrink-0" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-[min(20rem,90vw)] p-2">
+              <div className="flex items-center justify-between px-1 pb-2">
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => setRecipientIds(selectableProfiles.map((p) => p.id))}
                 >
-                  <Checkbox
-                    checked={checked}
-                    onCheckedChange={() => toggleRecipient(p.id)}
-                  />
-                  <span
-                    className="h-6 w-6 rounded-full grid place-items-center text-[10px] font-medium text-white"
-                    style={{ backgroundColor: p.color }}
-                  >
-                    {p.initials}
-                  </span>
-                  <span className="text-sm truncate">
-                    {p.name}
-                    {isMe && <span className="text-muted-foreground"> (me)</span>}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
+                  Everyone
+                </button>
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => setRecipientIds(myProfile ? [myProfile.id] : [])}
+                >
+                  Just me
+                </button>
+              </div>
+              <div className="max-h-64 overflow-y-auto space-y-1">
+                {selectableProfiles.map((p) => {
+                  const checked = recipientIds.includes(p.id);
+                  const isMe = p.id === myProfile?.id;
+                  return (
+                    <label
+                      key={p.id}
+                      className={`flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
+                        checked
+                          ? "border-primary/60 bg-primary/5"
+                          : "border-transparent hover:bg-muted/50"
+                      }`}
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={() => toggleRecipient(p.id)}
+                      />
+                      <span
+                        className="h-6 w-6 rounded-full grid place-items-center text-[10px] font-medium text-white"
+                        style={{ backgroundColor: p.color }}
+                      >
+                        {p.initials}
+                      </span>
+                      <span className="text-sm truncate">
+                        {p.name}
+                        {isMe && <span className="text-muted-foreground"> (me)</span>}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
+
 
         <div className="space-y-1.5">
           <Label htmlFor="rem-message">What is the reminder?</Label>
@@ -228,19 +242,6 @@ export function RemindersPage() {
             onChange={(e) => setSendAt(e.target.value)}
           />
         </div>
-
-        <div className="space-y-1.5">
-          <Label>How to send it</Label>
-          <div className="grid grid-cols-1 gap-2">
-            <ChannelToggle
-              label="In-app notification"
-              icon={<Bell className="h-4 w-4" />}
-              checked={channels.includes("app")}
-              onToggle={() => toggleChannel("app")}
-            />
-          </div>
-        </div>
-
 
         <div className="flex justify-end">
           <Button
@@ -297,40 +298,6 @@ export function RemindersPage() {
   );
 }
 
-function ChannelToggle({
-  label,
-  icon,
-  checked,
-  onToggle,
-}: {
-  label: string;
-  icon: React.ReactNode;
-  checked: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors text-left ${
-        checked
-          ? "border-primary/60 bg-primary/5"
-          : "border-border bg-background hover:bg-muted/50"
-      }`}
-    >
-      <span
-        className={`h-4 w-4 rounded border grid place-items-center ${
-          checked ? "border-primary bg-primary text-primary-foreground" : "border-border"
-        }`}
-      >
-        {checked && <Check className="h-3 w-3" />}
-      </span>
-      {icon}
-      <span>{label}</span>
-    </button>
-  );
-}
-
 function ReminderCard({
   reminder,
   profiles,
@@ -347,11 +314,6 @@ function ReminderCard({
     .map((id) => profiles.find((p) => p.id === id))
     .filter(Boolean) as { id: string; name: string; color: string; initials: string }[];
 
-  const channelIcons: Record<string, React.ReactNode | undefined> = {
-    app: <Bell className="h-3 w-3" />,
-  };
-
-  const displayChannels = (reminder.channels as string[]).filter((c) => c === "app");
 
   return (
     <div
@@ -371,13 +333,6 @@ function ReminderCard({
               hour: "numeric",
               minute: "2-digit",
             })}
-          </span>
-          <span className="flex items-center gap-1">
-            {displayChannels.map((c) => (
-              <span key={c} className="inline-flex items-center gap-0.5">
-                {channelIcons[c]}
-              </span>
-            ))}
           </span>
         </div>
         <div className="flex flex-wrap gap-1">
