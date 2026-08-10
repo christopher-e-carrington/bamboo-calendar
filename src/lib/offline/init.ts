@@ -15,6 +15,8 @@ export function initOffline(queryClient: QueryClient) {
   if (initialised || typeof window === "undefined") return;
   initialised = true;
 
+  installChunkRecovery();
+
   persistQueryClient({
     queryClient,
     persister: createSyncStoragePersister({
