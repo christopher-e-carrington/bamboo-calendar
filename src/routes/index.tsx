@@ -85,7 +85,7 @@ function Index() {
             <div className="flex flex-1 w-full">
               <AppSidebar active={active} onSelect={select} />
               <SidebarInset className="flex-1 flex flex-col min-w-0 bg-transparent">
-                <TopNav />
+                <TopNav onNavigate={select} />
                 <main className="flex-1">
                   <PageRouter active={active} />
                 </main>
