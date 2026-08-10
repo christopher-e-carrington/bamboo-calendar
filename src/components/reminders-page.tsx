@@ -144,59 +144,79 @@ export function RemindersPage() {
 
       <section className="rounded-2xl border border-border bg-card/60 p-4 space-y-4">
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <Label>Who to remind</Label>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="text-xs text-primary hover:underline"
-                onClick={() => setRecipientIds(selectableProfiles.map((p) => p.id))}
+          <Label>Who to remind</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-between font-normal"
               >
-                Everyone
-              </button>
-              <span className="text-xs text-muted-foreground">·</span>
-              <button
-                type="button"
-                className="text-xs text-primary hover:underline"
-                onClick={() => setRecipientIds(myProfile ? [myProfile.id] : [])}
-              >
-                Just me
-              </button>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-
-            {selectableProfiles.map((p) => {
-              const checked = recipientIds.includes(p.id);
-              const isMe = p.id === myProfile?.id;
-              return (
-                <label
-                  key={p.id}
-                  className={`flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
-                    checked
-                      ? "border-primary/60 bg-primary/5"
-                      : "border-border bg-background hover:bg-muted/50"
-                  }`}
+                <span className="flex items-center gap-1.5 truncate">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  {recipientIds.length === 0
+                    ? "Select people"
+                    : recipientIds.length === selectableProfiles.length
+                      ? "Everyone"
+                      : selectableProfiles
+                          .filter((p) => recipientIds.includes(p.id))
+                          .map((p) => p.name)
+                          .join(", ")}
+                </span>
+                <ChevronDown className="h-4 w-4 opacity-60 shrink-0" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-[min(20rem,90vw)] p-2">
+              <div className="flex items-center justify-between px-1 pb-2">
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => setRecipientIds(selectableProfiles.map((p) => p.id))}
                 >
-                  <Checkbox
-                    checked={checked}
-                    onCheckedChange={() => toggleRecipient(p.id)}
-                  />
-                  <span
-                    className="h-6 w-6 rounded-full grid place-items-center text-[10px] font-medium text-white"
-                    style={{ backgroundColor: p.color }}
-                  >
-                    {p.initials}
-                  </span>
-                  <span className="text-sm truncate">
-                    {p.name}
-                    {isMe && <span className="text-muted-foreground"> (me)</span>}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
+                  Everyone
+                </button>
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => setRecipientIds(myProfile ? [myProfile.id] : [])}
+                >
+                  Just me
+                </button>
+              </div>
+              <div className="max-h-64 overflow-y-auto space-y-1">
+                {selectableProfiles.map((p) => {
+                  const checked = recipientIds.includes(p.id);
+                  const isMe = p.id === myProfile?.id;
+                  return (
+                    <label
+                      key={p.id}
+                      className={`flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
+                        checked
+                          ? "border-primary/60 bg-primary/5"
+                          : "border-transparent hover:bg-muted/50"
+                      }`}
+                    >
+                      <Checkbox
+                        checked={checked}
+                        onCheckedChange={() => toggleRecipient(p.id)}
+                      />
+                      <span
+                        className="h-6 w-6 rounded-full grid place-items-center text-[10px] font-medium text-white"
+                        style={{ backgroundColor: p.color }}
+                      >
+                        {p.initials}
+                      </span>
+                      <span className="text-sm truncate">
+                        {p.name}
+                        {isMe && <span className="text-muted-foreground"> (me)</span>}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
+
 
         <div className="space-y-1.5">
           <Label htmlFor="rem-message">What is the reminder?</Label>
