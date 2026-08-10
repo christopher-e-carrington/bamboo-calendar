@@ -14,6 +14,7 @@ import { ThemeProvider } from "@/lib/theme-store";
 import { DisplayProvider } from "@/lib/display-store";
 import { OfflineBanner } from "@/components/offline-banner";
 import { initOffline } from "@/lib/offline/init";
+import { isChunkLoadError, recoverFromStaleBundle } from "@/lib/offline/chunk-recovery";
 
 function NotFoundComponent() {
   return (
@@ -40,6 +41,11 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+
+  useEffect(() => {
+    if (isChunkLoadError(error)) void recoverFromStaleBundle();
+  }, [error]);
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
