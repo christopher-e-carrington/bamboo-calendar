@@ -29,7 +29,7 @@ function fmtMonth(d: Date) {
   return d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 }
 function fmtTime(iso: string) {
-  return new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const d = new Date(iso); if (isNaN(d.getTime())) return ""; return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 function dayKey(d: Date) {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -68,7 +68,7 @@ export function CalendarView() {
   const eventsByDay = useMemo(() => {
     const m = new Map<string, CalendarEvent[]>();
     for (const ev of expanded) {
-      const d = new Date(ev.start_at);
+      const d = new Date(ev.start_at); if (isNaN(d.getTime())) continue;
       const k = dayKey(d);
       if (!m.has(k)) m.set(k, []);
       m.get(k)!.push(ev);
@@ -84,7 +84,7 @@ export function CalendarView() {
       if (error) throw error;
       const days: string[] = [];
       for (const row of data ?? []) {
-        const [y, m, d] = (row.memory_date as string).split("-").map(Number);
+        if (!row.memory_date) continue; const parts = String(row.memory_date).split("-"); if (parts.length < 3) continue; const [y, m, d] = parts.map(Number);
         days.push(`${y}-${m - 1}-${d}`);
       }
       return days;

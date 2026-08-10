@@ -54,9 +54,10 @@ function occurrenceInMonth(date: Date): { nth: number; isLast: boolean } {
  * Expand a single event into all occurrences intersecting [rangeStart, rangeEnd].
  */
 export function expandEvent(ev: CalendarEvent, rangeStart: Date, rangeEnd: Date): CalendarEvent[] {
+  if (isNaN(new Date(ev.start_at).getTime())) return [];
   const base = new Date(ev.start_at);
   const baseEnd = ev.end_at ? new Date(ev.end_at) : null;
-  const durationMs = baseEnd ? +baseEnd - +base : 0;
+  const durationMs = (baseEnd && !isNaN(baseEnd.getTime())) ? +baseEnd - +base : 0;
 
   const make = (occStart: Date, suffix: string): CalendarEvent => ({
     ...ev,
