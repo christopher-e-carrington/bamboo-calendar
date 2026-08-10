@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Bell, Trash2, Plus, Clock, Check } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Bell, Trash2, Plus, Clock, Users, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 type Channel = "app";
