@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Bell, CalendarPlus, Plus, Search } from "lucide-react";
+import { Bell, CalendarPlus, Home, Calendar, Plus, Search } from "lucide-react";
 import { useHousehold } from "@/lib/household-store";
 import { useNotifications } from "@/lib/notifications-store";
 import { EventDialog } from "./event-dialog";
@@ -29,7 +29,7 @@ function timeAgo(ts: number): string {
   return `${d}d ago`;
 }
 
-export function TopNav() {
+export function TopNav({ onNavigate }: { onNavigate: (id: string) => void }) {
   const { activeProfile, familyProfile } = useHousehold();
   const { items, unreadCount, markAllRead, clear } = useNotifications();
   const [eventOpen, setEventOpen] = useState(false);
@@ -57,6 +57,12 @@ export function TopNav() {
         <div className="md:hidden text-sm font-medium truncate">{viewing}</div>
 
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+          <Button variant="ghost" size="icon" className="hidden sm:inline-flex" onClick={() => onNavigate("today")} aria-label="Today">
+            <Home className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="hidden sm:inline-flex" onClick={() => onNavigate("calendar")} aria-label="Calendar">
+            <Calendar className="h-4 w-4" />
+          </Button>
           <Button variant="ghost" size="icon" className="hidden sm:inline-flex">
             <Search className="h-4 w-4" />
           </Button>
