@@ -151,8 +151,28 @@ export function RemindersPage() {
 
       <section className="rounded-2xl border border-border bg-card/60 p-4 space-y-4">
         <div className="space-y-1.5">
-          <Label>Who to remind</Label>
+          <div className="flex items-center justify-between gap-2">
+            <Label>Who to remind</Label>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="text-xs text-primary hover:underline"
+                onClick={() => setRecipientIds(selectableProfiles.map((p) => p.id))}
+              >
+                Everyone
+              </button>
+              <span className="text-xs text-muted-foreground">·</span>
+              <button
+                type="button"
+                className="text-xs text-primary hover:underline"
+                onClick={() => setRecipientIds(myProfile ? [myProfile.id] : [])}
+              >
+                Just me
+              </button>
+            </div>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+
             {selectableProfiles.map((p) => {
               const checked = recipientIds.includes(p.id);
               const isMe = p.id === myProfile?.id;
