@@ -54,15 +54,18 @@ function occurrenceInMonth(date: Date): { nth: number; isLast: boolean } {
  * Expand a single event into all occurrences intersecting [rangeStart, rangeEnd].
  */
 export function expandEvent(ev: CalendarEvent, rangeStart: Date, rangeEnd: Date): CalendarEvent[] {
+  if (!ev.start_at) return [];
   const base = new Date(ev.start_at);
+  if (isNaN(base.getTime())) return [];
+
   const baseEnd = ev.end_at ? new Date(ev.end_at) : null;
-  const durationMs = baseEnd ? +baseEnd - +base : 0;
+  const durationMs = (baseEnd && !isNaN(baseEnd.getTime())) ? +baseEnd - +base : 0;
 
   const make = (occStart: Date, suffix: string): CalendarEvent => ({
     ...ev,
     id: `${ev.id}:${suffix}`,
     start_at: occStart.toISOString(),
-    end_at: baseEnd ? new Date(+occStart + durationMs).toISOString() : null,
+    end_at: baseEnd && !isNaN(baseEnd.getTime()) ? new Date(+occStart + durationMs).toISOString() : null,
   });
 
   const out: CalendarEvent[] = [];
@@ -150,6 +153,12 @@ export function expandEvent(ev: CalendarEvent, rangeStart: Date, rangeEnd: Date)
 
 export function expandEvents(events: CalendarEvent[], rangeStart: Date, rangeEnd: Date): CalendarEvent[] {
   const out: CalendarEvent[] = [];
-  for (const ev of events) out.push(...expandEvent(ev, rangeStart, rangeEnd));
+  for (const ev of events) {
+    try {
+      out.push(...expandEvent(ev, rangeStart, rangeEnd));
+    } catch (e) {
+      console.warn("Failed to expand event", ev.id, e);
+    }
+  }
   return out;
 }

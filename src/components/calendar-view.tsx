@@ -29,7 +29,10 @@ function fmtMonth(d: Date) {
   return d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 }
 function fmtTime(iso: string) {
-  return new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 function dayKey(d: Date) {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -62,18 +65,26 @@ export function CalendarView() {
     rangeStart.setHours(0, 0, 0, 0);
     const rangeEnd = new Date(days[days.length - 1]);
     rangeEnd.setHours(23, 59, 59, 999);
-    return expandEvents(visibleEvents, rangeStart, rangeEnd);
+    return expandEvents(visibleEvents || [], rangeStart, rangeEnd);
   }, [visibleEvents, days]);
 
   const eventsByDay = useMemo(() => {
     const m = new Map<string, CalendarEvent[]>();
     for (const ev of expanded) {
+      if (!ev.start_at) continue;
       const d = new Date(ev.start_at);
+      if (isNaN(d.getTime())) continue;
       const k = dayKey(d);
       if (!m.has(k)) m.set(k, []);
       m.get(k)!.push(ev);
     }
-    for (const list of m.values()) list.sort((a, b) => +new Date(a.start_at) - +new Date(b.start_at));
+    for (const list of m.values()) {
+      list.sort((a, b) => {
+        const da = new Date(a.start_at).getTime();
+        const db = new Date(b.start_at).getTime();
+        return (isNaN(da) ? 0 : da) - (isNaN(db) ? 0 : db);
+      });
+    }
     return m;
   }, [expanded]);
 
@@ -82,16 +93,22 @@ export function CalendarView() {
     queryFn: async () => {
       const { data, error } = await supabase.from("memories").select("memory_date");
       if (error) throw error;
-      const set = new Set<string>();
+      const days: string[] = [];
       for (const row of data ?? []) {
-        const [y, m, d] = (row.memory_date as string).split("-").map(Number);
-        set.add(`${y}-${m - 1}-${d}`);
+        if (!row.memory_date) continue;
+        const parts = String(row.memory_date).split("-");
+        if (parts.length < 3) continue;
+        const [y, m, d] = parts.map(Number);
+        if (isNaN(y) || isNaN(m) || isNaN(d)) continue;
+        days.push(`${y}-${m - 1}-${d}`);
       }
-      return set;
+      return days;
     },
     enabled: !!user,
   });
-  const hasMemory = (d: Date) => memoryDays?.has(dayKey(d)) ?? false;
+  // Offline query persistence uses JSON, so this value must remain an array.
+  // Array.isArray also safely ignores the old cached Set that became `{}`.
+  const hasMemory = (d: Date) => Array.isArray(memoryDays) && memoryDays.includes(dayKey(d));
 
 
 
@@ -123,7 +140,7 @@ export function CalendarView() {
     const ids = ev.profile_ids?.length ? ev.profile_ids : [ev.profile_id];
     return (
       <span className="inline-flex -space-x-0.5 ml-1 align-middle">
-        {ids.slice(0, 4).map((id) => {
+        {ids.filter(Boolean).slice(0, 4).map((id) => {
           const p = findProfile(id);
           if (!p) return null;
           return (

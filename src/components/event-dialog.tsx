@@ -22,12 +22,15 @@ function nowLocalRounded() {
 }
 function addHourLocal(local: string) {
   const d = new Date(local);
+  if (isNaN(d.getTime())) return nowLocalRounded();
   d.setHours(d.getHours() + 1);
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 function toLocalInput(iso: string) {
+  if (!iso) return nowLocalRounded();
   const d = new Date(iso);
+  if (isNaN(d.getTime())) return nowLocalRounded();
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
@@ -73,7 +76,7 @@ export function EventDialog({
       setSelected(new Set(ids.filter(Boolean) as string[]));
       return;
     }
-    const s = initialDate
+    const s = initialDate && !isNaN(initialDate.getTime())
       ? `${initialDate.getFullYear()}-${pad(initialDate.getMonth() + 1)}-${pad(initialDate.getDate())}T09:00`
       : nowLocalRounded();
     setTitle("");
@@ -97,13 +100,28 @@ export function EventDialog({
 
   const submit = async () => {
     if (!title.trim() || selected.size === 0 || !start) return;
+    
+    const startDate = new Date(start);
+    if (isNaN(startDate.getTime())) {
+      toast.error("Invalid start date");
+      return;
+    }
+    
+    let endDate: Date | null = null;
+    if (end) {
+      endDate = new Date(end);
+      if (isNaN(endDate.getTime())) {
+        endDate = null;
+      }
+    }
+
     setBusy(true);
     try {
       const payload = {
         profile_ids: Array.from(selected),
         title: title.trim(),
-        start_at: new Date(start).toISOString(),
-        end_at: end ? new Date(end).toISOString() : null,
+        start_at: startDate.toISOString(),
+        end_at: endDate ? endDate.toISOString() : null,
         location: location.trim() || null,
         notes: notes.trim() || null,
         recurrence,
@@ -189,7 +207,9 @@ export function EventDialog({
                 value={start}
                 onChange={(e) => {
                   setStart(e.target.value);
-                  if (!end || new Date(end) <= new Date(e.target.value)) {
+                  const newD = new Date(e.target.value);
+                  const endD = new Date(end);
+                  if (!isNaN(newD.getTime()) && (isNaN(endD.getTime()) || endD <= newD)) {
                     setEnd(addHourLocal(e.target.value));
                   }
                 }}
