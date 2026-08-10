@@ -93,20 +93,22 @@ export function CalendarView() {
     queryFn: async () => {
       const { data, error } = await supabase.from("memories").select("memory_date");
       if (error) throw error;
-      const set = new Set<string>();
+      const days: string[] = [];
       for (const row of data ?? []) {
         if (!row.memory_date) continue;
         const parts = String(row.memory_date).split("-");
         if (parts.length < 3) continue;
         const [y, m, d] = parts.map(Number);
         if (isNaN(y) || isNaN(m) || isNaN(d)) continue;
-        set.add(`${y}-${m - 1}-${d}`);
+        days.push(`${y}-${m - 1}-${d}`);
       }
-      return set;
+      return days;
     },
     enabled: !!user,
   });
-  const hasMemory = (d: Date) => memoryDays?.has(dayKey(d)) ?? false;
+  // Offline query persistence uses JSON, so this value must remain an array.
+  // Array.isArray also safely ignores the old cached Set that became `{}`.
+  const hasMemory = (d: Date) => Array.isArray(memoryDays) && memoryDays.includes(dayKey(d));
 
 
 
