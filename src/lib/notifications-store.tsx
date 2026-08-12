@@ -355,7 +355,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       const nowIso = new Date().toISOString();
       const { data } = await (supabase as any)
         .from("reminders")
-        .select("id,message,recipient_profile_ids,channels,send_at,sent_at")
+        .select("id,message,recipient_profile_ids,channels,send_at,sent_at,recurrence")
         .eq("owner_id", householdId)
         .is("sent_at", null)
         .lte("send_at", nowIso);
@@ -366,20 +366,30 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         channels: string[];
         send_at: string;
         sent_at: string | null;
+        recurrence?: string | null;
       }>;
       for (const r of rows) {
         if (r.channels?.includes("app")) {
           const names = (r.recipient_profile_ids ?? [])
             .map((id) => profileName(id))
             .join(", ");
-          push(`reminder:${r.id}`, `Reminder for ${names || "you"}: ${r.message}`);
+          push(`reminder:${r.id}:${r.send_at}`, `Reminder for ${names || "you"}: ${r.message}`);
         }
-        await (supabase as any)
-          .from("reminders")
-          .update({ sent_at: new Date().toISOString() })
-          .eq("id", r.id);
+        const next = nextReminderOccurrence(r.send_at, r.recurrence);
+        if (next) {
+          await (supabase as any)
+            .from("reminders")
+            .update({ send_at: next.toISOString(), sent_at: null })
+            .eq("id", r.id);
+        } else {
+          await (supabase as any)
+            .from("reminders")
+            .update({ sent_at: new Date().toISOString() })
+            .eq("id", r.id);
+        }
       }
     };
+
     scanReminders();
     const reminderTimer = window.setInterval(scanReminders, 30 * 1000);
 
