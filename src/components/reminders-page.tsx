@@ -9,8 +9,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Bell, Trash2, Plus, Clock, Users, ChevronDown } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Bell, Trash2, Plus, Clock, Users, ChevronDown, Repeat } from "lucide-react";
 import { toast } from "sonner";
+import {
+  REMINDER_RECURRENCE_OPTIONS,
+  reminderRecurrenceLabel,
+  type ReminderRecurrence,
+} from "@/lib/reminder-recurrence";
 
 type Channel = "app";
 
@@ -21,9 +27,11 @@ interface Reminder {
   channels: Channel[];
   send_at: string;
   sent_at: string | null;
+  recurrence?: ReminderRecurrence | null;
   created_by: string;
   created_at: string;
 }
+
 
 function toLocalInputValue(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -53,6 +61,8 @@ export function RemindersPage() {
 
   const [message, setMessage] = useState("");
   const [sendAt, setSendAt] = useState(defaultSendAt);
+  const [recurrence, setRecurrence] = useState<ReminderRecurrence>("none");
+
   const [recipientIds, setRecipientIds] = useState<string[]>([]);
   const channels: Channel[] = ["app"];
 
@@ -92,6 +102,7 @@ export function RemindersPage() {
         recipient_profile_ids: recipientIds,
         channels,
         send_at: when.toISOString(),
+        recurrence,
       } as never);
       if (error) throw error;
     },
@@ -99,7 +110,9 @@ export function RemindersPage() {
       toast.success("Reminder scheduled");
       setMessage("");
       setSendAt(defaultSendAt);
+      setRecurrence("none");
       setRecipientIds(myProfile ? [myProfile.id] : []);
+
       qc.invalidateQueries({ queryKey: ["reminders", householdId] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -240,6 +253,24 @@ export function RemindersPage() {
           />
         </div>
 
+        <div className="space-y-1.5">
+          <Label htmlFor="rem-repeat" className="flex items-center gap-1.5">
+            <Repeat className="h-4 w-4" /> Repeat
+          </Label>
+          <Select value={recurrence} onValueChange={(v) => setRecurrence(v as ReminderRecurrence)}>
+            <SelectTrigger id="rem-repeat">
+              <SelectValue placeholder="Does not repeat" />
+            </SelectTrigger>
+            <SelectContent>
+              {REMINDER_RECURRENCE_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+
+
         <div className="flex justify-end">
           <Button
             onClick={() => addM.mutate()}
@@ -331,7 +362,14 @@ function ReminderCard({
               minute: "2-digit",
             })}
           </span>
+          {reminder.recurrence && reminder.recurrence !== "none" && (
+            <span className="flex items-center gap-1">
+              <Repeat className="h-3 w-3" />
+              {reminderRecurrenceLabel(reminder.recurrence)}
+            </span>
+          )}
         </div>
+
         <div className="flex flex-wrap gap-1">
           {recipients.map((p) => (
             <span

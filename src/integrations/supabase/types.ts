@@ -1050,6 +1050,7 @@ export type Database = {
           owner_id: string
           pushed_at: string | null
           recipient_profile_ids: string[]
+          recurrence: string
           send_at: string
           sent_at: string | null
           updated_at: string
@@ -1064,6 +1065,7 @@ export type Database = {
           owner_id: string
           pushed_at?: string | null
           recipient_profile_ids?: string[]
+          recurrence?: string
           send_at: string
           sent_at?: string | null
           updated_at?: string
@@ -1078,6 +1080,7 @@ export type Database = {
           owner_id?: string
           pushed_at?: string | null
           recipient_profile_ids?: string[]
+          recurrence?: string
           send_at?: string
           sent_at?: string | null
           updated_at?: string
