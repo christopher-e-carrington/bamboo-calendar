@@ -102,6 +102,7 @@ export function RemindersPage() {
         recipient_profile_ids: recipientIds,
         channels,
         send_at: when.toISOString(),
+        recurrence,
       } as never);
       if (error) throw error;
     },
@@ -109,7 +110,9 @@ export function RemindersPage() {
       toast.success("Reminder scheduled");
       setMessage("");
       setSendAt(defaultSendAt);
+      setRecurrence("none");
       setRecipientIds(myProfile ? [myProfile.id] : []);
+
       qc.invalidateQueries({ queryKey: ["reminders", householdId] });
     },
     onError: (e: Error) => toast.error(e.message),
