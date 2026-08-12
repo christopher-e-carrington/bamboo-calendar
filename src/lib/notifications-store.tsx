@@ -380,7 +380,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         if (next) {
           await (supabase as any)
             .from("reminders")
-            .update({ send_at: next.toISOString(), sent_at: null })
+            .update({ send_at: next.toISOString(), sent_at: null, pushed_at: null })
             .eq("id", r.id);
         } else {
           await (supabase as any)
