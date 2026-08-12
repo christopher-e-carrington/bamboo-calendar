@@ -43,8 +43,8 @@ export function TopNav({ onNavigate }: { onNavigate: (id: string) => void }) {
   const viewing = !activeProfile
     ? "Loading…"
     : isHousehold
-    ? "Household view"
-    : `${activeProfile.name}'s view`;
+    ? familyProfile?.name || "Household"
+    : activeProfile.name;
 
   return (
     <header className="sticky top-0 z-30 backdrop-blur-md bg-background/70 border-b border-border">
