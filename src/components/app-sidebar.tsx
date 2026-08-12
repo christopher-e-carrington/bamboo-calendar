@@ -54,6 +54,13 @@ export function AppSidebar({
   const { state, setOpen, setOpenMobile, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const { hidden } = useHiddenPages();
+  const { display } = useDisplay();
+  const keepExpanded = WIDE_DISPLAYS.has(display);
+
+  // On wide displays, always keep the sidebar expanded.
+  useEffect(() => {
+    if (keepExpanded) setOpen(true);
+  }, [keepExpanded, setOpen]);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
