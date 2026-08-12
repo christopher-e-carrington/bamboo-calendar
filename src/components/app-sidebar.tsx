@@ -12,6 +12,10 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useHiddenPages } from "@/lib/hidden-pages-store";
+import { useDisplay } from "@/lib/display-store";
+import { useEffect } from "react";
+
+const WIDE_DISPLAYS = new Set(["tablet-horizontal", "tv", "monitor-horizontal"]);
 
 export const NAV_ITEMS = [
   { id: "today", title: "Today", icon: Home },
