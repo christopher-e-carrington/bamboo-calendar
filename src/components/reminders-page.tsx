@@ -61,6 +61,8 @@ export function RemindersPage() {
 
   const [message, setMessage] = useState("");
   const [sendAt, setSendAt] = useState(defaultSendAt);
+  const [recurrence, setRecurrence] = useState<ReminderRecurrence>("none");
+
   const [recipientIds, setRecipientIds] = useState<string[]>([]);
   const channels: Channel[] = ["app"];
 
