@@ -12,6 +12,10 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useHiddenPages } from "@/lib/hidden-pages-store";
+import { useDisplay } from "@/lib/display-store";
+import { useEffect } from "react";
+
+const WIDE_DISPLAYS = new Set(["tablet-horizontal", "tv", "monitor-horizontal"]);
 
 export const NAV_ITEMS = [
   { id: "today", title: "Today", icon: Home },
@@ -50,6 +54,13 @@ export function AppSidebar({
   const { state, setOpen, setOpenMobile, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const { hidden } = useHiddenPages();
+  const { display } = useDisplay();
+  const keepExpanded = WIDE_DISPLAYS.has(display);
+
+  // On wide displays, always keep the sidebar expanded.
+  useEffect(() => {
+    if (keepExpanded) setOpen(true);
+  }, [keepExpanded, setOpen]);
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border">
@@ -66,7 +77,7 @@ export function AppSidebar({
               </div>
             )}
           </div>
-          {!collapsed && (
+          {!collapsed && !keepExpanded && (
             <button
               onClick={toggleSidebar}
               className="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
@@ -89,7 +100,7 @@ export function AppSidebar({
                     isActive={active === item.id}
                     onClick={() => {
                       onSelect(item.id);
-                      setOpen(false);
+                      if (!keepExpanded) setOpen(false);
                       setOpenMobile(false);
                     }}
                     className="data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[active=true]:font-medium"
