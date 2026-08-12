@@ -9,8 +9,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Bell, Trash2, Plus, Clock, Users, ChevronDown } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Bell, Trash2, Plus, Clock, Users, ChevronDown, Repeat } from "lucide-react";
 import { toast } from "sonner";
+import {
+  REMINDER_RECURRENCE_OPTIONS,
+  reminderRecurrenceLabel,
+  type ReminderRecurrence,
+} from "@/lib/reminder-recurrence";
 
 type Channel = "app";
 
@@ -21,9 +27,11 @@ interface Reminder {
   channels: Channel[];
   send_at: string;
   sent_at: string | null;
+  recurrence?: ReminderRecurrence | null;
   created_by: string;
   created_at: string;
 }
+
 
 function toLocalInputValue(d: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
