@@ -1,4 +1,4 @@
-import { Calendar, CheckSquare, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Bell, BookHeart } from "lucide-react";
+import { Calendar, CheckSquare, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Bell, BookHeart, Image } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -28,11 +28,13 @@ export const NAV_ITEMS = [
   { id: "shopping", title: "Shopping", icon: ShoppingCart },
   { id: "meals", title: "Meals", icon: ChefHat },
   { id: "journal", title: "Journal", icon: BookHeart },
+  { id: "memories", title: "Memories", icon: Image },
   { id: "contacts", title: "Contacts", icon: BookUser },
   { id: "passwords", title: "Passwords", icon: KeyRound },
   { id: "documents", title: "Documents", icon: FileText },
   { id: "inventory", title: "Inventory", icon: Boxes },
   { id: "dashboard", title: "Dashboard", icon: LayoutDashboard },
+
 ];
 // Pages that can never be hidden from the sidebar.
 export const ALWAYS_VISIBLE_PAGES = new Set(["today"]);
