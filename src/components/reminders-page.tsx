@@ -362,7 +362,14 @@ function ReminderCard({
               minute: "2-digit",
             })}
           </span>
+          {reminder.recurrence && reminder.recurrence !== "none" && (
+            <span className="flex items-center gap-1">
+              <Repeat className="h-3 w-3" />
+              {reminderRecurrenceLabel(reminder.recurrence)}
+            </span>
+          )}
         </div>
+
         <div className="flex flex-wrap gap-1">
           {recipients.map((p) => (
             <span
