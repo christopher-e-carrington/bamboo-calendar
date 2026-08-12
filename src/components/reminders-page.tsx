@@ -253,6 +253,24 @@ export function RemindersPage() {
           />
         </div>
 
+        <div className="space-y-1.5">
+          <Label htmlFor="rem-repeat" className="flex items-center gap-1.5">
+            <Repeat className="h-4 w-4" /> Repeat
+          </Label>
+          <Select value={recurrence} onValueChange={(v) => setRecurrence(v as ReminderRecurrence)}>
+            <SelectTrigger id="rem-repeat">
+              <SelectValue placeholder="Does not repeat" />
+            </SelectTrigger>
+            <SelectContent>
+              {REMINDER_RECURRENCE_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+
+
         <div className="flex justify-end">
           <Button
             onClick={() => addM.mutate()}
