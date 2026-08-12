@@ -1,0 +1,2 @@
+ALTER TABLE public.reminders ADD COLUMN IF NOT EXISTS recurrence text NOT NULL DEFAULT 'none';
+ALTER TABLE public.reminders ADD CONSTRAINT reminders_recurrence_check CHECK (recurrence IN ('none','daily','weekly','monthly_dow','monthly_date','quarterly','yearly'));
