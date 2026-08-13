@@ -22,7 +22,6 @@ const TIER_LABEL: Record<Tier, string> = {
 };
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-const WEEKDAYS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 function nextWeeklyDue(weekday: number): string {
   const d = new Date();
