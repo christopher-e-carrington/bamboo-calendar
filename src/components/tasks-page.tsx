@@ -82,13 +82,7 @@ export function TasksPage() {
         const [y, m, d] = oneTimeDate.split("-").map(Number);
         due_at = new Date(y, (m ?? 1) - 1, d ?? 1, 9, 0, 0, 0).toISOString();
       } else if (tier === "daily") {
-        if (dailyMode === "daily") {
-          recurrence = "daily";
-        } else {
-          recurrence = "none";
-          const [y, m, d] = oneTimeDate.split("-").map(Number);
-          due_at = new Date(y, (m ?? 1) - 1, d ?? 1, 9, 0, 0, 0).toISOString();
-        }
+        recurrence = "daily";
       } else if (tier === "weekly") {
         recurrence = "weekly";
         due_at = nextWeeklyDue(weekday);
