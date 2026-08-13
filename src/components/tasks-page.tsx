@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Repeat, ListChecks, Sun } from "lucide-react";
+import { Plus, ListChecks, Sun } from "lucide-react";
 import { ProfileAvatar } from "./profile-avatar";
 import { ProgressDashboard } from "./progress-dashboard";
 import { toast } from "sonner";
