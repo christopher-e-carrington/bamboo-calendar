@@ -60,7 +60,7 @@ export function TasksPage() {
   const { visibleTasks, profiles, activeProfile, toggleTask, addTask, loading } = useHousehold();
   const [tier, setTier] = useState<EditorTab>("onetime");
   const [title, setTitle] = useState("");
-  const [dailyMode, setDailyMode] = useState<"none" | "daily">("daily");
+  
   const [oneTimeDate, setOneTimeDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [weekday, setWeekday] = useState<number>(new Date().getDay());
   const [monthDay, setMonthDay] = useState<number>(new Date().getDate());
@@ -82,13 +82,7 @@ export function TasksPage() {
         const [y, m, d] = oneTimeDate.split("-").map(Number);
         due_at = new Date(y, (m ?? 1) - 1, d ?? 1, 9, 0, 0, 0).toISOString();
       } else if (tier === "daily") {
-        if (dailyMode === "daily") {
-          recurrence = "daily";
-        } else {
-          recurrence = "none";
-          const [y, m, d] = oneTimeDate.split("-").map(Number);
-          due_at = new Date(y, (m ?? 1) - 1, d ?? 1, 9, 0, 0, 0).toISOString();
-        }
+        recurrence = "daily";
       } else if (tier === "weekly") {
         recurrence = "weekly";
         due_at = nextWeeklyDue(weekday);
@@ -263,31 +257,6 @@ export function TasksPage() {
                     onChange={(e) => setOneTimeDate(e.target.value)}
                     className="w-[160px]"
                   />
-                )}
-                {tier === "daily" && (
-                  <>
-                    <Select value={dailyMode} onValueChange={(v) => setDailyMode(v as "none" | "daily")}>
-                      <SelectTrigger className="w-[140px]">
-                        <div className="flex items-center gap-1.5">
-                          <Repeat className="h-3.5 w-3.5 text-muted-foreground" />
-                          <SelectValue />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">One-time</SelectItem>
-                        <SelectItem value="daily">Daily</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {dailyMode === "none" && (
-                      <Input
-                        type="date"
-                        value={oneTimeDate}
-                        min={new Date().toISOString().slice(0, 10)}
-                        onChange={(e) => setOneTimeDate(e.target.value)}
-                        className="w-[160px]"
-                      />
-                    )}
-                  </>
                 )}
                 {tier === "weekly" && (
                   <Select value={String(weekday)} onValueChange={(v) => setWeekday(Number(v))}>
