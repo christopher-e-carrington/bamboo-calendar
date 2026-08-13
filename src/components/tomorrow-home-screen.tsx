@@ -335,6 +335,10 @@ export function TomorrowHomeScreen() {
     () =>
       visibleTasks.filter((t) => {
         if (isDailyRepeat(t)) return true;
+        if ((!t.recurrence || t.recurrence === "none") && t.due_at) {
+          const d = new Date(t.due_at);
+          return isSameDay(d, tomorrow) || (!t.done && d < tomorrow);
+        }
         if (t.tier === "daily") return !t.done;
         if (!t.due_at) return false;
         const due = new Date(t.due_at);

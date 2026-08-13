@@ -178,6 +178,10 @@ export function TodosWidget() {
   const list = visibleTasks
     .filter((t) => {
       if (t.done) return false;
+      if ((!t.recurrence || t.recurrence === "none") && t.due_at) {
+        const d = new Date(t.due_at);
+        return isSameDay(d, now) || d < now;
+      }
       if (t.tier === "daily" || t.recurrence === "daily") return true;
       if (!t.due_at) return t.recurrence === "none";
       const due = new Date(t.due_at);

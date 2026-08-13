@@ -333,6 +333,10 @@ export function ProfileHomeScreen() {
   const todayTasks = useMemo(
     () =>
       visibleTasks.filter((t) => {
+        if ((!t.recurrence || t.recurrence === "none") && t.due_at) {
+          const d = new Date(t.due_at);
+          return isSameDay(d, today) || (!t.done && d < today);
+        }
         if (t.tier === "daily" || t.recurrence === "daily") return true;
         if (!t.due_at) return t.recurrence === "none";
         const due = new Date(t.due_at);
