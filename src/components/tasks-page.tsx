@@ -11,6 +11,8 @@ import { ProgressDashboard } from "./progress-dashboard";
 import { toast } from "sonner";
 import { TaskDetailsDialog } from "./task-details-dialog";
 
+type EditorTab = "onetime" | Tier;
+
 const TIER_LABEL: Record<Tier, string> = {
   daily: "Daily",
   weekly: "Weekly",
@@ -56,7 +58,7 @@ function isSameDay(a: Date, b: Date) {
 
 export function TasksPage() {
   const { visibleTasks, profiles, activeProfile, toggleTask, addTask, loading } = useHousehold();
-  const [tier, setTier] = useState<Tier>("daily");
+  const [tier, setTier] = useState<EditorTab>("onetime");
   const [title, setTitle] = useState("");
   const [dailyMode, setDailyMode] = useState<"none" | "daily">("daily");
   const [oneTimeDate, setOneTimeDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
@@ -75,7 +77,11 @@ export function TasksPage() {
     try {
       let due_at: string | null = null;
       let recurrence: Recurrence = "none";
-      if (tier === "daily") {
+      if (tier === "onetime") {
+        recurrence = "none";
+        const [y, m, d] = oneTimeDate.split("-").map(Number);
+        due_at = new Date(y, (m ?? 1) - 1, d ?? 1, 9, 0, 0, 0).toISOString();
+      } else if (tier === "daily") {
         if (dailyMode === "daily") {
           recurrence = "daily";
         } else {
@@ -96,7 +102,13 @@ export function TasksPage() {
         recurrence = "yearly";
         due_at = nextMonthlyDue(monthDay);
       }
-      await addTask({ profile_id: activeProfile.id, title: title.trim(), tier, recurrence, due_at });
+      await addTask({
+        profile_id: activeProfile.id,
+        title: title.trim(),
+        tier: tier === "onetime" ? "daily" : tier,
+        recurrence,
+        due_at,
+      });
       setTitle("");
     } catch {
       toast.error("Couldn't add task");
@@ -213,9 +225,10 @@ export function TasksPage() {
           </div>
         </header>
         <div className="p-4 sm:p-5">
-          <Tabs value={tier} onValueChange={(v) => setTier(v as Tier)}>
+          <Tabs value={tier} onValueChange={(v) => setTier(v as EditorTab)}>
             <div className="overflow-x-auto -mx-1 px-1">
               <TabsList className="bg-secondary/60">
+                <TabsTrigger value="onetime">One time</TabsTrigger>
                 {TIERS.map((t) => (
                   <TabsTrigger key={t} value={t} className="capitalize">
                     {TIER_LABEL[t]}
@@ -234,10 +247,19 @@ export function TasksPage() {
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder={`Add a ${TIER_LABEL[tier].toLowerCase()} to-do…`}
+                placeholder={tier === "onetime" ? "Add a one-time to-do…" : `Add a ${TIER_LABEL[tier as Tier].toLowerCase()} to-do…`}
                 className="flex-1"
               />
               <div className="flex flex-wrap gap-2">
+                {tier === "onetime" && (
+                  <Input
+                    type="date"
+                    value={oneTimeDate}
+                    min={new Date().toISOString().slice(0, 10)}
+                    onChange={(e) => setOneTimeDate(e.target.value)}
+                    className="w-[160px]"
+                  />
+                )}
                 {tier === "daily" && (
                   <>
                     <Select value={dailyMode} onValueChange={(v) => setDailyMode(v as "none" | "daily")}>
@@ -299,8 +321,55 @@ export function TasksPage() {
               </div>
             </form>
 
+            <TabsContent value="onetime" className="mt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-display text-lg">One-time to-dos</h2>
+                <span className="text-xs text-muted-foreground">
+                  {oneTimeItems.filter((x) => !x.done).length} of {oneTimeItems.length} open
+                </span>
+              </div>
+              {oneTimeItems.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-8 text-center">
+                  Nothing scheduled — pick a date above to plant a one-time to-do.
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {oneTimeItems.map((task) => {
+                    const p = findProfile(task.profile_id);
+                    return (
+                      <li
+                        key={task.id}
+                        className="group flex items-center gap-3 rounded-lg p-2.5 hover:bg-secondary/60 transition-colors border border-transparent hover:border-border"
+                      >
+                        <Checkbox checked={task.done} onCheckedChange={(v) => toggleTask(task.id, Boolean(v))} />
+                        <TaskDetailsDialog
+                          task={task}
+                          trigger={
+                            <button
+                              type="button"
+                              className={`flex-1 text-left text-sm flex items-center gap-1.5 hover:text-primary transition-colors ${task.done ? "line-through text-muted-foreground" : ""}`}
+                            >
+                              {task.title}
+                              {task.due_at && (
+                                <span className="text-[10px] uppercase tracking-wide text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+                                  {new Date(task.due_at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                                </span>
+                              )}
+                            </button>
+                          }
+                        />
+                        {p && <ProfileAvatar profile={p} size={22} />}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </TabsContent>
+
             {TIERS.map((t) => {
-              const items = visibleTasks.filter((x) => x.tier === t);
+              const items = visibleTasks.filter(
+                (x) => x.tier === t && !(t === "daily" && (!x.recurrence || x.recurrence === "none")),
+              );
               const open = items.filter((x) => !x.done).length;
               return (
                 <TabsContent key={t} value={t} className="mt-4">
