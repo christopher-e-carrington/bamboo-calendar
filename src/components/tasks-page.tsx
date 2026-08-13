@@ -60,7 +60,7 @@ export function TasksPage() {
   const { visibleTasks, profiles, activeProfile, toggleTask, addTask, loading } = useHousehold();
   const [tier, setTier] = useState<EditorTab>("onetime");
   const [title, setTitle] = useState("");
-  const [dailyMode, setDailyMode] = useState<"none" | "daily">("daily");
+  
   const [oneTimeDate, setOneTimeDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
   const [weekday, setWeekday] = useState<number>(new Date().getDay());
   const [monthDay, setMonthDay] = useState<number>(new Date().getDate());
