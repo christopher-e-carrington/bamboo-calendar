@@ -64,6 +64,10 @@ export function Dashboard() {
   const isSameDayDate = (a: Date, b: Date) =>
     a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
   const todaysTasks = visibleTasks.filter((t) => {
+    if ((!t.recurrence || t.recurrence === "none") && t.due_at) {
+      const d = new Date(t.due_at);
+      return isSameDayDate(d, now) || (!t.done && d < now);
+    }
     if (t.tier === "daily" || t.recurrence === "daily") return true;
     if (!t.due_at) return t.recurrence === "none";
     const due = new Date(t.due_at);

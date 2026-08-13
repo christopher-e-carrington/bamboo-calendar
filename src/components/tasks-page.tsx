@@ -116,6 +116,10 @@ export function TasksPage() {
   // by the store so they only land on today when their next occurrence hits.
   const now = new Date();
   const todayTasks = visibleTasks.filter((t) => {
+    if ((!t.recurrence || t.recurrence === "none") && t.due_at) {
+      const d = new Date(t.due_at);
+      return isSameDay(d, now) || (!t.done && d < now);
+    }
     if (t.tier === "daily" || t.recurrence === "daily") return true;
     if (!t.due_at) return t.recurrence === "none";
     const due = new Date(t.due_at);
