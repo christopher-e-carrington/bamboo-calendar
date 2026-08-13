@@ -119,6 +119,10 @@ export function TasksPage() {
 
   const findProfile = (id: string) => profiles.find((p) => p.id === id);
 
+  const oneTimeItems = visibleTasks
+    .filter((x) => (!x.recurrence || x.recurrence === "none") && x.due_at)
+    .sort((a, b) => new Date(a.due_at!).getTime() - new Date(b.due_at!).getTime());
+
   // "Today" rules:
   // - Daily recurrence or daily-tier tasks always show.
   // - Tasks with a due date show only when due_at falls on today.
