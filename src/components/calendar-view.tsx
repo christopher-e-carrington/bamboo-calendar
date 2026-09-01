@@ -243,6 +243,7 @@ export function CalendarView() {
                   className={cn(
                     "group text-left border-r border-b border-border last:border-r-0 p-1.5 sm:p-2 hover:bg-secondary/50 transition-colors relative overflow-hidden",
                     otherMonth && "bg-muted/30 text-muted-foreground/60",
+                    sameDay(d, selectedDay) && "ring-2 ring-inset ring-primary/60 bg-secondary/40",
                   )}
                 >
                   <div className="flex items-center justify-between mb-1">
