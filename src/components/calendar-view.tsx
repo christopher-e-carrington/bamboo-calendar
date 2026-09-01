@@ -46,6 +46,12 @@ export function CalendarView() {
   const [cursor, setCursor] = useState(() => new Date());
   const [pickedDate, setPickedDate] = useState<Date | null>(null);
   const [open, setOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<Date>(() => {
+    const n = new Date();
+    return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+  });
+  const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
+  const [editEvent, setEditEvent] = useState<CalendarEvent | null>(null);
 
   const findProfile = (id: string) => profiles.find((p) => p.id === id);
 
