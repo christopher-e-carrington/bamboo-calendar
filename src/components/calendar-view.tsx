@@ -264,7 +264,7 @@ export function CalendarView() {
                           <ImageIcon className="h-2.5 w-2.5" />
                         </span>
                       )}
-                      <Plus className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      
                     </div>
                   </div>
                   <ul className="space-y-1">
