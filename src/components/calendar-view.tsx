@@ -130,6 +130,11 @@ export function CalendarView() {
 
 
 
+  useEffect(() => {
+    if (mode !== "day") return;
+    setSelectedDay(new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate()));
+  }, [mode, cursor]);
+
   const shift = (dir: -1 | 1) => {
     const x = new Date(cursor);
     if (mode === "day") x.setDate(x.getDate() + dir);
