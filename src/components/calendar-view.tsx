@@ -134,8 +134,17 @@ export function CalendarView() {
       : fmtMonth(cursor);
 
   const onDayClick = (d: Date) => {
-    setPickedDate(d);
+    setSelectedDay(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
+  };
+
+  const openAdd = (d?: Date) => {
+    setPickedDate(d ?? selectedDay);
     setOpen(true);
+  };
+
+  const findOriginal = (ev: CalendarEvent) => {
+    const realId = String(ev.id).split(":")[0];
+    return (visibleEvents ?? []).find((x) => x.id === realId) ?? null;
   };
 
   if (loading || !activeProfile) {
