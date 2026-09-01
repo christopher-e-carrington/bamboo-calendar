@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useHousehold, type CalendarEvent } from "@/lib/household-store";
 import { expandEvents } from "@/lib/event-recurrence";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus, Cake, Image as ImageIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Cake, Image as ImageIcon, Pencil } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { EventDialog } from "./event-dialog";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +47,12 @@ export function CalendarView() {
   const [cursor, setCursor] = useState(() => new Date());
   const [pickedDate, setPickedDate] = useState<Date | null>(null);
   const [open, setOpen] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<Date>(() => {
+    const n = new Date();
+    return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+  });
+  const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
+  const [editEvent, setEditEvent] = useState<CalendarEvent | null>(null);
 
   const findProfile = (id: string) => profiles.find((p) => p.id === id);
 
@@ -88,6 +95,17 @@ export function CalendarView() {
     return m;
   }, [expanded]);
 
+  const selectedEvents = useMemo(() => {
+    const s = new Date(selectedDay);
+    s.setHours(0, 0, 0, 0);
+    const e = new Date(selectedDay);
+    e.setHours(23, 59, 59, 999);
+    return expandEvents(visibleEvents || [], s, e)
+      .filter((ev) => ev.start_at && !isNaN(new Date(ev.start_at).getTime()))
+      .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime());
+  }, [visibleEvents, selectedDay]);
+
+
   const { data: memoryDays } = useQuery({
     queryKey: ["memories-days", user?.id],
     queryFn: async () => {
@@ -112,6 +130,11 @@ export function CalendarView() {
 
 
 
+  useEffect(() => {
+    if (mode !== "day") return;
+    setSelectedDay(new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate()));
+  }, [mode, cursor]);
+
   const shift = (dir: -1 | 1) => {
     const x = new Date(cursor);
     if (mode === "day") x.setDate(x.getDate() + dir);
@@ -128,8 +151,17 @@ export function CalendarView() {
       : fmtMonth(cursor);
 
   const onDayClick = (d: Date) => {
-    setPickedDate(d);
+    setSelectedDay(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
+  };
+
+  const openAdd = (d?: Date) => {
+    setPickedDate(d ?? selectedDay);
     setOpen(true);
+  };
+
+  const findOriginal = (ev: CalendarEvent) => {
+    const realId = String(ev.id).split(":")[0];
+    return (visibleEvents ?? []).find((x) => x.id === realId) ?? null;
   };
 
   if (loading || !activeProfile) {
@@ -158,6 +190,14 @@ export function CalendarView() {
   return (
     <div className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-7xl mx-auto w-full">
       <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="inline-flex rounded-full bg-secondary p-1">
+          <button
+            onClick={() => openAdd()}
+            className="px-3 py-1 text-xs rounded-full bg-background shadow-sm inline-flex items-center gap-1"
+          >
+            <Plus className="h-3 w-3" /> Add event
+          </button>
+        </div>
         <Button variant="ghost" size="icon" onClick={() => shift(-1)} aria-label="Previous">
           <ChevronLeft className="h-4 w-4" />
         </Button>
@@ -182,66 +222,7 @@ export function CalendarView() {
         </div>
       </div>
 
-      {mode === "day" ? (
-        <div className="bamboo-card p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="font-display text-xl">{days[0].getDate()}</div>
-            <Button size="sm" variant="ghost" onClick={() => onDayClick(days[0])} className="gap-1">
-              <Plus className="h-4 w-4" /> Add
-            </Button>
-          </div>
-          <ul className="space-y-2">
-            {(eventsByDay.get(dayKey(days[0])) ?? []).map((ev) => {
-              const ids = ev.profile_ids?.length ? ev.profile_ids : [ev.profile_id];
-              const colors = ids.map((id) => findProfile(id)?.color).filter(Boolean) as string[];
-              return (
-                <li
-                  key={ev.id}
-                  className="flex items-start gap-3 rounded-xl p-3 border border-border hover:bg-secondary/50 transition-colors"
-                >
-                  <div className="flex flex-col gap-0.5 self-stretch">
-                    {colors.map((c, i) => (
-                      <span key={i} className="w-1 flex-1 rounded-full min-h-3" style={{ background: c }} />
-                    ))}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {ev.contact_id && <Cake className="h-3.5 w-3.5 text-primary" />}
-                      <span className="font-medium truncate">{ev.title}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {fmtTime(ev.start_at)}
-                        {ev.end_at && ` – ${fmtTime(ev.end_at)}`}
-                      </span>
-                    </div>
-                    {ev.location && (
-                      <div className="text-xs text-muted-foreground mt-0.5">{ev.location}</div>
-                    )}
-                  </div>
-                  <div className="flex -space-x-1 shrink-0">
-                    {ids.slice(0, 4).map((id) => {
-                      const p = findProfile(id);
-                      if (!p) return null;
-                      return (
-                        <span
-                          key={id}
-                          title={p.name}
-                          className="h-5 w-5 rounded-full ring-2 ring-background text-[9px] grid place-items-center font-medium text-white"
-                          style={{ background: p.color }}
-                        >
-                          {p.initials}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </li>
-              );
-            })}
-            {(eventsByDay.get(dayKey(days[0])) ?? []).length === 0 && (
-              <li className="text-sm text-muted-foreground py-8 text-center">Nothing scheduled.</li>
-            )}
-          </ul>
-        </div>
-      ) : (
+      {mode !== "day" && (
         <div className="bamboo-card overflow-hidden">
           <div className="grid grid-cols-7 border-b border-border bg-secondary/40">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
@@ -268,6 +249,7 @@ export function CalendarView() {
                   className={cn(
                     "group text-left border-r border-b border-border last:border-r-0 p-1.5 sm:p-2 hover:bg-secondary/50 transition-colors relative overflow-hidden",
                     otherMonth && "bg-muted/30 text-muted-foreground/60",
+                    sameDay(d, selectedDay) && "ring-2 ring-inset ring-primary/60 bg-secondary/40",
                   )}
                 >
                   <div className="flex items-center justify-between mb-1">
@@ -288,7 +270,7 @@ export function CalendarView() {
                           <ImageIcon className="h-2.5 w-2.5" />
                         </span>
                       )}
-                      <Plus className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      
                     </div>
                   </div>
                   <ul className="space-y-1">
@@ -328,7 +310,135 @@ export function CalendarView() {
         </div>
       )}
 
+      <div className="bamboo-card p-4 sm:p-6 mt-4">
+        <div className="flex items-center justify-between mb-3 gap-2">
+          <h2 className="font-display text-lg">
+            {selectedDay.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+          </h2>
+          <Button size="sm" variant="ghost" className="gap-1" onClick={() => openAdd()}>
+            <Plus className="h-4 w-4" /> Add
+          </Button>
+        </div>
+        <ul className="space-y-2">
+          {selectedEvents.map((ev) => {
+            const ids = ev.profile_ids?.length ? ev.profile_ids : [ev.profile_id];
+            const colors = ids.map((id) => findProfile(id)?.color).filter(Boolean) as string[];
+            return (
+              <li key={ev.id}>
+                <button
+                  onClick={() => setDetailEvent(ev)}
+                  className="w-full text-left flex items-start gap-3 rounded-xl p-3 border border-border hover:bg-secondary/50 transition-colors"
+                >
+                  <div className="flex flex-col gap-0.5 self-stretch">
+                    {colors.map((c, i) => (
+                      <span key={i} className="w-1 flex-1 rounded-full min-h-3" style={{ background: c }} />
+                    ))}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {ev.contact_id && <Cake className="h-3.5 w-3.5 text-primary" />}
+                      <span className="font-medium truncate">{ev.title}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {fmtTime(ev.start_at)}
+                        {ev.end_at && ` – ${fmtTime(ev.end_at)}`}
+                      </span>
+                    </div>
+                    {ev.location && <div className="text-xs text-muted-foreground mt-0.5">{ev.location}</div>}
+                  </div>
+                  <div className="flex -space-x-1 shrink-0">
+                    {ids.slice(0, 4).map((id) => {
+                      const p = findProfile(id);
+                      if (!p) return null;
+                      return (
+                        <span
+                          key={id}
+                          title={p.name}
+                          className="h-5 w-5 rounded-full ring-2 ring-background text-[9px] grid place-items-center font-medium text-white"
+                          style={{ background: p.color }}
+                        >
+                          {p.initials}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </button>
+              </li>
+            );
+          })}
+          {selectedEvents.length === 0 && (
+            <li className="text-sm text-muted-foreground py-8 text-center">Nothing scheduled.</li>
+          )}
+        </ul>
+      </div>
+
       <EventDialog open={open} onOpenChange={setOpen} initialDate={pickedDate ?? undefined} />
+
+      <Dialog open={!!detailEvent} onOpenChange={(o) => !o && setDetailEvent(null)}>
+        <DialogContent>
+          {detailEvent && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  {detailEvent.contact_id && <Cake className="h-4 w-4 text-primary" />}
+                  {detailEvent.title}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-2 text-sm">
+                <div className="text-muted-foreground">
+                  {new Date(detailEvent.start_at).toLocaleDateString(undefined, {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                  {" · "}
+                  {fmtTime(detailEvent.start_at)}
+                  {detailEvent.end_at && ` – ${fmtTime(detailEvent.end_at)}`}
+                </div>
+                {detailEvent.location && <div>📍 {detailEvent.location}</div>}
+                {detailEvent.notes && <div className="whitespace-pre-wrap">{detailEvent.notes}</div>}
+                <div className="flex flex-wrap gap-1 pt-1">
+                  {(detailEvent.profile_ids?.length ? detailEvent.profile_ids : [detailEvent.profile_id])
+                    .map((id) => findProfile(id))
+                    .filter(Boolean)
+                    .map((p) => (
+                      <span
+                        key={p!.id}
+                        className="text-[11px] rounded-full px-2 py-0.5 text-white"
+                        style={{ background: p!.color }}
+                      >
+                        {p!.name}
+                      </span>
+                    ))}
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setDetailEvent(null)}>Close</Button>
+                <Button
+                  onClick={() => {
+                    const original = findOriginal(detailEvent);
+                    setDetailEvent(null);
+                    if (original) setEditEvent(original);
+                  }}
+                  disabled={!findOriginal(detailEvent)}
+                  className="gap-1"
+                >
+                  <Pencil className="h-4 w-4" /> Edit
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {editEvent && (
+        <EventDialog
+          key={editEvent.id}
+          event={editEvent}
+          open={!!editEvent}
+          onOpenChange={(o) => !o && setEditEvent(null)}
+        />
+      )}
     </div>
   );
 }
