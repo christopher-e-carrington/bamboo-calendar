@@ -5,7 +5,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useHousehold, type CalendarEvent } from "@/lib/household-store";
 import { expandEvents } from "@/lib/event-recurrence";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus, Cake, Image as ImageIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Cake, Image as ImageIcon, Pencil } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { EventDialog } from "./event-dialog";
 import { cn } from "@/lib/utils";
 
