@@ -94,6 +94,17 @@ export function CalendarView() {
     return m;
   }, [expanded]);
 
+  const selectedEvents = useMemo(() => {
+    const s = new Date(selectedDay);
+    s.setHours(0, 0, 0, 0);
+    const e = new Date(selectedDay);
+    e.setHours(23, 59, 59, 999);
+    return expandEvents(visibleEvents || [], s, e)
+      .filter((ev) => ev.start_at && !isNaN(new Date(ev.start_at).getTime()))
+      .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime());
+  }, [visibleEvents, selectedDay]);
+
+
   const { data: memoryDays } = useQuery({
     queryKey: ["memories-days", user?.id],
     queryFn: async () => {
