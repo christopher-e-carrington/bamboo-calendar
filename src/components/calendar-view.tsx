@@ -184,6 +184,14 @@ export function CalendarView() {
   return (
     <div className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-7xl mx-auto w-full">
       <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="inline-flex rounded-full bg-secondary p-1">
+          <button
+            onClick={() => openAdd()}
+            className="px-3 py-1 text-xs rounded-full bg-background shadow-sm inline-flex items-center gap-1"
+          >
+            <Plus className="h-3 w-3" /> Add event
+          </button>
+        </div>
         <Button variant="ghost" size="icon" onClick={() => shift(-1)} aria-label="Previous">
           <ChevronLeft className="h-4 w-4" />
         </Button>
