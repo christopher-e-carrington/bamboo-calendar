@@ -216,66 +216,7 @@ export function CalendarView() {
         </div>
       </div>
 
-      {mode === "day" ? (
-        <div className="bamboo-card p-4 sm:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="font-display text-xl">{days[0].getDate()}</div>
-            <Button size="sm" variant="ghost" onClick={() => onDayClick(days[0])} className="gap-1">
-              <Plus className="h-4 w-4" /> Add
-            </Button>
-          </div>
-          <ul className="space-y-2">
-            {(eventsByDay.get(dayKey(days[0])) ?? []).map((ev) => {
-              const ids = ev.profile_ids?.length ? ev.profile_ids : [ev.profile_id];
-              const colors = ids.map((id) => findProfile(id)?.color).filter(Boolean) as string[];
-              return (
-                <li
-                  key={ev.id}
-                  className="flex items-start gap-3 rounded-xl p-3 border border-border hover:bg-secondary/50 transition-colors"
-                >
-                  <div className="flex flex-col gap-0.5 self-stretch">
-                    {colors.map((c, i) => (
-                      <span key={i} className="w-1 flex-1 rounded-full min-h-3" style={{ background: c }} />
-                    ))}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {ev.contact_id && <Cake className="h-3.5 w-3.5 text-primary" />}
-                      <span className="font-medium truncate">{ev.title}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {fmtTime(ev.start_at)}
-                        {ev.end_at && ` – ${fmtTime(ev.end_at)}`}
-                      </span>
-                    </div>
-                    {ev.location && (
-                      <div className="text-xs text-muted-foreground mt-0.5">{ev.location}</div>
-                    )}
-                  </div>
-                  <div className="flex -space-x-1 shrink-0">
-                    {ids.slice(0, 4).map((id) => {
-                      const p = findProfile(id);
-                      if (!p) return null;
-                      return (
-                        <span
-                          key={id}
-                          title={p.name}
-                          className="h-5 w-5 rounded-full ring-2 ring-background text-[9px] grid place-items-center font-medium text-white"
-                          style={{ background: p.color }}
-                        >
-                          {p.initials}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </li>
-              );
-            })}
-            {(eventsByDay.get(dayKey(days[0])) ?? []).length === 0 && (
-              <li className="text-sm text-muted-foreground py-8 text-center">Nothing scheduled.</li>
-            )}
-          </ul>
-        </div>
-      ) : (
+      {mode !== "day" && (
         <div className="bamboo-card overflow-hidden">
           <div className="grid grid-cols-7 border-b border-border bg-secondary/40">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
