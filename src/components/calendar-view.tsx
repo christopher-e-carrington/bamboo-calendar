@@ -7,6 +7,15 @@ import { expandEvents } from "@/lib/event-recurrence";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Plus, Cake, Image as ImageIcon, Pencil } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { EventDialog } from "./event-dialog";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +52,7 @@ function dayKey(d: Date) {
 export function CalendarView() {
   const { user } = useAuth();
   const { visibleEvents, profiles, activeProfile, loading } = useHousehold();
+  const isMobile = useIsMobile();
   const [mode, setMode] = useState<Mode>("month");
   const [cursor, setCursor] = useState(() => new Date());
   const [pickedDate, setPickedDate] = useState<Date | null>(null);
@@ -53,6 +63,7 @@ export function CalendarView() {
   });
   const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
   const [editEvent, setEditEvent] = useState<CalendarEvent | null>(null);
+  const [dayDrawerOpen, setDayDrawerOpen] = useState(false);
 
   const findProfile = (id: string) => profiles.find((p) => p.id === id);
 
@@ -154,6 +165,10 @@ export function CalendarView() {
     const clicked = new Date(d.getFullYear(), d.getMonth(), d.getDate());
     setCursor(clicked);
     setSelectedDay(clicked);
+    if (isMobile && mode === "month") {
+      setDayDrawerOpen(true);
+      return;
+    }
     setMode("day");
   };
 
@@ -235,7 +250,9 @@ export function CalendarView() {
           <div
             className={cn(
               "grid grid-cols-7",
-              mode === "week" ? "auto-rows-[minmax(10rem,1fr)]" : "auto-rows-[minmax(5.5rem,1fr)]",
+               mode === "week"
+                 ? "auto-rows-[minmax(10rem,1fr)]"
+                 : "auto-rows-[minmax(7rem,1fr)] sm:auto-rows-[minmax(5.5rem,1fr)]",
             )}
           >
             {days.map((d) => {
@@ -281,7 +298,7 @@ export function CalendarView() {
                       return (
                         <li
                           key={ev.id}
-                          className="text-[11px] leading-tight rounded-md px-1.5 py-0.5 truncate"
+                           className="min-h-8 overflow-hidden rounded-md px-1 py-1 text-[10px] leading-tight sm:min-h-0 sm:px-1.5 sm:py-0.5 sm:text-[11px]"
                           style={{
                             background: primary
                               ? `color-mix(in oklab, ${primary.color} 22%, transparent)`
@@ -290,11 +307,11 @@ export function CalendarView() {
                           }}
                           title={`${ev.title} · ${fmtTime(ev.start_at)}`}
                         >
-                          <span className="font-medium truncate">
+                           <span className="line-clamp-2 font-medium sm:block sm:truncate">
                             {ev.contact_id && <Cake className="inline h-2.5 w-2.5 mr-0.5 -mt-0.5" />}
                             {ev.title}
                           </span>
-                          {renderProfileDots(ev)}
+                           <span className="hidden sm:inline">{renderProfileDots(ev)}</span>
                         </li>
                       );
                     })}
@@ -377,6 +394,71 @@ export function CalendarView() {
       </div>
 
       <EventDialog open={open} onOpenChange={setOpen} initialDate={pickedDate ?? undefined} />
+
+      <Drawer open={dayDrawerOpen} onOpenChange={setDayDrawerOpen} shouldScaleBackground={false}>
+        <DrawerContent className="max-h-[78dvh]">
+          <DrawerHeader className="border-b border-border text-left">
+            <DrawerTitle className="font-display">
+              {selectedDay.toLocaleDateString(undefined, {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+              })}
+            </DrawerTitle>
+            <p className="text-sm text-muted-foreground">
+              {selectedEvents.length === 0
+                ? "Nothing scheduled"
+                : `${selectedEvents.length} ${selectedEvents.length === 1 ? "event" : "events"}`}
+            </p>
+          </DrawerHeader>
+          <div className="overflow-y-auto px-4 py-3">
+            <ul className="space-y-2">
+              {selectedEvents.map((ev) => {
+                const ids = ev.profile_ids?.length ? ev.profile_ids : [ev.profile_id];
+                const primary = findProfile(ids[0]);
+                return (
+                  <li key={ev.id}>
+                    <button
+                      onClick={() => {
+                        setDayDrawerOpen(false);
+                        setDetailEvent(ev);
+                      }}
+                      className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-border bg-card p-3 text-left shadow-sm"
+                      style={{ borderLeftWidth: "4px", borderLeftColor: primary?.color }}
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate font-medium">{ev.title}</span>
+                        {ev.location && (
+                          <span className="mt-0.5 block truncate text-xs text-muted-foreground">{ev.location}</span>
+                        )}
+                      </span>
+                      <span className="shrink-0 text-xs font-medium text-muted-foreground">
+                        {fmtTime(ev.start_at)}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+              {selectedEvents.length === 0 && (
+                <li className="py-8 text-center text-sm text-muted-foreground">This day is clear.</li>
+              )}
+            </ul>
+          </div>
+          <DrawerFooter className="border-t border-border">
+            <Button
+              onClick={() => {
+                setDayDrawerOpen(false);
+                openAdd(selectedDay);
+              }}
+            >
+              <Plus className="h-4 w-4" /> Add event
+            </Button>
+            <DrawerClose asChild>
+              <Button variant="outline">Close</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
 
       <Dialog open={!!detailEvent} onOpenChange={(o) => !o && setDetailEvent(null)}>
         <DialogContent>
