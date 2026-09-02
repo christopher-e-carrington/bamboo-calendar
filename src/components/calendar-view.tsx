@@ -208,6 +208,9 @@ export function CalendarView() {
           <ChevronRight className="h-4 w-4" />
         </Button>
         <Button variant="ghost" size="sm" onClick={() => setCursor(new Date())}>Today</Button>
+        <div className="inline-flex items-center rounded-lg bg-card border border-border px-3 py-1 shadow-sm">
+          <h1 className="font-display text-base sm:text-xl min-w-0 truncate">{headerLabel}</h1>
+        </div>
         <div className="ml-auto inline-flex rounded-full bg-secondary p-1">
           {mode === "day" && (
             <button
