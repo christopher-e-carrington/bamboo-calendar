@@ -208,7 +208,9 @@ export function CalendarView() {
           <ChevronRight className="h-4 w-4" />
         </Button>
         <Button variant="ghost" size="sm" onClick={() => setCursor(new Date())}>Today</Button>
-        <h1 className="font-display text-lg sm:text-2xl ml-1 min-w-0 truncate">{headerLabel}</h1>
+        <div className="inline-flex items-center rounded-lg bg-card border border-border px-3 py-1 shadow-sm">
+          <h1 className="font-display text-base sm:text-xl min-w-0 truncate">{headerLabel}</h1>
+        </div>
         <div className="ml-auto inline-flex rounded-full bg-secondary p-1">
           {mode === "day" && (
             <button
@@ -254,8 +256,8 @@ export function CalendarView() {
                   <div className="flex items-center justify-between mb-1">
                     <span
                       className={cn(
-                        "text-xs sm:text-sm font-medium inline-flex items-center justify-center h-6 w-6 rounded-full",
-                        isToday && "bg-primary text-primary-foreground",
+                        "text-xs sm:text-sm font-medium inline-flex items-center justify-center h-6 w-6 rounded-md bg-card border border-border shadow-sm",
+                        isToday && "bg-primary text-primary-foreground border-primary",
                       )}
                     >
                       {d.getDate()}
@@ -311,11 +313,11 @@ export function CalendarView() {
 
       <div className="bamboo-card p-4 sm:p-6 mt-4">
         <div className="flex items-center mb-3 gap-2">
-          <h2 className="font-display text-lg">
-            {mode === "day"
-              ? "Events"
-              : selectedDay.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
-          </h2>
+          <div className="inline-flex items-center rounded-lg bg-card border border-border px-3 py-1.5 shadow-sm">
+            <h2 className="font-display text-base sm:text-lg">
+              {selectedDay.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+            </h2>
+          </div>
         </div>
         <ul className="space-y-3">
           {selectedEvents.map((ev) => {
