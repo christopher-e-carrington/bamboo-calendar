@@ -256,8 +256,8 @@ export function CalendarView() {
                   <div className="flex items-center justify-between mb-1">
                     <span
                       className={cn(
-                        "text-xs sm:text-sm font-medium inline-flex items-center justify-center h-6 w-6 rounded-full",
-                        isToday && "bg-primary text-primary-foreground",
+                        "text-xs sm:text-sm font-medium inline-flex items-center justify-center h-6 w-6 rounded-md bg-card border border-border shadow-sm",
+                        isToday && "bg-primary text-primary-foreground border-primary",
                       )}
                     >
                       {d.getDate()}
