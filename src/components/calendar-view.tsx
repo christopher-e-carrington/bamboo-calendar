@@ -151,7 +151,10 @@ export function CalendarView() {
       : fmtMonth(cursor);
 
   const onDayClick = (d: Date) => {
-    setSelectedDay(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
+    const clicked = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    setCursor(clicked);
+    setSelectedDay(clicked);
+    setMode("day");
   };
 
   const openAdd = (d?: Date) => {
@@ -207,18 +210,14 @@ export function CalendarView() {
         <Button variant="ghost" size="sm" onClick={() => setCursor(new Date())}>Today</Button>
         <h1 className="font-display text-lg sm:text-2xl ml-1 min-w-0 truncate">{headerLabel}</h1>
         <div className="ml-auto inline-flex rounded-full bg-secondary p-1">
-          {(["day", "week", "month"] as Mode[]).map((m) => (
+          {mode === "day" && (
             <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={cn(
-                "px-3 py-1 text-xs rounded-full capitalize transition-colors",
-                mode === m ? "bg-background shadow-sm" : "text-muted-foreground",
-              )}
+              onClick={() => setMode("month")}
+              className="px-3 py-1 text-xs rounded-full bg-background shadow-sm inline-flex items-center gap-1"
             >
-              {m}
+              Month
             </button>
-          ))}
+          )}
         </div>
       </div>
 
@@ -311,13 +310,10 @@ export function CalendarView() {
       )}
 
       <div className="bamboo-card p-4 sm:p-6 mt-4">
-        <div className="flex items-center justify-between mb-3 gap-2">
+        <div className="flex items-center mb-3 gap-2">
           <h2 className="font-display text-lg">
             {selectedDay.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
           </h2>
-          <Button size="sm" variant="ghost" className="gap-1" onClick={() => openAdd()}>
-            <Plus className="h-4 w-4" /> Add
-          </Button>
         </div>
         <ul className="space-y-2">
           {selectedEvents.map((ev) => {
