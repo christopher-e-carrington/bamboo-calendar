@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -7,19 +7,8 @@ import { expandEvents } from "@/lib/event-recurrence";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Plus, Cake, Image as ImageIcon, Pencil } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { EventDialog } from "./event-dialog";
 import { cn } from "@/lib/utils";
-
-type Mode = "day" | "week" | "month";
 
 function startOfWeek(d: Date) {
   const x = new Date(d);
@@ -52,8 +41,6 @@ function dayKey(d: Date) {
 export function CalendarView() {
   const { user } = useAuth();
   const { visibleEvents, profiles, activeProfile, loading } = useHousehold();
-  const isMobile = useIsMobile();
-  const [mode, setMode] = useState<Mode>("month");
   const [cursor, setCursor] = useState(() => new Date());
   const [pickedDate, setPickedDate] = useState<Date | null>(null);
   const [open, setOpen] = useState(false);
@@ -63,20 +50,14 @@ export function CalendarView() {
   });
   const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
   const [editEvent, setEditEvent] = useState<CalendarEvent | null>(null);
-  const [dayDrawerOpen, setDayDrawerOpen] = useState(false);
 
   const findProfile = (id: string) => profiles.find((p) => p.id === id);
 
   const days = useMemo(() => {
-    if (mode === "day") return [new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate())];
-    if (mode === "week") {
-      const start = startOfWeek(cursor);
-      return Array.from({ length: 7 }, (_, i) => addDays(start, i));
-    }
     const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
     const start = startOfWeek(first);
     return Array.from({ length: 42 }, (_, i) => addDays(start, i));
-  }, [cursor, mode]);
+  }, [cursor]);
 
   const expanded = useMemo(() => {
     const rangeStart = new Date(days[0]);
@@ -140,36 +121,18 @@ export function CalendarView() {
   const hasMemory = (d: Date) => Array.isArray(memoryDays) && memoryDays.includes(dayKey(d));
 
 
-
-  useEffect(() => {
-    if (mode !== "day") return;
-    setSelectedDay(new Date(cursor.getFullYear(), cursor.getMonth(), cursor.getDate()));
-  }, [mode, cursor]);
-
   const shift = (dir: -1 | 1) => {
     const x = new Date(cursor);
-    if (mode === "day") x.setDate(x.getDate() + dir);
-    else if (mode === "week") x.setDate(x.getDate() + dir * 7);
-    else x.setMonth(x.getMonth() + dir);
+    x.setMonth(x.getMonth() + dir);
     setCursor(x);
   };
 
-  const headerLabel =
-    mode === "day"
-      ? cursor.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric", year: "numeric" })
-      : mode === "week"
-      ? `${days[0].toLocaleDateString(undefined, { month: "short", day: "numeric" })} – ${days[6].toLocaleDateString(undefined, { month: "short", day: "numeric" })}`
-      : fmtMonth(cursor);
+  const headerLabel = fmtMonth(cursor);
 
   const onDayClick = (d: Date) => {
     const clicked = new Date(d.getFullYear(), d.getMonth(), d.getDate());
     setCursor(clicked);
     setSelectedDay(clicked);
-    if (isMobile && mode === "month") {
-      setDayDrawerOpen(true);
-      return;
-    }
-    setMode("day");
   };
 
   const openAdd = (d?: Date) => {
@@ -226,107 +189,92 @@ export function CalendarView() {
         <div className="inline-flex items-center rounded-lg bg-card border border-border px-3 py-1 shadow-sm">
           <h1 className="font-display text-base sm:text-xl min-w-0 truncate">{headerLabel}</h1>
         </div>
-        <div className="ml-auto inline-flex rounded-full bg-secondary p-1">
-          {mode === "day" && (
-            <button
-              onClick={() => setMode("month")}
-              className="px-3 py-1 text-xs rounded-full bg-background shadow-sm inline-flex items-center gap-1"
-            >
-              Month
-            </button>
-          )}
-        </div>
       </div>
 
-      {mode !== "day" && (
-        <div className="bamboo-card overflow-hidden">
-          <div className="grid grid-cols-7 border-b border-border bg-secondary/40">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-              <div key={d} className="px-2 py-2 text-[11px] uppercase tracking-wider text-muted-foreground text-center">
-                {d}
-              </div>
-            ))}
-          </div>
-          <div
-            className={cn(
-              "grid grid-cols-7",
-               mode === "week"
-                 ? "auto-rows-[minmax(10rem,1fr)]"
-                 : "auto-rows-[minmax(7rem,1fr)] sm:auto-rows-[minmax(5.5rem,1fr)]",
-            )}
-          >
-            {days.map((d) => {
-              const dayEvents = eventsByDay.get(dayKey(d)) ?? [];
-              const isToday = sameDay(d, new Date());
-              const otherMonth = mode === "month" && d.getMonth() !== cursor.getMonth();
-              const limit = mode === "week" ? 5 : 3;
-              return (
-                <button
-                  key={dayKey(d)}
-                  onClick={() => onDayClick(d)}
-                  className={cn(
-                    "group text-left border-r border-b border-border last:border-r-0 p-1.5 sm:p-2 hover:bg-secondary/50 transition-colors relative overflow-hidden",
-                    otherMonth && "bg-muted/30 text-muted-foreground/60",
-                    sameDay(d, selectedDay) && "ring-2 ring-inset ring-primary/60 bg-secondary/40",
-                  )}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span
-                      className={cn(
-                        "text-xs sm:text-sm font-medium inline-flex items-center justify-center h-6 w-6 rounded-md bg-card border border-border shadow-sm",
-                        isToday && "bg-primary text-primary-foreground border-primary",
-                      )}
-                    >
-                      {d.getDate()}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      {hasMemory(d) && (
-                        <span
-                          title="Has memories"
-                          className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-accent text-accent-foreground"
-                        >
-                          <ImageIcon className="h-2.5 w-2.5" />
-                        </span>
-                      )}
-                      
-                    </div>
-                  </div>
-                  <ul className="space-y-1">
-                    {dayEvents.slice(0, limit).map((ev) => {
-                      const ids = ev.profile_ids?.length ? ev.profile_ids : [ev.profile_id];
-                      const primary = findProfile(ids[0]);
-                      return (
-                        <li
-                          key={ev.id}
-                           className="min-h-8 overflow-hidden rounded-md px-1 py-1 text-[10px] leading-tight sm:min-h-0 sm:px-1.5 sm:py-0.5 sm:text-[11px]"
-                          style={{
-                            background: primary
-                              ? `color-mix(in oklab, ${primary.color} 22%, transparent)`
-                              : undefined,
-                            borderLeft: primary ? `2px solid ${primary.color}` : undefined,
-                          }}
-                          title={`${ev.title} · ${fmtTime(ev.start_at)}`}
-                        >
-                           <span className="line-clamp-2 font-medium sm:block sm:truncate">
-                            {ev.contact_id && <Cake className="inline h-2.5 w-2.5 mr-0.5 -mt-0.5" />}
-                            {ev.title}
-                          </span>
-                           <span className="hidden sm:inline">{renderProfileDots(ev)}</span>
-                        </li>
-                      );
-                    })}
-                    {dayEvents.length > limit && (
-                      <li className="text-[10px] text-muted-foreground px-1.5">
-                        +{dayEvents.length - limit} more
-                      </li>
-                    )}
-                  </ul>
-                </button>
-              );
-            })}
-          </div>
+      <div className="bamboo-card overflow-hidden">
+        <div className="grid grid-cols-7 border-b border-border bg-secondary/40">
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+            <div key={d} className="px-2 py-2 text-[11px] uppercase tracking-wider text-muted-foreground text-center">
+              {d}
+            </div>
+          ))}
         </div>
-      )}
+        <div
+          className={cn(
+            "grid grid-cols-7 auto-rows-[minmax(7rem,1fr)] sm:auto-rows-[minmax(5.5rem,1fr)]",
+          )}
+        >
+          {days.map((d) => {
+            const dayEvents = eventsByDay.get(dayKey(d)) ?? [];
+            const isToday = sameDay(d, new Date());
+            const otherMonth = d.getMonth() !== cursor.getMonth();
+            const limit = 3;
+            return (
+              <button
+                key={dayKey(d)}
+                onClick={() => onDayClick(d)}
+                className={cn(
+                  "group text-left border-r border-b border-border last:border-r-0 p-1.5 sm:p-2 hover:bg-secondary/50 transition-colors relative overflow-hidden",
+                  otherMonth && "bg-muted/30 text-muted-foreground/60",
+                  sameDay(d, selectedDay) && "ring-2 ring-inset ring-primary/60 bg-secondary/40",
+                )}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span
+                    className={cn(
+                      "text-xs sm:text-sm font-medium inline-flex items-center justify-center h-6 w-6 rounded-md bg-card border border-border shadow-sm",
+                      isToday && "bg-primary text-primary-foreground border-primary",
+                    )}
+                  >
+                    {d.getDate()}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {hasMemory(d) && (
+                      <span
+                        title="Has memories"
+                        className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-accent text-accent-foreground"
+                      >
+                        <ImageIcon className="h-2.5 w-2.5" />
+                      </span>
+                    )}
+
+                  </div>
+                </div>
+                <ul className="space-y-1">
+                  {dayEvents.slice(0, limit).map((ev) => {
+                    const ids = ev.profile_ids?.length ? ev.profile_ids : [ev.profile_id];
+                    const primary = findProfile(ids[0]);
+                    return (
+                      <li
+                        key={ev.id}
+                         className="min-h-8 overflow-hidden rounded-md px-1 py-1 text-[10px] leading-tight sm:min-h-0 sm:px-1.5 sm:py-0.5 sm:text-[11px]"
+                        style={{
+                          background: primary
+                            ? `color-mix(in oklab, ${primary.color} 22%, transparent)`
+                            : undefined,
+                          borderLeft: primary ? `2px solid ${primary.color}` : undefined,
+                        }}
+                        title={`${ev.title} · ${fmtTime(ev.start_at)}`}
+                      >
+                         <span className="line-clamp-2 font-medium sm:block sm:truncate">
+                          {ev.contact_id && <Cake className="inline h-2.5 w-2.5 mr-0.5 -mt-0.5" />}
+                          {ev.title}
+                        </span>
+                         <span className="hidden sm:inline">{renderProfileDots(ev)}</span>
+                      </li>
+                    );
+                  })}
+                  {dayEvents.length > limit && (
+                    <li className="text-[10px] text-muted-foreground px-1.5">
+                      +{dayEvents.length - limit} more
+                    </li>
+                  )}
+                </ul>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <div className="bamboo-card p-4 sm:p-6 mt-4">
         <div className="flex items-center mb-3 gap-2">
@@ -394,71 +342,6 @@ export function CalendarView() {
       </div>
 
       <EventDialog open={open} onOpenChange={setOpen} initialDate={pickedDate ?? undefined} />
-
-      <Drawer open={dayDrawerOpen} onOpenChange={setDayDrawerOpen} shouldScaleBackground={false}>
-        <DrawerContent className="max-h-[78dvh]">
-          <DrawerHeader className="border-b border-border text-left">
-            <DrawerTitle className="font-display">
-              {selectedDay.toLocaleDateString(undefined, {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              })}
-            </DrawerTitle>
-            <p className="text-sm text-muted-foreground">
-              {selectedEvents.length === 0
-                ? "Nothing scheduled"
-                : `${selectedEvents.length} ${selectedEvents.length === 1 ? "event" : "events"}`}
-            </p>
-          </DrawerHeader>
-          <div className="overflow-y-auto px-4 py-3">
-            <ul className="space-y-2">
-              {selectedEvents.map((ev) => {
-                const ids = ev.profile_ids?.length ? ev.profile_ids : [ev.profile_id];
-                const primary = findProfile(ids[0]);
-                return (
-                  <li key={ev.id}>
-                    <button
-                      onClick={() => {
-                        setDayDrawerOpen(false);
-                        setDetailEvent(ev);
-                      }}
-                      className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 rounded-lg border border-border bg-card p-3 text-left shadow-sm"
-                      style={{ borderLeftWidth: "4px", borderLeftColor: primary?.color }}
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate font-medium">{ev.title}</span>
-                        {ev.location && (
-                          <span className="mt-0.5 block truncate text-xs text-muted-foreground">{ev.location}</span>
-                        )}
-                      </span>
-                      <span className="shrink-0 text-xs font-medium text-muted-foreground">
-                        {fmtTime(ev.start_at)}
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-              {selectedEvents.length === 0 && (
-                <li className="py-8 text-center text-sm text-muted-foreground">This day is clear.</li>
-              )}
-            </ul>
-          </div>
-          <DrawerFooter className="border-t border-border">
-            <Button
-              onClick={() => {
-                setDayDrawerOpen(false);
-                openAdd(selectedDay);
-              }}
-            >
-              <Plus className="h-4 w-4" /> Add event
-            </Button>
-            <DrawerClose asChild>
-              <Button variant="outline">Close</Button>
-            </DrawerClose>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
 
       <Dialog open={!!detailEvent} onOpenChange={(o) => !o && setDetailEvent(null)}>
         <DialogContent>
