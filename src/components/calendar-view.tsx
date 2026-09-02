@@ -312,18 +312,25 @@ export function CalendarView() {
       <div className="bamboo-card p-4 sm:p-6 mt-4">
         <div className="flex items-center mb-3 gap-2">
           <h2 className="font-display text-lg">
-            {selectedDay.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+            {mode === "day"
+              ? "Events"
+              : selectedDay.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
           </h2>
         </div>
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {selectedEvents.map((ev) => {
             const ids = ev.profile_ids?.length ? ev.profile_ids : [ev.profile_id];
             const colors = ids.map((id) => findProfile(id)?.color).filter(Boolean) as string[];
+            const primary = findProfile(ids[0]);
             return (
               <li key={ev.id}>
                 <button
                   onClick={() => setDetailEvent(ev)}
-                  className="w-full text-left flex items-start gap-3 rounded-xl p-3 border border-border hover:bg-secondary/50 transition-colors"
+                  className="w-full text-left group flex items-start gap-3 rounded-2xl p-4 bg-card/80 border border-border shadow-sm hover:shadow-md hover:bg-card hover:-translate-y-0.5 transition-all"
+                  style={{
+                    borderLeftWidth: "4px",
+                    borderLeftColor: primary?.color,
+                  }}
                 >
                   <div className="flex flex-col gap-0.5 self-stretch">
                     {colors.map((c, i) => (
@@ -339,7 +346,7 @@ export function CalendarView() {
                         {ev.end_at && ` – ${fmtTime(ev.end_at)}`}
                       </span>
                     </div>
-                    {ev.location && <div className="text-xs text-muted-foreground mt-0.5">{ev.location}</div>}
+                    {ev.location && <div className="text-xs text-muted-foreground mt-1">{ev.location}</div>}
                   </div>
                   <div className="flex -space-x-1 shrink-0">
                     {ids.slice(0, 4).map((id) => {
