@@ -313,11 +313,13 @@ export function CalendarView() {
 
       <div className="bamboo-card p-4 sm:p-6 mt-4">
         <div className="flex items-center mb-3 gap-2">
-          <h2 className="font-display text-lg">
-            {mode === "day"
-              ? "Events"
-              : selectedDay.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
-          </h2>
+          <div className="inline-flex items-center rounded-lg bg-card border border-border px-3 py-1.5 shadow-sm">
+            <h2 className="font-display text-base sm:text-lg">
+              {mode === "day"
+                ? selectedDay.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })
+                : selectedDay.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+            </h2>
+          </div>
         </div>
         <ul className="space-y-3">
           {selectedEvents.map((ev) => {
