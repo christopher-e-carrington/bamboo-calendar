@@ -315,9 +315,7 @@ export function CalendarView() {
         <div className="flex items-center mb-3 gap-2">
           <div className="inline-flex items-center rounded-lg bg-card border border-border px-3 py-1.5 shadow-sm">
             <h2 className="font-display text-base sm:text-lg">
-              {mode === "day"
-                ? selectedDay.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })
-                : selectedDay.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
+              {selectedDay.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
             </h2>
           </div>
         </div>
