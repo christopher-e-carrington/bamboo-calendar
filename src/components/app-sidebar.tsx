@@ -1,4 +1,4 @@
-import { Calendar, CheckSquare, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Bell, BookHeart, Image } from "lucide-react";
+import { CalendarClock, Calendar, CheckSquare, Home, Leaf, BookUser, Target, ChefHat, ShoppingCart, Boxes, Repeat, FileText, KeyRound, CalendarPlus, NotebookPen, PanelLeftClose, CalendarRange, Sunrise, FolderKanban, LayoutDashboard, Bell, BookHeart, Image } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -21,6 +21,7 @@ export const NAV_ITEMS = [
   { id: "today", title: "Today", icon: Home },
   { id: "tomorrow", title: "Tomorrow", icon: Sunrise },
   { id: "calendar", title: "Calendar", icon: Calendar },
+  { id: "schedule", title: "Schedule", icon: CalendarClock },
   { id: "this-week", title: "This Week", icon: CalendarRange },
   { id: "events", title: "Events", icon: CalendarPlus },
   { id: "tasks", title: "To-Dos", icon: CheckSquare },

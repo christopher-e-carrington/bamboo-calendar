@@ -94,7 +94,6 @@ export function SchedulePage() {
     familyProfile,
     loading,
     deleteEvent,
-    toggleTask,
   } = useHousehold();
 
   const [day, setDay] = useState(() => startOfDay(new Date()));
@@ -506,8 +505,6 @@ export function SchedulePage() {
         />
       )}
 
-      {/* keeps toggleTask referenced for future inline completion */}
-      <span className="hidden" aria-hidden onClick={() => toggleTask("", false)} />
     </div>
   );
 }
