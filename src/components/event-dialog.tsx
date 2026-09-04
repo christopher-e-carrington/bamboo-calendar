@@ -37,17 +37,27 @@ function toLocalInput(iso: string) {
 export function EventDialog({
   trigger,
   initialDate,
+  initialStart,
+  initialEnd,
+  initialTitle,
+  initialProfileIds,
   event,
   open: controlledOpen,
   onOpenChange: setControlledOpen,
 }: {
   trigger?: React.ReactNode;
   initialDate?: Date;
+  /** Exact start/end to prefill (time-blocking). Takes precedence over initialDate. */
+  initialStart?: Date;
+  initialEnd?: Date;
+  initialTitle?: string;
+  initialProfileIds?: string[];
   /** When provided, the dialog edits this existing event instead of creating one. */
   event?: CalendarEvent;
   open?: boolean;
   onOpenChange?: (o: boolean) => void;
 }) {
+
   const { profiles, activeProfile, familyProfile, addEvent, updateEvent } = useHousehold();
   const [uncontrolled, setUncontrolled] = useState(false);
   const open = controlledOpen ?? uncontrolled;
