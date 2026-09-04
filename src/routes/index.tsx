@@ -9,6 +9,7 @@ import { TopNav } from "@/components/top-nav";
 import { ProfileHomeScreen } from "@/components/profile-home-screen";
 import { TomorrowHomeScreen } from "@/components/tomorrow-home-screen";
 import { CalendarView } from "@/components/calendar-view";
+import { SchedulePage } from "@/components/schedule-page";
 import { EventsPage } from "@/components/events-page";
 import { ThisWeekPage } from "@/components/this-week-page";
 import { NotesPage } from "@/components/notes-page";
@@ -106,6 +107,7 @@ function PageRouter({ active }: { active: string }) {
     case "calendar": return <CalendarView />;
     case "dashboard": return <DashboardPage />;
     case "tomorrow": return <TomorrowHomeScreen />;
+    case "schedule": return <SchedulePage />;
     case "this-week": return <ThisWeekPage />;
     case "events": return <EventsPage />;
     case "notes": return <NotesPage />;
