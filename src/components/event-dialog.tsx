@@ -86,18 +86,30 @@ export function EventDialog({
       setSelected(new Set(ids.filter(Boolean) as string[]));
       return;
     }
-    const s = initialDate && !isNaN(initialDate.getTime())
-      ? `${initialDate.getFullYear()}-${pad(initialDate.getMonth() + 1)}-${pad(initialDate.getDate())}T09:00`
-      : nowLocalRounded();
-    setTitle("");
+    const validStart = initialStart && !isNaN(initialStart.getTime()) ? initialStart : null;
+    const s = validStart
+      ? `${validStart.getFullYear()}-${pad(validStart.getMonth() + 1)}-${pad(validStart.getDate())}T${pad(validStart.getHours())}:${pad(validStart.getMinutes())}`
+      : initialDate && !isNaN(initialDate.getTime())
+        ? `${initialDate.getFullYear()}-${pad(initialDate.getMonth() + 1)}-${pad(initialDate.getDate())}T09:00`
+        : nowLocalRounded();
+    const validEnd = initialEnd && !isNaN(initialEnd.getTime()) ? initialEnd : null;
+    setTitle(initialTitle ?? "");
     setLocation("");
     setNotes("");
     setStart(s);
-    setEnd(addHourLocal(s));
+    setEnd(
+      validEnd
+        ? `${validEnd.getFullYear()}-${pad(validEnd.getMonth() + 1)}-${pad(validEnd.getDate())}T${pad(validEnd.getHours())}:${pad(validEnd.getMinutes())}`
+        : addHourLocal(s),
+    );
     setRecurrence("none");
-    const pre = activeProfile?.id ?? familyProfile?.id ?? profiles[0]?.id;
-    setSelected(new Set(pre ? [pre] : []));
-  }, [open, initialDate, event, activeProfile, familyProfile, profiles]);
+    const pre = initialProfileIds?.length
+      ? initialProfileIds
+      : [activeProfile?.id ?? familyProfile?.id ?? profiles[0]?.id].filter(Boolean) as string[];
+    setSelected(new Set(pre));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialDate, initialStart, initialEnd, initialTitle, event, activeProfile, familyProfile, profiles]);
+
 
   const toggle = (id: string) => {
     setSelected((prev) => {
