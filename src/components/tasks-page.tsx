@@ -104,13 +104,16 @@ export function TasksPage() {
         recurrence = "yearly";
         due_at = nextMonthlyDue(monthDay);
       }
-      await addTask({
-        profile_id: activeProfile.id,
-        title: title.trim(),
-        tier: tier === "onetime" ? "daily" : tier,
-        recurrence,
-        due_at,
-      });
+      const targets = assignees.length ? assignees : [activeProfile.id];
+      for (const pid of targets) {
+        await addTask({
+          profile_id: pid,
+          title: title.trim(),
+          tier: tier === "onetime" ? "daily" : tier,
+          recurrence,
+          due_at,
+        });
+      }
       setTitle("");
     } catch {
       toast.error("Couldn't add task");
