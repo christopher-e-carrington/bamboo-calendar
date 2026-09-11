@@ -51,6 +51,9 @@ export function CalendarView() {
   const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
   const [editEvent, setEditEvent] = useState<CalendarEvent | null>(null);
 
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
+
   const findProfile = (id: string) => profiles.find((p) => p.id === id);
 
   const days = useMemo(() => {
@@ -140,6 +143,28 @@ export function CalendarView() {
     setOpen(true);
   };
 
+  const minSwipeDistance = 50;
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
+  };
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const dx = touchStart.x - touchEnd.x;
+    const dy = touchStart.y - touchEnd.y;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    if (absX < minSwipeDistance || absX < absY) return;
+    if (dx > 0) {
+      shift(1);
+    } else {
+      shift(-1);
+    }
+  };
+
   const findOriginal = (ev: CalendarEvent) => {
     const realId = String(ev.id).split(":")[0];
     return (visibleEvents ?? []).find((x) => x.id === realId) ?? null;
@@ -169,7 +194,12 @@ export function CalendarView() {
   };
 
   return (
-    <div className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-7xl mx-auto w-full">
+    <div
+      className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-7xl mx-auto w-full touch-pan-y"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="inline-flex rounded-full bg-secondary p-1">
           <button
