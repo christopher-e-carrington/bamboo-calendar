@@ -367,7 +367,10 @@ export function ProfileHomeScreen() {
   const travelEvent = todayEvents.find((e) => e.location && e.location.trim().length > 0);
 
   return (
-    <div className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-7xl mx-auto w-full">
+    <div
+      className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-7xl mx-auto w-full touch-pan-y"
+      {...swipe}
+    >
       {/* Hero */}
       <section className="bamboo-card overflow-hidden mb-6 relative">
         <div className="absolute inset-y-0 left-0 w-1.5" style={{ background: activeProfile.color }} />
