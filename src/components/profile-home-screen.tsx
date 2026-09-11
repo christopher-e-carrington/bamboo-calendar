@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSwipe } from "@/hooks/use-swipe";
+import { usePageNav } from "@/lib/page-nav";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useHousehold } from "@/lib/household-store";
@@ -315,6 +317,11 @@ function SmartTravelCard({ title, location, startAt }: { title: string; location
 // ---------- Main screen ----------
 export function ProfileHomeScreen() {
   const { activeProfile, visibleEvents, visibleTasks, visibleGoals, toggleTask, loading } = useHousehold();
+  const navigatePage = usePageNav();
+  const swipe = useSwipe({
+    onSwipeLeft: () => navigatePage("tomorrow"),
+    onSwipeRight: () => navigatePage("calendar"),
+  });
 
   const today = new Date();
 
@@ -367,7 +374,10 @@ export function ProfileHomeScreen() {
   const travelEvent = todayEvents.find((e) => e.location && e.location.trim().length > 0);
 
   return (
-    <div className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-7xl mx-auto w-full">
+    <div
+      className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-7xl mx-auto w-full touch-pan-y"
+      {...swipe}
+    >
       {/* Hero */}
       <section className="bamboo-card overflow-hidden mb-6 relative">
         <div className="absolute inset-y-0 left-0 w-1.5" style={{ background: activeProfile.color }} />

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSwipe } from "@/hooks/use-swipe";
 import { useHousehold, type CalendarEvent, type TaskItem } from "@/lib/household-store";
 import { expandEvents } from "@/lib/event-recurrence";
 import { EventDialog } from "./event-dialog";
@@ -212,6 +213,12 @@ export function SchedulePage() {
     setDrag(null);
   };
 
+  const swipe = useSwipe({
+    onSwipeLeft: () => setDay(addDays(day, 1)),
+    onSwipeRight: () => setDay(addDays(day, -1)),
+    ignoreSelector: "[data-timeline]",
+  });
+
   const top = (min: number) => ((min - startHour * 60) / totalMin) * height;
 
   const nowMin = now.getHours() * 60 + now.getMinutes();
@@ -222,7 +229,7 @@ export function SchedulePage() {
   }
 
   return (
-    <div className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-6xl mx-auto w-full">
+    <div className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-6xl mx-auto w-full touch-pan-y" {...swipe}>
       {/* Header */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <button
@@ -324,6 +331,7 @@ export function SchedulePage() {
           {/* grid */}
           <div
             ref={gridRef}
+            data-timeline
             className="relative flex-1 touch-none select-none"
             style={{ height }}
             onPointerDown={onPointerDown}

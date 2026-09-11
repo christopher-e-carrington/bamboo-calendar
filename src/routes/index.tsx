@@ -32,6 +32,7 @@ import { AuthScreen } from "@/components/auth-screen";
 import { OnboardingWizard } from "@/components/onboarding-wizard";
 import { useAuth } from "@/hooks/use-auth";
 import { PageBoundary } from "@/components/page-boundary";
+import { PageNavProvider } from "@/lib/page-nav";
 import { Leaf } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -89,9 +90,11 @@ function Index() {
               <SidebarInset className="flex-1 flex flex-col min-w-0 bg-transparent">
                 <TopNav onNavigate={select} />
                 <main className="flex-1">
-                  <PageBoundary resetKey={active}>
-                    <PageRouter active={active} />
-                  </PageBoundary>
+                  <PageNavProvider navigate={select}>
+                    <PageBoundary resetKey={active}>
+                      <PageRouter active={active} />
+                    </PageBoundary>
+                  </PageNavProvider>
                 </main>
               </SidebarInset>
             </div>
