@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Users, ChevronDown } from "lucide-react";
 import { useSwipe } from "@/hooks/use-swipe";
 import { useHousehold, TIERS, type Tier, type Recurrence } from "@/lib/household-store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,7 +47,15 @@ function isSameDay(a: Date, b: Date) {
 }
 
 export function TasksPage() {
-  const { visibleTasks, profiles, activeProfile, toggleTask, addTask, loading } = useHousehold();
+  const { visibleTasks, profiles, activeProfile, familyProfile, toggleTask, addTask, loading } = useHousehold();
+  const [assignees, setAssignees] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (activeProfile) setAssignees([activeProfile.id]);
+  }, [activeProfile?.id]);
+
+  const toggleAssignee = (id: string) =>
+    setAssignees((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   const [tier, setTier] = useState<EditorTab>("onetime");
   const editorTabs: EditorTab[] = ["onetime", ...TIERS];
   const shiftTier = (dir: number) => {
@@ -94,13 +104,16 @@ export function TasksPage() {
         recurrence = "yearly";
         due_at = nextMonthlyDue(monthDay);
       }
-      await addTask({
-        profile_id: activeProfile.id,
-        title: title.trim(),
-        tier: tier === "onetime" ? "daily" : tier,
-        recurrence,
-        due_at,
-      });
+      const targets = assignees.length ? assignees : [activeProfile.id];
+      for (const pid of targets) {
+        await addTask({
+          profile_id: pid,
+          title: title.trim(),
+          tier: tier === "onetime" ? "daily" : tier,
+          recurrence,
+          due_at,
+        });
+      }
       setTitle("");
     } catch {
       toast.error("Couldn't add task");
@@ -110,6 +123,15 @@ export function TasksPage() {
   };
 
   const findProfile = (id: string) => profiles.find((p) => p.id === id);
+
+  const assigneeLabel =
+    assignees.length === 0
+      ? "Nobody selected"
+      : assignees.length === 1
+        ? assignees[0] === familyProfile?.id
+          ? "Shared"
+          : findProfile(assignees[0]!)?.nickname || findProfile(assignees[0]!)?.name || "1 person"
+        : `${assignees.length} selected`;
 
   const oneTimeItems = visibleTasks
     .filter((x) => (!x.recurrence || x.recurrence === "none") && x.due_at)
@@ -286,7 +308,47 @@ export function TasksPage() {
                     </SelectContent>
                   </Select>
                 )}
-                <Button type="submit" disabled={!title.trim() || busy} className="gap-1.5">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button type="button" variant="outline" className="gap-1.5 justify-between min-w-[170px]">
+                      <span className="flex items-center gap-1.5 truncate">
+                        <Users className="h-4 w-4" />
+                        {assigneeLabel}
+                      </span>
+                      <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-64 p-2">
+                    <p className="px-2 pb-2 text-xs text-muted-foreground">Show this to-do on:</p>
+                    <div className="max-h-64 overflow-y-auto space-y-0.5">
+                      {familyProfile && (
+                        <label className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-secondary/60 cursor-pointer">
+                          <Checkbox
+                            checked={assignees.includes(familyProfile.id)}
+                            onCheckedChange={() => toggleAssignee(familyProfile.id)}
+                          />
+                          <span className="text-sm">Shared household page</span>
+                        </label>
+                      )}
+                      {profiles
+                        .filter((p) => p.id !== familyProfile?.id)
+                        .map((p) => (
+                          <label
+                            key={p.id}
+                            className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-secondary/60 cursor-pointer"
+                          >
+                            <Checkbox
+                              checked={assignees.includes(p.id)}
+                              onCheckedChange={() => toggleAssignee(p.id)}
+                            />
+                            <ProfileAvatar profile={p} size={20} />
+                            <span className="text-sm truncate">{p.nickname || p.name}</span>
+                          </label>
+                        ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <Button type="submit" disabled={!title.trim() || busy || assignees.length === 0} className="gap-1.5">
                   <Plus className="h-4 w-4" /> Add
                 </Button>
               </div>
