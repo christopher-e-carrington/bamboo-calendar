@@ -143,6 +143,28 @@ export function CalendarView() {
     setOpen(true);
   };
 
+  const minSwipeDistance = 50;
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY });
+  };
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const dx = touchStart.x - touchEnd.x;
+    const dy = touchStart.y - touchEnd.y;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    if (absX < minSwipeDistance || absX < absY) return;
+    if (dx > 0) {
+      shift(1);
+    } else {
+      shift(-1);
+    }
+  };
+
   const findOriginal = (ev: CalendarEvent) => {
     const realId = String(ev.id).split(":")[0];
     return (visibleEvents ?? []).find((x) => x.id === realId) ?? null;
