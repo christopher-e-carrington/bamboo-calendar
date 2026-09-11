@@ -307,6 +307,11 @@ function SmartTravelCard({ title, location, startAt }: { title: string; location
 
 export function TomorrowHomeScreen() {
   const { activeProfile, visibleEvents, visibleTasks, visibleGoals, toggleTask, loading } = useHousehold();
+  const navigatePage = usePageNav();
+  const swipe = useSwipe({
+    onSwipeLeft: () => navigatePage("this-week"),
+    onSwipeRight: () => navigatePage("today"),
+  });
 
   const tomorrow = useMemo(() => {
     const d = new Date();
