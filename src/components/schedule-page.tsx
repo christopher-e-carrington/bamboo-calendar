@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSwipe } from "@/hooks/use-swipe";
 import { useHousehold, type CalendarEvent, type TaskItem } from "@/lib/household-store";
 import { expandEvents } from "@/lib/event-recurrence";
 import { EventDialog } from "./event-dialog";

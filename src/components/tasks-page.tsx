@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSwipe } from "@/hooks/use-swipe";
 import { useHousehold, TIERS, type Tier, type Recurrence } from "@/lib/household-store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
