@@ -194,7 +194,12 @@ export function CalendarView() {
   };
 
   return (
-    <div className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-7xl mx-auto w-full">
+    <div
+      className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-7xl mx-auto w-full touch-pan-y"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+    >
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="inline-flex rounded-full bg-secondary p-1">
           <button
