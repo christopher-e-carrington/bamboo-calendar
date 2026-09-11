@@ -47,7 +47,15 @@ function isSameDay(a: Date, b: Date) {
 }
 
 export function TasksPage() {
-  const { visibleTasks, profiles, activeProfile, toggleTask, addTask, loading } = useHousehold();
+  const { visibleTasks, profiles, activeProfile, familyProfile, toggleTask, addTask, loading } = useHousehold();
+  const [assignees, setAssignees] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (activeProfile) setAssignees([activeProfile.id]);
+  }, [activeProfile?.id]);
+
+  const toggleAssignee = (id: string) =>
+    setAssignees((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   const [tier, setTier] = useState<EditorTab>("onetime");
   const editorTabs: EditorTab[] = ["onetime", ...TIERS];
   const shiftTier = (dir: number) => {
