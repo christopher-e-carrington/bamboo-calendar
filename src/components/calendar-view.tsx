@@ -51,6 +51,9 @@ export function CalendarView() {
   const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
   const [editEvent, setEditEvent] = useState<CalendarEvent | null>(null);
 
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
+
   const findProfile = (id: string) => profiles.find((p) => p.id === id);
 
   const days = useMemo(() => {
