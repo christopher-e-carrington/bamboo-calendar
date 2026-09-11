@@ -47,6 +47,16 @@ function isSameDay(a: Date, b: Date) {
 export function TasksPage() {
   const { visibleTasks, profiles, activeProfile, toggleTask, addTask, loading } = useHousehold();
   const [tier, setTier] = useState<EditorTab>("onetime");
+  const editorTabs: EditorTab[] = ["onetime", ...TIERS];
+  const shiftTier = (dir: number) => {
+    const i = editorTabs.indexOf(tier);
+    const next = editorTabs[Math.min(editorTabs.length - 1, Math.max(0, i + dir))];
+    if (next) setTier(next);
+  };
+  const swipe = useSwipe({
+    onSwipeLeft: () => shiftTier(1),
+    onSwipeRight: () => shiftTier(-1),
+  });
   const [title, setTitle] = useState("");
   
   const [oneTimeDate, setOneTimeDate] = useState<string>(() => new Date().toISOString().slice(0, 10));
@@ -131,7 +141,7 @@ export function TasksPage() {
   const todayLabel = now.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
 
   return (
-    <div className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-7xl mx-auto w-full space-y-6">
+    <div className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-7xl mx-auto w-full space-y-6 touch-pan-y" {...swipe}>
       <header className="flex items-center gap-3">
         <div className="h-10 w-10 rounded-xl bg-primary/10 text-primary grid place-items-center">
           <ListChecks className="h-5 w-5" />
