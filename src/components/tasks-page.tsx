@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Users, ChevronDown } from "lucide-react";
 import { useSwipe } from "@/hooks/use-swipe";
 import { useHousehold, TIERS, type Tier, type Recurrence } from "@/lib/household-store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
