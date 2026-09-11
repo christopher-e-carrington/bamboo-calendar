@@ -299,7 +299,47 @@ export function TasksPage() {
                     </SelectContent>
                   </Select>
                 )}
-                <Button type="submit" disabled={!title.trim() || busy} className="gap-1.5">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button type="button" variant="outline" className="gap-1.5 justify-between min-w-[170px]">
+                      <span className="flex items-center gap-1.5 truncate">
+                        <Users className="h-4 w-4" />
+                        {assigneeLabel}
+                      </span>
+                      <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-64 p-2">
+                    <p className="px-2 pb-2 text-xs text-muted-foreground">Show this to-do on:</p>
+                    <div className="max-h-64 overflow-y-auto space-y-0.5">
+                      {familyProfile && (
+                        <label className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-secondary/60 cursor-pointer">
+                          <Checkbox
+                            checked={assignees.includes(familyProfile.id)}
+                            onCheckedChange={() => toggleAssignee(familyProfile.id)}
+                          />
+                          <span className="text-sm">Shared household page</span>
+                        </label>
+                      )}
+                      {profiles
+                        .filter((p) => p.id !== familyProfile?.id)
+                        .map((p) => (
+                          <label
+                            key={p.id}
+                            className="flex items-center gap-2 rounded-md px-2 py-2 hover:bg-secondary/60 cursor-pointer"
+                          >
+                            <Checkbox
+                              checked={assignees.includes(p.id)}
+                              onCheckedChange={() => toggleAssignee(p.id)}
+                            />
+                            <ProfileAvatar profile={p} size={20} />
+                            <span className="text-sm truncate">{p.nickname || p.name}</span>
+                          </label>
+                        ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <Button type="submit" disabled={!title.trim() || busy || assignees.length === 0} className="gap-1.5">
                   <Plus className="h-4 w-4" /> Add
                 </Button>
               </div>
