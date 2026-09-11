@@ -331,6 +331,7 @@ export function SchedulePage() {
           {/* grid */}
           <div
             ref={gridRef}
+            data-timeline
             className="relative flex-1 touch-none select-none"
             style={{ height }}
             onPointerDown={onPointerDown}
