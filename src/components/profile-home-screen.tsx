@@ -315,6 +315,11 @@ function SmartTravelCard({ title, location, startAt }: { title: string; location
 // ---------- Main screen ----------
 export function ProfileHomeScreen() {
   const { activeProfile, visibleEvents, visibleTasks, visibleGoals, toggleTask, loading } = useHousehold();
+  const navigatePage = usePageNav();
+  const swipe = useSwipe({
+    onSwipeLeft: () => navigatePage("tomorrow"),
+    onSwipeRight: () => navigatePage("calendar"),
+  });
 
   const today = new Date();
 
