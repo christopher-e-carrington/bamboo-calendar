@@ -32,6 +32,7 @@ import { AuthScreen } from "@/components/auth-screen";
 import { OnboardingWizard } from "@/components/onboarding-wizard";
 import { useAuth } from "@/hooks/use-auth";
 import { PageBoundary } from "@/components/page-boundary";
+import { PageNavProvider } from "@/lib/page-nav";
 import { Leaf } from "lucide-react";
 
 export const Route = createFileRoute("/")({
