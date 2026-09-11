@@ -124,6 +124,15 @@ export function TasksPage() {
 
   const findProfile = (id: string) => profiles.find((p) => p.id === id);
 
+  const assigneeLabel =
+    assignees.length === 0
+      ? "Nobody selected"
+      : assignees.length === 1
+        ? assignees[0] === familyProfile?.id
+          ? "Shared"
+          : findProfile(assignees[0]!)?.nickname || findProfile(assignees[0]!)?.name || "1 person"
+        : `${assignees.length} selected`;
+
   const oneTimeItems = visibleTasks
     .filter((x) => (!x.recurrence || x.recurrence === "none") && x.due_at)
     .sort((a, b) => new Date(a.due_at!).getTime() - new Date(b.due_at!).getTime());
