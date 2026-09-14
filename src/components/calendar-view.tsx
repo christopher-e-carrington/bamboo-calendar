@@ -67,18 +67,46 @@ export function CalendarView() {
     rangeStart.setHours(0, 0, 0, 0);
     const rangeEnd = new Date(days[days.length - 1]);
     rangeEnd.setHours(23, 59, 59, 999);
-    return expandEvents(visibleEvents || [], rangeStart, rangeEnd);
+    // widen the start so multi-day events that began earlier still appear
+    const lookBack = new Date(rangeStart);
+    lookBack.setDate(lookBack.getDate() - 366);
+    return expandEvents(visibleEvents || [], lookBack, rangeEnd);
   }, [visibleEvents, days]);
+
+  // Every day an occurrence covers, clipped to [from, to]
+  const daysCovered = (ev: CalendarEvent, from: Date, to: Date): Date[] => {
+    const s = new Date(ev.start_at);
+    if (isNaN(s.getTime())) return [];
+    let e = ev.end_at ? new Date(ev.end_at) : null;
+    if (!e || isNaN(e.getTime()) || +e < +s) e = s;
+    // an end exactly at midnight belongs to the previous day
+    if (+e > +s && e.getHours() === 0 && e.getMinutes() === 0 && e.getSeconds() === 0) {
+      e = new Date(+e - 1000);
+    }
+    let cur = new Date(s.getFullYear(), s.getMonth(), s.getDate());
+    const last = new Date(e.getFullYear(), e.getMonth(), e.getDate());
+    const lo = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+    const hi = new Date(to.getFullYear(), to.getMonth(), to.getDate());
+    const out: Date[] = [];
+    let guard = 0;
+    while (+cur <= +last && guard++ < 400) {
+      if (+cur >= +lo && +cur <= +hi) out.push(new Date(cur));
+      cur = addDays(cur, 1);
+    }
+    return out;
+  };
 
   const eventsByDay = useMemo(() => {
     const m = new Map<string, CalendarEvent[]>();
+    const rangeStart = days[0];
+    const rangeEnd = days[days.length - 1];
     for (const ev of expanded) {
       if (!ev.start_at) continue;
-      const d = new Date(ev.start_at);
-      if (isNaN(d.getTime())) continue;
-      const k = dayKey(d);
-      if (!m.has(k)) m.set(k, []);
-      m.get(k)!.push(ev);
+      for (const d of daysCovered(ev, rangeStart, rangeEnd)) {
+        const k = dayKey(d);
+        if (!m.has(k)) m.set(k, []);
+        m.get(k)!.push(ev);
+      }
     }
     for (const list of m.values()) {
       list.sort((a, b) => {
@@ -88,17 +116,20 @@ export function CalendarView() {
       });
     }
     return m;
-  }, [expanded]);
+  }, [expanded, days]);
 
   const selectedEvents = useMemo(() => {
     const s = new Date(selectedDay);
     s.setHours(0, 0, 0, 0);
     const e = new Date(selectedDay);
     e.setHours(23, 59, 59, 999);
-    return expandEvents(visibleEvents || [], s, e)
-      .filter((ev) => ev.start_at && !isNaN(new Date(ev.start_at).getTime()))
+    const lookBack = new Date(s);
+    lookBack.setDate(lookBack.getDate() - 366);
+    return expandEvents(visibleEvents || [], lookBack, e)
+      .filter((ev) => ev.start_at && daysCovered(ev, s, e).length > 0)
       .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime());
   }, [visibleEvents, selectedDay]);
+
 
 
   const { data: memoryDays } = useQuery({
