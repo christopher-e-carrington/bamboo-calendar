@@ -37,6 +37,29 @@ function dayKey(d: Date) {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
 
+function eventDayBounds(ev: CalendarEvent) {
+  const start = new Date(ev.start_at);
+  if (isNaN(start.getTime())) return null;
+  let end = ev.end_at ? new Date(ev.end_at) : new Date(start);
+  if (isNaN(end.getTime()) || +end < +start) end = new Date(start);
+  if (+end > +start && end.getHours() === 0 && end.getMinutes() === 0 && end.getSeconds() === 0) {
+    end = new Date(+end - 1000);
+  }
+  return {
+    start: new Date(start.getFullYear(), start.getMonth(), start.getDate()),
+    end: new Date(end.getFullYear(), end.getMonth(), end.getDate()),
+  };
+}
+
+type WeekEventSegment = {
+  event: CalendarEvent;
+  startColumn: number;
+  endColumn: number;
+  lane: number;
+  continuesBefore: boolean;
+  continuesAfter: boolean;
+};
+
 
 export function CalendarView() {
   const { user } = useAuth();
@@ -72,6 +95,50 @@ export function CalendarView() {
     lookBack.setDate(lookBack.getDate() - 366);
     return expandEvents(visibleEvents || [], lookBack, rangeEnd);
   }, [visibleEvents, days]);
+
+  const calendarWeeks = useMemo(() => {
+    return Array.from({ length: 6 }, (_, weekIndex) => {
+      const weekDays = days.slice(weekIndex * 7, weekIndex * 7 + 7);
+      const weekStart = new Date(weekDays[0]);
+      const weekEnd = new Date(weekDays[6]);
+      const candidates = expanded
+        .map((event) => ({ event, bounds: eventDayBounds(event) }))
+        .filter(
+          (entry): entry is { event: CalendarEvent; bounds: NonNullable<ReturnType<typeof eventDayBounds>> } =>
+            entry.bounds !== null && +entry.bounds.end >= +weekStart && +entry.bounds.start <= +weekEnd,
+        )
+        .sort((a, b) => {
+          const startDifference = +a.bounds.start - +b.bounds.start;
+          if (startDifference !== 0) return startDifference;
+          return +b.bounds.end - +a.bounds.end;
+        });
+
+      const laneEnds: number[] = [];
+      const segments: WeekEventSegment[] = candidates.map(({ event, bounds }) => {
+        const clippedStart = +bounds.start < +weekStart ? weekStart : bounds.start;
+        const clippedEnd = +bounds.end > +weekEnd ? weekEnd : bounds.end;
+        const startColumn = clippedStart.getDay() + 1;
+        const endColumn = clippedEnd.getDay() + 1;
+        let lane = laneEnds.findIndex((lastColumn) => lastColumn < startColumn);
+        if (lane === -1) {
+          lane = laneEnds.length;
+          laneEnds.push(endColumn);
+        } else {
+          laneEnds[lane] = endColumn;
+        }
+        return {
+          event,
+          startColumn,
+          endColumn,
+          lane,
+          continuesBefore: +bounds.start < +weekStart,
+          continuesAfter: +bounds.end > +weekEnd,
+        };
+      });
+
+      return { weekDays, segments, laneCount: laneEnds.length };
+    });
+  }, [days, expanded]);
 
   // Every day an occurrence covers, clipped to [from, to]
   const daysCovered = (ev: CalendarEvent, from: Date, to: Date): Date[] => {
@@ -260,80 +327,83 @@ export function CalendarView() {
             </div>
           ))}
         </div>
-        <div
-          className={cn(
-            "grid grid-cols-7 auto-rows-[minmax(7rem,1fr)] sm:auto-rows-[minmax(5.5rem,1fr)]",
-          )}
-        >
-          {days.map((d) => {
-            const dayEvents = eventsByDay.get(dayKey(d)) ?? [];
-            const isToday = sameDay(d, new Date());
-            const otherMonth = d.getMonth() !== cursor.getMonth();
-            const limit = 3;
-            return (
-              <button
-                key={dayKey(d)}
-                onClick={() => onDayClick(d)}
-                className={cn(
-                  "group text-left border-r border-b border-border last:border-r-0 p-1.5 sm:p-2 hover:bg-secondary/50 transition-colors relative overflow-hidden",
-                  otherMonth && "bg-muted/30 text-muted-foreground/60",
-                  sameDay(d, selectedDay) && "ring-2 ring-inset ring-primary/60 bg-secondary/40",
-                )}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span
+        <div>
+          {calendarWeeks.map(({ weekDays, segments, laneCount }, weekIndex) => (
+            <div
+              key={dayKey(weekDays[0])}
+              className="grid grid-cols-7 border-b border-border last:border-b-0 min-h-28 sm:min-h-[5.5rem]"
+              style={{ gridTemplateRows: `2.25rem repeat(${Math.max(laneCount, 1)}, minmax(2rem, auto)) 0.375rem` }}
+            >
+              {weekDays.map((d, dayIndex) => {
+                const isToday = sameDay(d, new Date());
+                const otherMonth = d.getMonth() !== cursor.getMonth();
+                return (
+                  <button
+                    key={dayKey(d)}
+                    onClick={() => onDayClick(d)}
+                    aria-label={d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
                     className={cn(
-                      "text-xs sm:text-sm font-medium inline-flex items-center justify-center h-6 w-6 rounded-md bg-card border border-border shadow-sm",
-                      isToday && "bg-primary text-primary-foreground border-primary",
+                      "group relative z-0 flex items-start justify-between border-r border-border p-1.5 text-left transition-colors last:border-r-0 hover:bg-secondary/50 sm:p-2",
+                      otherMonth && "bg-muted/30 text-muted-foreground/60",
+                      sameDay(d, selectedDay) && "ring-2 ring-inset ring-primary/60 bg-secondary/40",
                     )}
+                    style={{ gridColumn: dayIndex + 1, gridRow: "1 / -1" }}
                   >
-                    {d.getDate()}
-                  </span>
-                  <div className="flex items-center gap-1">
+                    <span
+                      className={cn(
+                        "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border bg-card text-xs font-medium shadow-sm sm:text-sm",
+                        isToday && "border-primary bg-primary text-primary-foreground",
+                      )}
+                    >
+                      {d.getDate()}
+                    </span>
                     {hasMemory(d) && (
                       <span
                         title="Has memories"
-                        className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-accent text-accent-foreground"
+                        className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground"
                       >
                         <ImageIcon className="h-2.5 w-2.5" />
                       </span>
                     )}
+                  </button>
+                );
+              })}
 
-                  </div>
-                </div>
-                <ul className="space-y-1">
-                  {dayEvents.slice(0, limit).map((ev) => {
-                    const ids = ev.profile_ids?.length ? ev.profile_ids : [ev.profile_id];
-                    const primary = findProfile(ids[0]);
-                    return (
-                      <li
-                        key={ev.id}
-                         className="min-h-8 overflow-hidden rounded-md px-1 py-1 text-[10px] leading-tight sm:min-h-0 sm:px-1.5 sm:py-0.5 sm:text-[11px]"
-                        style={{
-                          background: primary
-                            ? `color-mix(in oklab, ${primary.color} 22%, transparent)`
-                            : undefined,
-                          borderLeft: primary ? `2px solid ${primary.color}` : undefined,
-                        }}
-                        title={`${ev.title} · ${fmtTime(ev.start_at)}`}
-                      >
-                         <span className="line-clamp-2 font-medium sm:block sm:truncate">
-                          {ev.contact_id && <Cake className="inline h-2.5 w-2.5 mr-0.5 -mt-0.5" />}
-                          {ev.title}
-                        </span>
-                         <span className="hidden sm:inline">{renderProfileDots(ev)}</span>
-                      </li>
-                    );
-                  })}
-                  {dayEvents.length > limit && (
-                    <li className="text-[10px] text-muted-foreground px-1.5">
-                      +{dayEvents.length - limit} more
-                    </li>
-                  )}
-                </ul>
-              </button>
-            );
-          })}
+              {segments.map((segment) => {
+                const ids = segment.event.profile_ids?.length
+                  ? segment.event.profile_ids
+                  : [segment.event.profile_id];
+                const primary = findProfile(ids[0]);
+                return (
+                  <button
+                    key={`${segment.event.id}-${weekIndex}`}
+                    type="button"
+                    onClick={() => setDetailEvent(segment.event)}
+                    className={cn(
+                      "relative z-10 mx-0 min-w-0 self-stretch overflow-hidden px-1.5 py-1 text-left text-[10px] font-medium leading-tight shadow-sm transition-[filter] hover:brightness-95 sm:text-[11px]",
+                      !segment.continuesBefore && "ml-1 rounded-l-md border-l-2",
+                      !segment.continuesAfter && "mr-1 rounded-r-md",
+                    )}
+                    style={{
+                      gridColumn: `${segment.startColumn} / ${segment.endColumn + 1}`,
+                      gridRow: segment.lane + 2,
+                      background: primary
+                        ? `color-mix(in oklab, ${primary.color} 24%, var(--card))`
+                        : undefined,
+                      borderLeftColor: primary?.color,
+                    }}
+                    title={`${segment.event.title} · ${fmtTime(segment.event.start_at)}`}
+                  >
+                    <span className="line-clamp-2 sm:block sm:truncate">
+                      {segment.event.contact_id && <Cake className="mr-0.5 -mt-0.5 inline h-2.5 w-2.5" />}
+                      {segment.event.title}
+                      <span className="hidden sm:inline">{renderProfileDots(segment.event)}</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
       </div>
 
