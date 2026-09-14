@@ -163,28 +163,6 @@ export function CalendarView() {
     return out;
   };
 
-  const eventsByDay = useMemo(() => {
-    const m = new Map<string, CalendarEvent[]>();
-    const rangeStart = days[0];
-    const rangeEnd = days[days.length - 1];
-    for (const ev of expanded) {
-      if (!ev.start_at) continue;
-      for (const d of daysCovered(ev, rangeStart, rangeEnd)) {
-        const k = dayKey(d);
-        if (!m.has(k)) m.set(k, []);
-        m.get(k)!.push(ev);
-      }
-    }
-    for (const list of m.values()) {
-      list.sort((a, b) => {
-        const da = new Date(a.start_at).getTime();
-        const db = new Date(b.start_at).getTime();
-        return (isNaN(da) ? 0 : da) - (isNaN(db) ? 0 : db);
-      });
-    }
-    return m;
-  }, [expanded, days]);
-
   const selectedEvents = useMemo(() => {
     const s = new Date(selectedDay);
     s.setHours(0, 0, 0, 0);
@@ -501,14 +479,14 @@ export function CalendarView() {
                 <div className="flex flex-wrap gap-1 pt-1">
                   {(detailEvent.profile_ids?.length ? detailEvent.profile_ids : [detailEvent.profile_id])
                     .map((id) => findProfile(id))
-                    .filter(Boolean)
+                    .filter((profile): profile is NonNullable<typeof profile> => Boolean(profile))
                     .map((p) => (
                       <span
-                        key={p!.id}
+                        key={p.id}
                         className="text-[11px] rounded-full px-2 py-0.5 text-white"
-                        style={{ background: p!.color }}
+                        style={{ background: p.color }}
                       >
-                        {p!.name}
+                        {p.name}
                       </span>
                     ))}
                 </div>
