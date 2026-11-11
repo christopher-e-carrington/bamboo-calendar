@@ -476,6 +476,7 @@ export type Database = {
           claimed_user_id: string | null
           color: string
           created_at: string
+          has_pin: boolean
           id: string
           initials: string
           name: string
@@ -490,6 +491,7 @@ export type Database = {
           claimed_user_id?: string | null
           color?: string
           created_at?: string
+          has_pin?: boolean
           id?: string
           initials?: string
           name: string
@@ -504,6 +506,7 @@ export type Database = {
           claimed_user_id?: string | null
           color?: string
           created_at?: string
+          has_pin?: boolean
           id?: string
           initials?: string
           name?: string
@@ -1403,6 +1406,14 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      set_profile_pin: {
+        Args: { _pin: string; _profile: string }
+        Returns: undefined
+      }
+      verify_profile_pin: {
+        Args: { _pin: string; _profile: string }
+        Returns: boolean
       }
     }
     Enums: {
