@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Delete } from "lucide-react";
 import { ProfileAvatar } from "./profile-avatar";
 import type { Profile } from "@/lib/household-store";
+import { supabase } from "@/integrations/supabase/client";
 
 export function PinDialog({
   profile,
@@ -29,15 +30,24 @@ export function PinDialog({
   useEffect(() => {
     if (!profile) return;
     if (pin.length === 4) {
-      if (pin === profile.pin) {
-        onSuccess();
-      } else {
-        setError(true);
-        setTimeout(() => {
-          setPin("");
-          setError(false);
-        }, 600);
-      }
+      let cancelled = false;
+      supabase
+        .rpc("verify_profile_pin" as never, { _profile: profile.id, _pin: pin } as never)
+        .then(({ data }) => {
+          if (cancelled) return;
+          if (data === true) {
+            onSuccess();
+          } else {
+            setError(true);
+            setTimeout(() => {
+              setPin("");
+              setError(false);
+            }, 600);
+          }
+        });
+      return () => {
+        cancelled = true;
+      };
     }
   }, [pin, profile, onSuccess]);
 
