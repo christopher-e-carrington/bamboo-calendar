@@ -15,7 +15,7 @@ export function ProfileSwitcher() {
 
   const choose = (p: Profile) => {
     setOpen(false);
-    if (p.pin && p.id !== activeProfileId) {
+    if (p.has_pin && p.id !== activeProfileId) {
       setPinFor(p);
       setPinOpen(true);
     } else {
@@ -52,7 +52,7 @@ export function ProfileSwitcher() {
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium flex items-center gap-1.5">
                       {p.name}
-                      {p.pin && <Lock className="h-3 w-3 text-muted-foreground" />}
+                      {p.has_pin && <Lock className="h-3 w-3 text-muted-foreground" />}
                     </div>
                   </div>
                   {active && <Check className="h-4 w-4 text-primary" />}

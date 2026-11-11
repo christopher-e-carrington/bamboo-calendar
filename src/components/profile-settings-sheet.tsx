@@ -350,7 +350,7 @@ function PinRow({ profile }: { profile: Profile }) {
         <div className="flex-1 min-w-0">
           <div className="text-sm font-medium truncate">{profile.name}</div>
           <div className="text-xs text-muted-foreground capitalize flex items-center gap-1">
-            {profile.pin ? (
+            {profile.has_pin ? (
               <>
                 <Lock className="h-3 w-3" /> Protected
               </>
@@ -367,14 +367,14 @@ function PinRow({ profile }: { profile: Profile }) {
           type="password"
           inputMode="numeric"
           maxLength={4}
-          placeholder={profile.pin ? "Update 4-digit PIN" : "Set 4-digit PIN"}
+          placeholder={profile.has_pin ? "Update 4-digit PIN" : "Set 4-digit PIN"}
           value={pin}
           onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
         />
         <Button size="sm" onClick={save} disabled={busy || pin.length !== 4}>
           Save
         </Button>
-        {profile.pin && (
+        {profile.has_pin && (
           <Button size="sm" variant="ghost" onClick={clear} disabled={busy}>
             Remove
           </Button>

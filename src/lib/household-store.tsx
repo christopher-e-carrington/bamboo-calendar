@@ -18,6 +18,7 @@ export interface Profile {
   color: string;
   initials: string;
   pin?: string | null;
+  has_pin?: boolean;
   sort_order: number;
   birthday?: string | null;
 }
@@ -179,7 +180,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
     queryFn: async (): Promise<Profile[]> => {
       const { data, error } = await supabase
         .from("household_profiles")
-        .select("*")
+        .select("id, owner_id, name, role, color, initials, sort_order, created_at, birthday, nickname, claimed_user_id, has_pin")
         .eq("owner_id", householdId)
         .order("sort_order", { ascending: true });
       if (error) throw error;
@@ -443,7 +444,7 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
 
   const setPinMut = useMutation({
     mutationFn: async ({ id, pin }: { id: string; pin: string | null }) => {
-      const { error } = await supabase.from("household_profiles").update({ pin }).eq("id", id);
+      const { error } = await supabase.rpc("set_profile_pin" as never, { _profile: id, _pin: pin ?? "" } as never);
       if (error) throw error;
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ["profiles", householdId] }),
