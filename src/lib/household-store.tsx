@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { pushEventToGoogle, deleteEventFromGoogle } from "@/lib/google-calendar.functions";
 import type { User } from "@supabase/supabase-js";
 
 const fireAndForget = (p: Promise<unknown>) => {
