@@ -14,16 +14,12 @@ export const Route = createFileRoute("/api/public/hooks/push-dispatch")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const key = request.headers.get("apikey");
-        const allowed = [
-          process.env["SUPABASE_ANON_KEY"],
-          process.env["SUPABASE_PUBLISHABLE_KEY"],
-          process.env["VITE_SUPABASE_PUBLISHABLE_KEY"],
-        ].filter(Boolean);
-        if (!key || !allowed.includes(key)) {
+        // Only the scheduled job (which holds the server key) may trigger dispatch.
+        const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"];
+        const auth = request.headers.get("authorization") ?? "";
+        if (!serviceKey || auth !== `Bearer ${serviceKey}`) {
           return new Response("Unauthorized", { status: 401 });
         }
-
 
         const supabase = createClient(
           process.env["SUPABASE_URL"]!,
