@@ -475,9 +475,6 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       if (error) throw error;
       return data?.id as string | undefined;
     },
-    onSuccess: (id) => {
-      if (id) fireAndForget(pushEventToGoogle({ data: { eventId: id } }));
-    },
     onSettled: () => qc.invalidateQueries({ queryKey: ["events", householdId] }),
   });
 
@@ -505,9 +502,6 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
       const { error } = await supabase.from("events").update(row as any).eq("id", id);
       if (error) throw error;
       return id;
-    },
-    onSuccess: (id) => {
-      if (id) fireAndForget(pushEventToGoogle({ data: { eventId: id } }));
     },
     onSettled: () => qc.invalidateQueries({ queryKey: ["events", householdId] }),
   });
@@ -537,13 +531,6 @@ export function HouseholdProvider({ children, user }: { children: ReactNode; use
 
   const deleteEventMut = useMutation({
     mutationFn: async (id: string) => {
-      // Best-effort: delete on Google first; the mapping row cascades when the
-      // event row is removed below, so we need to call this before the delete.
-      try {
-        await deleteEventFromGoogle({ data: { eventId: id } });
-      } catch (e) {
-        console.warn("[google-sync] delete failed", e);
-      }
       const { error } = await supabase.from("events").delete().eq("id", id);
       if (error) throw error;
     },
