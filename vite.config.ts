@@ -24,13 +24,14 @@ export default defineConfig({
         filename: "sw.js",
         manifest: false,
         workbox: {
+          navigateFallbackDenylist: [/^\/~oauth(?:\/|$)/, /^\/api\//],
           // Keeps the existing push/notification worker running inside the same worker.
           importScripts: ["/notif-sw.js"],
           globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest,woff2}"],
           cleanupOutdatedCaches: true,
           runtimeCaching: [
             {
-              urlPattern: ({ request }) => request.mode === "navigate",
+              urlPattern: ({ request, url }) => request.mode === "navigate" && !url.pathname.startsWith("/~oauth") && !url.pathname.startsWith("/api/"),
               handler: "NetworkFirst",
               options: { cacheName: "bamboo-html", networkTimeoutSeconds: 5 },
             },

@@ -90,15 +90,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
       { name: "description", content: "Bamboo Calendar is a cross-platform web app for managing schedules and tasks with a calming, nature-inspired theme." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
+      { property: "og:title", content: "Bamboo Calendar — Household Planner" },
       { property: "og:description", content: "Bamboo Calendar is a cross-platform web app for managing schedules and tasks with a calming, nature-inspired theme." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
+      { name: "twitter:title", content: "Bamboo Calendar — Household Planner" },
       { name: "twitter:description", content: "Bamboo Calendar is a cross-platform web app for managing family schedules and tasks with a calming, nature-inspired theme." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/71b807fe-d310-439a-87a4-c9375838333b/id-preview-db8353bc--dd00767a-558d-4382-ae22-cc067f9b1d9e.lovable.app-1780193450175.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/71b807fe-d310-439a-87a4-c9375838333b/id-preview-db8353bc--dd00767a-558d-4382-ae22-cc067f9b1d9e.lovable.app-1780193450175.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

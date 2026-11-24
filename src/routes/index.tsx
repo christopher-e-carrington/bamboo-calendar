@@ -45,6 +45,8 @@ export const Route = createFileRoute("/")({
           "A calming, nature-inspired calendar with multi-profile household accounts, shared events, tasks and PIN-protected profile switching.",
       },
       { property: "og:title", content: "Bamboo Calendar" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       {
         property: "og:description",
         content: "Multi-profile household calendar with a sage and bamboo aesthetic.",

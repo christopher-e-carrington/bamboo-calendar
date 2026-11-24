@@ -14,7 +14,14 @@ import { signupFromInvite } from "@/lib/invite.functions";
 
 export const Route = createFileRoute("/invite/$token")({
   head: () => ({
-    meta: [{ title: "You're invited — Bamboo" }],
+    meta: [
+      { title: "You're invited — Bamboo Calendar" },
+      { name: "description", content: "Accept your Bamboo Calendar household invitation and set up your personal profile." },
+      { property: "og:title", content: "You're invited — Bamboo Calendar" },
+      { property: "og:description", content: "Join your household in Bamboo Calendar with your own sign-in and profile." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
   }),
   component: InvitePage,
 });

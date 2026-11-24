@@ -1355,6 +1355,7 @@ export type Database = {
         }
         Returns: string
       }
+      cleanup_account_data: { Args: { _user_id: string }; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean

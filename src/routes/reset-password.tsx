@@ -8,6 +8,14 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/reset-password")({
+  head: () => ({ meta: [
+    { title: "Reset password — Bamboo Calendar" },
+    { name: "description", content: "Securely reset your Bamboo Calendar account password." },
+    { property: "og:title", content: "Reset password — Bamboo Calendar" },
+    { property: "og:description", content: "Recover access to your Bamboo Calendar household account." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   ssr: false,
   component: ResetPasswordPage,
 });

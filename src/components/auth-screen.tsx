@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import bambooHero from "@/assets/bamboo-hero.jpg";
+import appleWhite from "@/assets/apple-sign-in-white.svg.asset.json";
+import appleBlack from "@/assets/apple-sign-in-black.svg.asset.json";
+import { InformationLinks } from "@/components/information-layout";
 
 type Mode = "signin" | "signup" | "forgot";
 
@@ -51,13 +54,19 @@ export function AuthScreen() {
     }
   };
 
-  const google = async () => {
+  const socialSignIn = async (provider: "google" | "apple") => {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      toast.error("Google sign-in failed", { description: String(result.error) });
+    try {
+      const result = await lovable.auth.signInWithOAuth(provider, {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) throw result.error;
+      if ("redirected" in result && result.redirected) return;
+    } catch (error) {
+      toast.error(`${provider === "apple" ? "Apple" : "Google"} sign-in failed`, {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
       setLoading(false);
     }
   };
@@ -115,14 +124,19 @@ export function AuthScreen() {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full mt-6 gap-2"
-                onClick={google}
+                className="w-full mt-6 h-11 gap-2"
+                onClick={() => void socialSignIn("google")}
                 disabled={loading}
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden>
                   <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.46-1.74 4.28-5.5 4.28-3.32 0-6.02-2.74-6.02-6.12S8.68 6.14 12 6.14c1.88 0 3.14.8 3.86 1.48l2.64-2.54C16.86 3.6 14.66 2.7 12 2.7 6.94 2.7 2.84 6.8 2.84 11.86c0 5.06 4.1 9.16 9.16 9.16 5.28 0 8.78-3.7 8.78-8.92 0-.6-.06-1.06-.14-1.5H12z" />
                 </svg>
                 Continue with Google
+              </Button>
+              <Button type="button" className="apple-sign-in w-full mt-3" onClick={() => void socialSignIn("apple")} disabled={loading}>
+                <img src={appleWhite.url} alt="" className="apple-logo-light" />
+                <img src={appleBlack.url} alt="" className="apple-logo-dark" />
+                Continue with Apple
               </Button>
 
               <div className="flex items-center gap-3 my-5 text-xs text-muted-foreground">
@@ -203,6 +217,7 @@ export function AuthScreen() {
               </>
             )}
           </p>
+          <InformationLinks className="mt-6" />
         </div>
       </main>
     </div>
