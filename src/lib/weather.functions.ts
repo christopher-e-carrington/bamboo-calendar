@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type WeatherKind = "sun" | "cloudSun" | "cloud" | "rain" | "snow" | "storm" | "fog";
 
@@ -34,6 +35,7 @@ function dayLabel(date: Date, offset: number) {
 }
 
 export const getWeather = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .inputValidator(
     z.object({
       lat: z.number().min(-90).max(90),
@@ -107,6 +109,7 @@ export const getWeather = createServerFn({ method: "GET" })
   });
 
 export const geocodeLocation = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
   .inputValidator(z.object({ query: z.string().min(1).max(120) }))
   .handler(async ({ data }) => {
     const key = process.env.OPENWEATHER_API_KEY;

@@ -43,6 +43,13 @@
       "when": 1795489517584,
       "tag": "0005_restrict_subscription_record_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795491844208,
+      "tag": "0006_restrict_push_subscription_households",
+      "breakpoints": true
     }
   ]
 }
