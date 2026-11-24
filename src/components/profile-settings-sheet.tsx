@@ -5,12 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useHousehold, countHouseholdUsers, MAX_HOUSEHOLD_USERS, type Profile } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
-import { Lock, LockOpen, Settings2, Check, Palette, ChevronDown, User, Eye, Shield, LayoutGrid, Users as UsersIcon, Share2, Plus, CalendarCheck, MonitorSmartphone, Bell } from "lucide-react";
+import { Lock, LockOpen, Settings2, Check, Palette, ChevronDown, User, Eye, Shield, LayoutGrid, Users as UsersIcon, Share2, Plus, MonitorSmartphone, Bell } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useNotifPrefs, setPref, type NotifPrefs, type NotifCategory } from "@/lib/notification-prefs";
 import { useDevicePush } from "@/lib/device-push";
 import { DISPLAYS, useDisplay, type DisplayId } from "@/lib/display-store";
-import { GoogleCalendarMenu } from "./google-calendar-settings";
 import { toast } from "sonner";
 import { THEMES, useTheme, type ThemeId, type CustomThemeColors } from "@/lib/theme-store";
 import { Trash2, Sparkles, Pencil, PanelLeft, Star, Home } from "lucide-react";
@@ -1456,9 +1455,6 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
           </SettingsSection>
           <SettingsSection title="Notifications" icon={Bell}>
             <NotificationsMenu />
-          </SettingsSection>
-          <SettingsSection title="Google Calendar" icon={CalendarCheck}>
-            <GoogleCalendarMenu />
           </SettingsSection>
           <SettingsSection title="Profile PINs" icon={Shield}>
             <div className="space-y-3">
