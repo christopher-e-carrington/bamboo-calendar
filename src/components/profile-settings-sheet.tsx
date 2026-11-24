@@ -34,6 +34,7 @@ import {
 import { ColorScroller } from "@/components/ui/color-scroller";
 import { AccountDeletionPanel } from "@/components/account-deletion-panel";
 import { InformationLinks } from "@/components/information-layout";
+import { HouseholdSubscriptionMenu } from "@/components/household-subscription-menu";
 
 function randomToken() {
   const bytes = new Uint8Array(24);
@@ -1376,6 +1377,9 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
                 <PinRow key={p.id} profile={p} />
               ))}
             </div>
+          </SettingsSection>
+          <SettingsSection title="Subscription" icon={Shield}>
+            <HouseholdSubscriptionMenu />
           </SettingsSection>
           <SettingsSection title="Delete account" icon={Trash2}>
             <DeleteAccountMenu />

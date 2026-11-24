@@ -1,0 +1,2 @@
+REVOKE ALL ON TABLE public.household_access_allowances, public.household_store_entitlements, public.household_subscription_settings FROM anon, authenticated;
+GRANT ALL ON TABLE public.household_access_allowances, public.household_store_entitlements, public.household_subscription_settings TO service_role;

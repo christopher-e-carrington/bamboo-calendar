@@ -29,6 +29,20 @@
       "when": 1795488141673,
       "tag": "0003_reliable_account_data_cleanup",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795489431271,
+      "tag": "0004_household_subscription_readiness",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795489517584,
+      "tag": "0005_restrict_subscription_record_grants",
+      "breakpoints": true
     }
   ]
 }

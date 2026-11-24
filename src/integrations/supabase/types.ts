@@ -393,6 +393,27 @@ export type Database = {
         }
         Relationships: []
       }
+      household_access_allowances: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          household_id: string
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          household_id: string
+          reason: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          household_id?: string
+          reason?: string
+        }
+        Relationships: []
+      }
       household_invitations: {
         Row: {
           accepted_at: string | null
@@ -515,6 +536,51 @@ export type Database = {
           pin?: string | null
           role?: string
           sort_order?: number
+        }
+        Relationships: []
+      }
+      household_store_entitlements: {
+        Row: {
+          expires_at: string
+          household_id: string
+          status: string
+          store: string
+          updated_at: string
+          verified_at: string
+          will_renew: boolean
+        }
+        Insert: {
+          expires_at: string
+          household_id: string
+          status: string
+          store: string
+          updated_at?: string
+          verified_at: string
+          will_renew?: boolean
+        }
+        Update: {
+          expires_at?: string
+          household_id?: string
+          status?: string
+          store?: string
+          updated_at?: string
+          verified_at?: string
+          will_renew?: boolean
+        }
+        Relationships: []
+      }
+      household_subscription_settings: {
+        Row: {
+          enforcement_enabled: boolean
+          id: boolean
+        }
+        Insert: {
+          enforcement_enabled?: boolean
+          id?: boolean
+        }
+        Update: {
+          enforcement_enabled?: boolean
+          id?: boolean
         }
         Relationships: []
       }
@@ -1379,6 +1445,7 @@ export type Database = {
           status: string
         }[]
       }
+      get_my_household_subscription: { Args: never; Returns: Json }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean

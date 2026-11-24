@@ -9,7 +9,7 @@ import { installChunkRecovery } from "./chunk-recovery";
 let initialised = false;
 
 /** Query keys that must never be written to disk. */
-const SENSITIVE = ["passwords", "documents"];
+const SENSITIVE = ["passwords", "documents", "household-subscription"];
 
 export function initOffline(queryClient: QueryClient) {
   if (initialised || typeof window === "undefined") return;
