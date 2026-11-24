@@ -9,6 +9,7 @@ import articBg from "@/assets/artic.png.asset.json";
 import stormBg from "@/assets/storm.png.asset.json";
 import dawnBg from "@/assets/dawn.png.asset.json";
 import saraBg from "@/assets/sara.jpg.asset.json";
+import { phoneBarColorScheme } from "@/lib/phone-bar-colors";
 
 export const THEMES = [
   { id: "parchment", name: "Parchment", description: "Warm cream, bamboo greens. The original.", swatches: ["#f6f1e4", "#7a9a72", "#c2a878", "#4a5a3c"], barColor: "#8FA97A" },
@@ -278,17 +279,6 @@ const ThemeContext = createContext<{
   deleteCustomTheme: async () => {},
 });
 
-function setThemeColorMeta(color: string) {
-  if (typeof document === "undefined") return;
-  let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
-  if (!meta) {
-    meta = document.createElement("meta");
-    meta.name = "theme-color";
-    document.head.appendChild(meta);
-  }
-  meta.content = color;
-}
-
 function applyTheme(theme: ThemeId, customs: CustomTheme[]) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
@@ -304,14 +294,12 @@ function applyTheme(theme: ThemeId, customs: CustomTheme[]) {
       opacity: custom.sidebarOpacity ?? null,
     });
     if (custom.backgroundImage) applyBackgroundImage(custom.backgroundImage);
-    setThemeColorMeta(custom.colors.background);
   } else {
     const builtIn = (THEMES.find((t) => t.id === theme)?.id ?? DEFAULT_THEME) as BuiltInThemeId;
     root.classList.add(`theme-${builtIn}`);
     root.classList.toggle("dark", builtIn === "dark" || builtIn === "aura" || builtIn === "leather" || builtIn === "storm");
     const bg = BUILTIN_BACKGROUNDS[builtIn];
     if (bg) applyBackgroundImage(bg);
-    setThemeColorMeta(THEMES.find((t) => t.id === builtIn)?.barColor ?? "#8FA97A");
   }
 }
 
@@ -354,6 +342,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<ThemeId>(DEFAULT_THEME);
   const [defaultTheme, setDefaultThemeState] = useState<ThemeId | null>(null);
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
+  const barColor = customThemes.find((item) => item.id === theme)?.colors.background
+    ?? THEMES.find((item) => item.id === theme)?.barColor
+    ?? THEMES[0].barColor;
 
   const refresh = useCallback(async () => {
     const { data, error } = await supabase
@@ -553,6 +544,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         deleteCustomTheme,
       }}
     >
+      {/* React owns these head tags so route renders cannot restore a stale color. */}
+      <meta name="theme-color" content={barColor} />
+      <meta name="color-scheme" content={phoneBarColorScheme(barColor)} />
       {children}
     </ThemeContext.Provider>
   );
