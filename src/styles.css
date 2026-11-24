@@ -541,6 +541,73 @@
   --sidebar-ring: oklch(0.68 0.07 75);
 }
 
+
+/* Sara — mid-2000s Apple: brushed aluminum, glossy aqua, airy white */
+.theme-sara {
+  --radius: 0.625rem;
+  --cream: oklch(0.975 0.004 250);
+  --sage: oklch(0.62 0.15 250);
+  --sage-deep: oklch(0.5 0.16 252);
+  --bamboo: oklch(0.6 0.16 250);
+  --bamboo-light: oklch(0.9 0.04 245);
+  --wood: oklch(0.7 0.01 250);
+
+  --background: oklch(0.955 0.004 250);
+  --foreground: oklch(0.22 0.006 260);
+  --card: oklch(0.995 0.002 250 / 94%);
+  --card-foreground: oklch(0.22 0.006 260);
+  --popover: oklch(0.995 0.002 250 / 98%);
+  --popover-foreground: oklch(0.22 0.006 260);
+  --primary: oklch(0.58 0.17 252);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.93 0.006 250);
+  --secondary-foreground: oklch(0.28 0.01 255);
+  --muted: oklch(0.94 0.005 250);
+  --muted-foreground: oklch(0.5 0.01 255);
+  --accent: oklch(0.91 0.04 245);
+  --accent-foreground: oklch(0.32 0.1 252);
+  --border: oklch(0.86 0.006 250);
+  --input: oklch(0.85 0.008 250);
+  --ring: oklch(0.62 0.16 250);
+
+  --sidebar: oklch(0.93 0.005 250 / 92%);
+  --sidebar-foreground: oklch(0.24 0.008 260);
+  --sidebar-primary: oklch(0.58 0.17 252);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.88 0.04 245);
+  --sidebar-accent-foreground: oklch(0.3 0.1 252);
+  --sidebar-border: oklch(0.84 0.006 250);
+  --sidebar-ring: oklch(0.62 0.16 250);
+  --font-sans: "Lucida Grande", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.theme-sara body { font-family: var(--font-sans); }
+.theme-sara .font-display, .theme-sara h1, .theme-sara h2, .theme-sara h3, .theme-sara h4 {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+/* Soft studio backdrop with faint brushed-metal grain */
+.theme-sara #bamboo-bg-layer {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% -10%, oklch(1 0 0) 0%, transparent 70%),
+    repeating-linear-gradient(90deg, oklch(0.5 0 0 / 2.5%) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, oklch(0.985 0.003 250) 0%, oklch(0.93 0.006 250) 100%);
+}
+.theme-sara .bamboo-card {
+  box-shadow: inset 0 1px 0 oklch(1 0 0), 0 1px 2px oklch(0.3 0.01 250 / 8%), 0 18px 44px -26px oklch(0.3 0.02 250 / 30%);
+}
+/* Glossy Aqua primary buttons */
+.theme-sara .bg-primary {
+  background-image: linear-gradient(180deg, oklch(0.78 0.11 245) 0%, oklch(0.62 0.16 250) 50%, oklch(0.55 0.17 252) 51%, oklch(0.64 0.16 248) 100%);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 45%), 0 1px 2px oklch(0.3 0.1 252 / 35%);
+}
+/* Aluminum-style secondary tiles */
+.theme-sara .bg-card.rounded-full, .theme-sara button.bg-card {
+  background-image: linear-gradient(180deg, oklch(1 0 0) 0%, oklch(0.94 0.004 250) 100%);
+  box-shadow: inset 0 1px 0 oklch(1 0 0), 0 1px 2px oklch(0.3 0.01 250 / 14%);
+}
+
 /* ============================================================
    Display profiles — reformat the whole app per device profile.
    Set on <html data-display="..."> by DisplayProvider. Kept

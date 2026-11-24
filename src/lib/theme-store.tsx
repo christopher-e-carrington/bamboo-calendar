@@ -17,6 +17,7 @@ export const THEMES = [
   { id: "artic", name: "Artic", description: "Frosted bamboo in an arctic mist.", swatches: ["#e8f4f4", "#4a8a8a", "#a0d0d0", "#1a3a3a"] },
   { id: "storm", name: "Storm", description: "Rain-soaked bamboo under a steel-grey sky.", swatches: ["#1a2629", "#4a6a6a", "#7a9a9a", "#c8d8d8"] },
   { id: "dawn", name: "Dawn", description: "Misty bamboo bathed in soft golden dawn light.", swatches: ["#f5e6d8", "#c4a878", "#8aaa90", "#5a7a72"] },
+  { id: "sara", name: "Sara", description: "Brushed aluminum, glossy aqua blue, and airy white space.", swatches: ["#f2f4f7", "#d5d9df", "#2f7fd8", "#1d1d1f"] },
   { id: "aura", name: "Aura", description: "Northern lights over moonlit bamboo.", swatches: ["#0f1b3d", "#4ade9e", "#a78bfa", "#5eead4"] },
   { id: "light", name: "Light", description: "Material light. Clean and neutral.", swatches: ["#ffffff", "#f5f5f5", "#1976d2", "#212121"] },
   { id: "dark", name: "Dark", description: "Material dark. Easy on the eyes.", swatches: ["#121212", "#1e1e1e", "#90caf9", "#e0e0e0"] },
