@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useLayoutEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight, Plus, Cake, Image as ImageIcon, Pencil } fro
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { EventDialog } from "./event-dialog";
 import { cn } from "@/lib/utils";
+import { expandedCalendarWeekHeight } from "@/lib/calendar-expansion";
 
 function startOfWeek(d: Date) {
   const x = new Date(d);
@@ -73,6 +74,9 @@ export function CalendarView() {
   });
   const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
   const [editEvent, setEditEvent] = useState<CalendarEvent | null>(null);
+  const [calendarExpanded, setCalendarExpanded] = useState(false);
+  const [expandedHeights, setExpandedHeights] = useState<number[]>([]);
+  const calendarGridRef = useRef<HTMLDivElement>(null);
 
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
   const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
@@ -139,6 +143,40 @@ export function CalendarView() {
       return { weekDays, segments, laneCount: laneEnds.length };
     });
   }, [days, expanded]);
+
+  useLayoutEffect(() => {
+    const grid = calendarGridRef.current;
+    if (!calendarExpanded || !grid) return;
+    const measure = () => {
+      const heights = Array.from(grid.children).map((week) => {
+        const clone = week.cloneNode(true) as HTMLElement;
+        clone.style.position = "fixed";
+        clone.style.left = "-10000px";
+        clone.style.visibility = "hidden";
+        clone.style.width = `${week.getBoundingClientRect().width}px`;
+        clone.style.height = "auto";
+        const lanes = Number(week.getAttribute("data-lanes")) || 1;
+        clone.style.gridTemplateRows = `2.25rem repeat(${lanes}, minmax(2rem, auto)) 0.375rem`;
+        clone.querySelectorAll<HTMLElement>("[data-event-title]").forEach((title) => {
+          title.className = "line-clamp-2 sm:block sm:truncate";
+          title.removeAttribute("style");
+        });
+        document.body.appendChild(clone);
+        const normalHeight = clone.getBoundingClientRect().height;
+        clone.querySelectorAll<HTMLElement>("[data-event-title]").forEach((title) => {
+          title.className = "block whitespace-normal break-words";
+        });
+        const contentHeight = clone.getBoundingClientRect().height;
+        clone.remove();
+        return expandedCalendarWeekHeight(normalHeight, contentHeight);
+      });
+      setExpandedHeights(heights);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(grid);
+    return () => observer.disconnect();
+  }, [calendarExpanded, calendarWeeks, loading, activeProfile]);
 
   // Every day an occurrence covers, clipped to [from, to]
   const daysCovered = (ev: CalendarEvent, from: Date, to: Date): Date[] => {
@@ -292,6 +330,9 @@ export function CalendarView() {
           <ChevronRight className="h-4 w-4" />
         </Button>
         <Button variant="ghost" size="sm" onClick={() => setCursor(new Date())}>Today</Button>
+        <Button variant="ghost" size="sm" aria-expanded={calendarExpanded} aria-controls="month-calendar-grid" onClick={() => setCalendarExpanded((value) => !value)}>
+          {calendarExpanded ? "Collapse" : "Expand"}
+        </Button>
         <div className="inline-flex items-center rounded-lg bg-card border border-border px-3 py-1 shadow-sm">
           <h1 className="font-display text-base sm:text-xl min-w-0 truncate">{headerLabel}</h1>
         </div>
@@ -305,12 +346,16 @@ export function CalendarView() {
             </div>
           ))}
         </div>
-        <div>
+        <div id="month-calendar-grid" ref={calendarGridRef}>
           {calendarWeeks.map(({ weekDays, segments, laneCount }, weekIndex) => (
             <div
               key={dayKey(weekDays[0])}
+              data-lanes={Math.max(laneCount, 1)}
               className="grid grid-cols-7 border-b border-border last:border-b-0 min-h-28 sm:min-h-[5.5rem]"
-              style={{ gridTemplateRows: `2.25rem repeat(${Math.max(laneCount, 1)}, minmax(2rem, auto)) 0.375rem` }}
+              style={{
+                height: calendarExpanded ? expandedHeights[weekIndex] : undefined,
+                gridTemplateRows: `2.25rem repeat(${Math.max(laneCount, 1)}, minmax(2rem, ${calendarExpanded ? "1fr" : "auto"})) 0.375rem`,
+              }}
             >
               {weekDays.map((d, dayIndex) => {
                 const isToday = sameDay(d, new Date());
@@ -372,7 +417,7 @@ export function CalendarView() {
                     }}
                     title={`${segment.event.title} · ${fmtTime(segment.event.start_at)}`}
                   >
-                    <span className="line-clamp-2 sm:block sm:truncate">
+                    <span data-event-title className={calendarExpanded ? "block max-h-full overflow-y-auto whitespace-normal break-words" : "line-clamp-2 sm:block sm:truncate"}>
                       {segment.event.contact_id && <Cake className="mr-0.5 -mt-0.5 inline h-2.5 w-2.5" />}
                       {segment.event.title}
                       <span className="hidden sm:inline">{renderProfileDots(segment.event)}</span>
