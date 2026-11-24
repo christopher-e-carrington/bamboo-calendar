@@ -1,3 +1,4 @@
+import { tint } from "@/lib/profile-tint";
 import { useMemo, useState, useLayoutEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -299,7 +300,7 @@ export function CalendarView() {
             <span
               key={id}
               className="h-2 w-2 rounded-full ring-1 ring-background"
-              style={{ background: p.color }}
+              style={{ background: tint(p.color) }}
             />
           );
         })}
@@ -406,9 +407,9 @@ export function CalendarView() {
                       gridColumn: `${segment.startColumn} / ${segment.endColumn + 1}`,
                       gridRow: segment.lane + 2,
                       background: primary
-                        ? `color-mix(in oklab, ${primary.color} 24%, var(--card))`
+                        ? `color-mix(in oklab, ${tint(primary.color)} 24%, var(--card))`
                         : undefined,
-                      borderLeftColor: primary?.color,
+                      borderLeftColor: tint(primary?.color),
                     }}
                     title={`${segment.event.title} · ${fmtTime(segment.event.start_at)}`}
                   >
@@ -436,7 +437,7 @@ export function CalendarView() {
         <ul className="space-y-3">
           {selectedEvents.map((ev) => {
             const ids = ev.profile_ids?.length ? ev.profile_ids : [ev.profile_id];
-            const colors = ids.map((id) => findProfile(id)?.color).filter(Boolean) as string[];
+            const colors = ids.map((id) => tint(findProfile(id)?.color)).filter(Boolean) as string[];
             const primary = findProfile(ids[0]);
             return (
               <li key={ev.id}>
@@ -445,7 +446,7 @@ export function CalendarView() {
                   className="w-full text-left group flex items-start gap-3 rounded-2xl p-4 bg-card/80 border border-border shadow-sm hover:shadow-md hover:bg-card hover:-translate-y-0.5 transition-all"
                   style={{
                     borderLeftWidth: "4px",
-                    borderLeftColor: primary?.color,
+                    borderLeftColor: tint(primary?.color),
                   }}
                 >
                   <div className="flex flex-col gap-0.5 self-stretch">
@@ -473,7 +474,7 @@ export function CalendarView() {
                           key={id}
                           title={p.name}
                           className="h-5 w-5 rounded-full ring-2 ring-background text-[9px] grid place-items-center font-medium text-white"
-                          style={{ background: p.color }}
+                          style={{ background: tint(p.color) }}
                         >
                           {p.initials}
                         </span>
@@ -524,7 +525,7 @@ export function CalendarView() {
                       <span
                         key={p.id}
                         className="text-[11px] rounded-full px-2 py-0.5 text-white"
-                        style={{ background: p.color }}
+                        style={{ background: tint(p.color) }}
                       >
                         {p.name}
                       </span>

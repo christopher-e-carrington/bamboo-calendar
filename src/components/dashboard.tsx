@@ -1,3 +1,4 @@
+import { tint } from "@/lib/profile-tint";
 import { useState } from "react";
 import { useHousehold, type Recurrence } from "@/lib/household-store";
 import { ProfileAvatar } from "./profile-avatar";
@@ -132,7 +133,7 @@ export function Dashboard() {
                           key={e.id}
                           className="flex items-start gap-3 rounded-xl p-3 hover:bg-secondary/60 transition-colors border border-transparent hover:border-border"
                         >
-                          <div className="w-1 self-stretch rounded-full" style={{ background: p.color }} />
+                          <div className="w-1 self-stretch rounded-full" style={{ background: tint(p.color) }} />
                           <div className="flex-1 min-w-0">
                             <div className="flex flex-wrap items-baseline gap-x-2">
                               <span className="font-medium truncate">{e.title}</span>

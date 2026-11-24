@@ -1,3 +1,4 @@
+import { tint } from "@/lib/profile-tint";
 import { useEffect, useMemo, useState } from "react";
 import { useSwipe } from "@/hooks/use-swipe";
 import { usePageNav } from "@/lib/page-nav";
@@ -380,7 +381,7 @@ export function ProfileHomeScreen() {
     >
       {/* Hero */}
       <section className="bamboo-card overflow-hidden mb-6 relative">
-        <div className="absolute inset-y-0 left-0 w-1.5" style={{ background: activeProfile.color }} />
+        <div className="absolute inset-y-0 left-0 w-1.5" style={{ background: tint(activeProfile.color) }} />
         <div className="p-5 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-4">
           <ProfileAvatar profile={activeProfile} size={56} />
           <div className="flex-1 min-w-0">
@@ -425,7 +426,7 @@ export function ProfileHomeScreen() {
                       key={e.id}
                       className="flex items-start gap-3 rounded-xl p-3 hover:bg-secondary/60 transition-colors border border-transparent hover:border-border"
                     >
-                      <div className="w-1 self-stretch rounded-full" style={{ background: activeProfile.color }} />
+                      <div className="w-1 self-stretch rounded-full" style={{ background: tint(activeProfile.color) }} />
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-baseline gap-x-2">
                           <span className="font-medium truncate">{e.title}</span>
@@ -450,7 +451,7 @@ export function ProfileHomeScreen() {
                 <ul className="space-y-1.5">
                   {upcoming.map((e) => (
                     <li key={e.id} className="flex items-center gap-3 text-sm py-1">
-                      <span className="h-2 w-2 rounded-full shrink-0" style={{ background: activeProfile.color }} />
+                      <span className="h-2 w-2 rounded-full shrink-0" style={{ background: tint(activeProfile.color) }} />
                       <span className="flex-1 truncate">{e.title}</span>
                       <span className="text-xs text-muted-foreground shrink-0">
                         {fmtDay(e.start_at)} · {fmtTime(e.start_at)}
@@ -561,7 +562,7 @@ export function ProfileHomeScreen() {
                     <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-[width] duration-500"
-                        style={{ width: `${p}%`, background: activeProfile.color }}
+                        style={{ width: `${p}%`, background: tint(activeProfile.color) }}
                       />
                     </div>
                   </li>

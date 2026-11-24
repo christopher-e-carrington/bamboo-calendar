@@ -1,3 +1,4 @@
+import { tint } from "@/lib/profile-tint";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -212,7 +213,7 @@ export function RemindersPage() {
                       />
                       <span
                         className="h-6 w-6 rounded-full grid place-items-center text-[10px] font-medium text-white"
-                        style={{ backgroundColor: p.color }}
+                        style={{ backgroundColor: tint(p.color) }}
                       >
                         {p.initials}
                       </span>
@@ -378,7 +379,7 @@ function ReminderCard({
             >
               <span
                 className="h-3.5 w-3.5 rounded-full grid place-items-center text-[8px] font-medium text-white"
-                style={{ backgroundColor: p.color }}
+                style={{ backgroundColor: tint(p.color) }}
               >
                 {p.initials}
               </span>

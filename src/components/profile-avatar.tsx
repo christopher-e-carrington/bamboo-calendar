@@ -1,3 +1,4 @@
+import { tint } from "@/lib/profile-tint";
 import type { Profile } from "@/lib/household-store";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +23,7 @@ export function ProfileAvatar({
       style={{
         width: size,
         height: size,
-        background: `linear-gradient(135deg, ${profile.color}, color-mix(in oklab, ${profile.color} 70%, white))`,
+        background: `linear-gradient(135deg, ${tint(profile.color)}, color-mix(in oklab, ${tint(profile.color)} 70%, white))`,
         fontSize: size * 0.38,
       }}
       aria-label={profile.name}

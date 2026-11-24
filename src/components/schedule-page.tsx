@@ -1,3 +1,4 @@
+import { tint } from "@/lib/profile-tint";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSwipe } from "@/hooks/use-swipe";
 import { useHousehold, type CalendarEvent, type TaskItem } from "@/lib/household-store";
@@ -304,7 +305,7 @@ export function SchedulePage() {
                     armed ? "border-primary bg-primary/10" : "border-border bg-card hover:bg-secondary/60",
                   )}
                 >
-                  <span className="h-2 w-2 rounded-full" style={{ background: p?.color }} />
+                  <span className="h-2 w-2 rounded-full" style={{ background: tint(p?.color) }} />
                   <span className="max-w-[10rem] truncate">{t.title}</span>
                 </button>
               );
@@ -370,7 +371,7 @@ export function SchedulePage() {
             {blocks.map((b) => {
               const ids = b.ev.profile_ids?.length ? b.ev.profile_ids : [b.ev.profile_id];
               const primary = findProfile(ids.filter(Boolean)[0]);
-              const color = primary?.color ?? "var(--primary)";
+              const color = tint(primary?.color) ?? "var(--primary)";
               const widthPct = 100 / b.lanes;
               const s = new Date(b.ev.start_at);
               const dur = b.endMin - b.startMin;
@@ -464,7 +465,7 @@ export function SchedulePage() {
                       <span
                         key={p!.id}
                         className="text-[11px] rounded-full px-2 py-0.5 text-white"
-                        style={{ background: p!.color }}
+                        style={{ background: tint(p!.color) }}
                       >
                         {p!.name}
                       </span>

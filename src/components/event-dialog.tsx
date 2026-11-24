@@ -1,3 +1,4 @@
+import { tint } from "@/lib/profile-tint";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -212,7 +213,7 @@ export function EventDialog({
                     <span className="text-sm truncate">{p.name}</span>
                     <span
                       className="ml-auto h-2.5 w-2.5 rounded-full shrink-0"
-                      style={{ background: p.color }}
+                      style={{ background: tint(p.color) }}
                     />
                   </label>
                 );
