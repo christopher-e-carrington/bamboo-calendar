@@ -1341,7 +1341,7 @@ export function ProfileSettingsSheet({ trigger }: { trigger?: React.ReactNode })
           </Button>
         )}
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+      <SheetContent className="w-[85%] sm:max-w-md overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="font-display">Settings</SheetTitle>
           <SheetDescription>
