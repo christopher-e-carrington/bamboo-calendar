@@ -11,17 +11,17 @@ import dawnBg from "@/assets/dawn.png.asset.json";
 import saraBg from "@/assets/sara.jpg.asset.json";
 
 export const THEMES = [
-  { id: "parchment", name: "Parchment", description: "Warm cream, bamboo greens. The original.", swatches: ["#f6f1e4", "#7a9a72", "#c2a878", "#4a5a3c"] },
-  { id: "bamboo", name: "Bamboo", description: "Soft cream over a sunlit bamboo grove.", swatches: ["#f6f1e4", "#7a9a72", "#c2a878", "#2a2a22"] },
-  { id: "leather", name: "Leather", description: "Burnished cognac, walnut, and deep grove greens.", swatches: ["#3a2818", "#b07040", "#e8b878", "#4a6a3c"] },
-  { id: "sketch", name: "Sketch", description: "Graphite pencil on textured paper.", swatches: ["#efece4", "#cfcabd", "#5a5a55", "#1f1f1f"] },
-  { id: "artic", name: "Artic", description: "Frosted bamboo in an arctic mist.", swatches: ["#e8f4f4", "#4a8a8a", "#a0d0d0", "#1a3a3a"] },
-  { id: "storm", name: "Storm", description: "Rain-soaked bamboo under a steel-grey sky.", swatches: ["#1a2629", "#4a6a6a", "#7a9a9a", "#c8d8d8"] },
-  { id: "dawn", name: "Dawn", description: "Misty bamboo bathed in soft golden dawn light.", swatches: ["#f5e6d8", "#c4a878", "#8aaa90", "#5a7a72"] },
-  { id: "sara", name: "Sara", description: "Brushed aluminum, glossy aqua blue, and airy white space.", swatches: ["#f2f4f7", "#d5d9df", "#2f7fd8", "#1d1d1f"] },
-  { id: "aura", name: "Aura", description: "Northern lights over moonlit bamboo.", swatches: ["#0f1b3d", "#4ade9e", "#a78bfa", "#5eead4"] },
-  { id: "light", name: "Light", description: "Material light. Clean and neutral.", swatches: ["#ffffff", "#f5f5f5", "#1976d2", "#212121"] },
-  { id: "dark", name: "Dark", description: "Material dark. Easy on the eyes.", swatches: ["#121212", "#1e1e1e", "#90caf9", "#e0e0e0"] },
+  { id: "parchment", name: "Parchment", description: "Warm cream, bamboo greens. The original.", swatches: ["#f6f1e4", "#7a9a72", "#c2a878", "#4a5a3c"], barColor: "#8FA97A" },
+  { id: "bamboo", name: "Bamboo", description: "Soft cream over a sunlit bamboo grove.", swatches: ["#f6f1e4", "#7a9a72", "#c2a878", "#2a2a22"], barColor: "#7a9a72" },
+  { id: "leather", name: "Leather", description: "Burnished cognac, walnut, and deep grove greens.", swatches: ["#3a2818", "#b07040", "#e8b878", "#4a6a3c"], barColor: "#3a2818" },
+  { id: "sketch", name: "Sketch", description: "Graphite pencil on textured paper.", swatches: ["#efece4", "#cfcabd", "#5a5a55", "#1f1f1f"], barColor: "#efece4" },
+  { id: "artic", name: "Artic", description: "Frosted bamboo in an arctic mist.", swatches: ["#e8f4f4", "#4a8a8a", "#a0d0d0", "#1a3a3a"], barColor: "#e8f4f4" },
+  { id: "storm", name: "Storm", description: "Rain-soaked bamboo under a steel-grey sky.", swatches: ["#1a2629", "#4a6a6a", "#7a9a9a", "#c8d8d8"], barColor: "#1a2629" },
+  { id: "dawn", name: "Dawn", description: "Misty bamboo bathed in soft golden dawn light.", swatches: ["#f5e6d8", "#c4a878", "#8aaa90", "#5a7a72"], barColor: "#f5e6d8" },
+  { id: "sara", name: "Sara", description: "Brushed aluminum, glossy aqua blue, and airy white space.", swatches: ["#f2f4f7", "#d5d9df", "#2f7fd8", "#1d1d1f"], barColor: "#f2f4f7" },
+  { id: "aura", name: "Aura", description: "Northern lights over moonlit bamboo.", swatches: ["#0f1b3d", "#4ade9e", "#a78bfa", "#5eead4"], barColor: "#0f1b3d" },
+  { id: "light", name: "Light", description: "Material light. Clean and neutral.", swatches: ["#ffffff", "#f5f5f5", "#1976d2", "#212121"], barColor: "#ffffff" },
+  { id: "dark", name: "Dark", description: "Material dark. Easy on the eyes.", swatches: ["#121212", "#1e1e1e", "#90caf9", "#e0e0e0"], barColor: "#121212" },
 ] as const;
 
 const BUILTIN_BACKGROUNDS: Record<string, string> = {
@@ -278,6 +278,17 @@ const ThemeContext = createContext<{
   deleteCustomTheme: async () => {},
 });
 
+function setThemeColorMeta(color: string) {
+  if (typeof document === "undefined") return;
+  let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.name = "theme-color";
+    document.head.appendChild(meta);
+  }
+  meta.content = color;
+}
+
 function applyTheme(theme: ThemeId, customs: CustomTheme[]) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
@@ -293,12 +304,14 @@ function applyTheme(theme: ThemeId, customs: CustomTheme[]) {
       opacity: custom.sidebarOpacity ?? null,
     });
     if (custom.backgroundImage) applyBackgroundImage(custom.backgroundImage);
+    setThemeColorMeta(custom.colors.background);
   } else {
     const builtIn = (THEMES.find((t) => t.id === theme)?.id ?? DEFAULT_THEME) as BuiltInThemeId;
     root.classList.add(`theme-${builtIn}`);
     root.classList.toggle("dark", builtIn === "dark" || builtIn === "aura" || builtIn === "leather" || builtIn === "storm");
     const bg = BUILTIN_BACKGROUNDS[builtIn];
     if (bg) applyBackgroundImage(bg);
+    setThemeColorMeta(THEMES.find((t) => t.id === builtIn)?.barColor ?? "#8FA97A");
   }
 }
 
