@@ -41,7 +41,13 @@ export const Route = createFileRoute("/api/public/hooks/push-dispatch")({
             .from("push_subscriptions")
             .select("id,user_id,endpoint,p256dh,auth")
             .eq("household_id", householdId);
-          const rows = (data ?? []) as SubRow[];
+          const { data: members } = await supabase
+            .from("household_members")
+            .select("user_id")
+            .eq("household_id", householdId);
+          // Only current members (and the household owner) receive alerts.
+          const allowed = new Set([householdId, ...(members ?? []).map((m) => m.user_id as string)]);
+          const rows = ((data ?? []) as SubRow[]).filter((s) => allowed.has(s.user_id));
           subsCache.set(householdId, rows);
           return rows;
         };
