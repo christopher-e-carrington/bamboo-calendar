@@ -232,26 +232,27 @@ export function SchedulePage() {
     <div className="px-3 sm:px-5 lg:px-8 py-5 lg:py-7 max-w-6xl mx-auto w-full touch-pan-y" {...swipe}>
       {/* Header */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <button
+        <Button
+          size="sm"
           onClick={() => openDraft(9 * 60, 10 * 60)}
           className="px-3 py-1.5 text-xs rounded-full bg-primary text-primary-foreground shadow-sm inline-flex items-center gap-1"
         >
           <Plus className="h-3.5 w-3.5" /> Block time
-        </button>
-        <Button variant="ghost" size="icon" aria-label="Previous day" onClick={() => setDay(addDays(day, -1))}>
+        </Button>
+        <Button variant="surface" size="icon" aria-label="Previous day" title="Previous day" onClick={() => setDay(addDays(day, -1))}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" aria-label="Next day" onClick={() => setDay(addDays(day, 1))}>
+        <Button variant="surface" size="icon" aria-label="Next day" title="Next day" onClick={() => setDay(addDays(day, 1))}>
           <ChevronRight className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => setDay(startOfDay(new Date()))}>Today</Button>
+        <Button variant="surface" size="sm" onClick={() => setDay(startOfDay(new Date()))}>Today</Button>
         <div className="inline-flex items-center rounded-lg bg-card border border-border px-3 py-1 shadow-sm min-w-0">
           <h1 className="font-display text-base sm:text-xl truncate">
             {day.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}
           </h1>
         </div>
         <Button
-          variant="ghost"
+          variant="surface"
           size="sm"
           className="ml-auto gap-1"
           onClick={() => setFullDay((v) => !v)}

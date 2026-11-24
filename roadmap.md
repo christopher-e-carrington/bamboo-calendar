@@ -1,3 +1,9 @@
+# Page-control visibility
+
+- [x] Match Calendar navigation and expansion controls to its existing tiles.
+- [x] Apply the same treatment to exposed Schedule, Dashboard, Journal, and Projects controls.
+- [x] Verify signed-in phone and desktop layouts and save the changes.
+
 # Store-readiness changes
 
 - [x] Strengthen account deletion, including uploaded files and safe household-member handling.

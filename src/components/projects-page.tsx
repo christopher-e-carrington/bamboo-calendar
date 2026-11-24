@@ -305,17 +305,16 @@ export function ProjectsPage() {
           const label = f === "all" ? "All" : STATUS[f].label;
           const active = filter === f;
           return (
-            <button
+            <Button
               key={f}
+              size="sm"
+              variant={active ? "default" : "surface"}
+              aria-pressed={active}
               onClick={() => setFilter(f)}
-              className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
-                active
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-card/60 border-border text-muted-foreground hover:text-foreground"
-              }`}
+              className="rounded-full"
             >
               {label}
-            </button>
+            </Button>
           );
         })}
       </div>

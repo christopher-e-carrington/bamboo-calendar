@@ -255,7 +255,7 @@ export function JournalPage() {
             >#{t}</Badge>
           ))}
           {hasFilters && (
-            <Button size="sm" variant="ghost" onClick={clearFilters} className="ml-auto gap-1">
+            <Button size="sm" variant="surface" onClick={clearFilters} className="ml-auto gap-1">
               <X className="h-3.5 w-3.5" /> Clear
             </Button>
           )}

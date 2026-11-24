@@ -7,3 +7,4 @@
 - Household subscription status must resolve household membership from authenticated identity and read only server-managed store entitlements or personal-access allowances; client claims and legacy checkout records are not proof of payment.
 - Keep subscription enforcement disabled during store preparation and exclude subscription queries from persisted offline caches; enabling restrictions requires verified store purchases and separately tested data-access enforcement.
 - Calendar expansion measures unclamped event content against the default week layout and caps each week at twice its normal height; keep the default rendering unchanged and use local state so collapse restores it.
+- Use the shared surface Button variant for secondary page controls placed directly over themed backdrops; card-colored tiles preserve legibility without changing controls inside cards or dialogs.

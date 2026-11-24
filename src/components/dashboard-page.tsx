@@ -57,7 +57,7 @@ export function DashboardPage() {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button size="sm" variant="ghost" onClick={reset} className="gap-1.5">
+              <Button size="sm" variant="surface" onClick={reset} className="gap-1.5">
                 <RotateCcw className="h-4 w-4" /> Reset
               </Button>
             </>

@@ -315,22 +315,17 @@ export function CalendarView() {
       onTouchEnd={onTouchEnd}
     >
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <div className="inline-flex rounded-full bg-secondary p-1">
-          <button
-            onClick={() => openAdd()}
-            className="px-3 py-1 text-xs rounded-full bg-background shadow-sm inline-flex items-center gap-1"
-          >
-            <Plus className="h-3 w-3" /> Add event
-          </button>
-        </div>
-        <Button variant="ghost" size="icon" onClick={() => shift(-1)} aria-label="Previous">
+        <Button variant="surface" size="sm" onClick={() => openAdd()} className="gap-1">
+          <Plus className="h-3 w-3" /> Add event
+        </Button>
+        <Button variant="surface" size="icon" onClick={() => shift(-1)} aria-label="Previous" title="Previous month">
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={() => shift(1)} aria-label="Next">
+        <Button variant="surface" size="icon" onClick={() => shift(1)} aria-label="Next" title="Next month">
           <ChevronRight className="h-4 w-4" />
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => setCursor(new Date())}>Today</Button>
-        <Button variant="ghost" size="sm" aria-expanded={calendarExpanded} aria-controls="month-calendar-grid" onClick={() => setCalendarExpanded((value) => !value)}>
+        <Button variant="surface" size="sm" onClick={() => setCursor(new Date())}>Today</Button>
+        <Button variant="surface" size="sm" aria-expanded={calendarExpanded} aria-controls="month-calendar-grid" onClick={() => setCalendarExpanded((value) => !value)}>
           {calendarExpanded ? "Collapse" : "Expand"}
         </Button>
         <div className="inline-flex items-center rounded-lg bg-card border border-border px-3 py-1 shadow-sm">
