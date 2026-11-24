@@ -1,9 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
-import { clearAccountDeviceData, completeAccountDeletion, purgeAccountUploads, type AccountStorage, type UploadEntry } from "./account-deletion";
+import { accountDeletionConfirmation, clearAccountDeviceData, completeAccountDeletion, purgeAccountUploads, type AccountStorage, type UploadEntry } from "./account-deletion";
 
 const accountId = "11111111-1111-4111-8111-111111111111";
 
 describe("account deletion", () => {
+  it("requires explicit permanent-deletion confirmation", () => {
+    expect(accountDeletionConfirmation.safeParse({ confirm: false }).success).toBe(false);
+    expect(accountDeletionConfirmation.safeParse({}).success).toBe(false);
+    expect(accountDeletionConfirmation.safeParse({ confirm: true }).success).toBe(true);
+  });
+
+  it("rejects a caller-supplied target account identifier", () => {
+    expect(accountDeletionConfirmation.safeParse({ confirm: true, userId: "22222222-2222-4222-8222-222222222222" }).success).toBe(false);
+  });
+
   it("removes all account-folder uploads across pages, including nested files", async () => {
     const files = new Map<string, UploadEntry[]>([
       [`documents/${accountId}`, Array.from({ length: 105 }, (_, index) => ({ name: `file-${index}`, id: `id-${index}` }))],
@@ -53,6 +63,13 @@ describe("account deletion", () => {
     const remove = vi.fn();
     await expect(purgeAccountUploads({ list: async () => [{ name: "../other-account/private.pdf", id: "file" }], remove }, accountId)).rejects.toThrow("Invalid upload path");
     expect(remove).not.toHaveBeenCalled();
+  });
+
+  it("does not report success when a nested file remains after storage removal", async () => {
+    await expect(purgeAccountUploads({
+      list: async (_bucket, prefix) => prefix === accountId ? [{ name: "album", id: null }] : [{ name: "photo.jpg", id: "remaining-file" }],
+      remove: async () => {},
+    }, accountId)).rejects.toThrow("Some uploaded files could not be removed");
   });
 
   it("clears Bamboo cached data and offline edits without clearing unrelated site data", () => {

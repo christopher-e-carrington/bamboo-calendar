@@ -1,3 +1,7 @@
+import { z } from "zod";
+
+export const accountDeletionConfirmation = z.object({ confirm: z.literal(true) }).strict();
+
 export interface UploadEntry { name: string; id: string | null }
 export interface AccountStorage {
   list: (bucket: string, prefix: string, offset: number) => Promise<UploadEntry[]>;
@@ -30,9 +34,9 @@ export async function purgeAccountUploads(storage: AccountStorage, userId: strin
     for (let start = 0; start < files.length; start += 100) {
       await storage.remove(bucket, files.slice(start, start + 100));
     }
-    const remaining = await storage.list(bucket, userId, 0);
-    // Storage may return empty virtual folders; check any remaining files recursively.
-    if (remaining.some((entry) => entry.id)) throw new Error("Some uploaded files could not be removed");
+    files.length = 0;
+    await visit(userId, 0);
+    if (files.length > 0) throw new Error("Some uploaded files could not be removed");
   }
 }
 

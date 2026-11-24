@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { ThemeProvider } from "@/lib/theme-store";
 import { DisplayProvider } from "@/lib/display-store";
 import { OfflineBanner } from "@/components/offline-banner";
+import { Toaster } from "@/components/ui/sonner";
 import { initOffline } from "@/lib/offline/init";
 import { isChunkLoadError, recoverFromStaleBundle } from "@/lib/offline/chunk-recovery";
 
@@ -146,6 +147,7 @@ function RootComponent() {
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
           <OfflineBanner />
+          <Toaster />
         </ThemeProvider>
       </DisplayProvider>
     </QueryClientProvider>
